@@ -18,7 +18,7 @@ const srcDir = path.join(here, '..', 'web', 'src');
 const FILES = [
   'rng.js',
   'data/world.js', 'data/actors.js', 'data/items.js', 'data/fragments.js',
-  'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js',
+  'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js', 'data/templates5.js',
   'data/arcs.js', 'data/arcs2.js',
   'generator.js', 'engine.js'
 ];

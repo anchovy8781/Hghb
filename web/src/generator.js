@@ -99,14 +99,14 @@
     return t;
   };
 
-  /* 가중치는 덱에 넣는 장수로 표현한다 (w 12 -> 3장, w 5 -> 2장) */
+  /* 덱에는 조건을 만족하는 템플릿을 한 장씩만 넣는다.
+   * 가중치로 장수를 늘리면 특정 사건이 몇 배씩 더 나와 "또 이거네" 소리를 듣게 된다. */
   Generator.prototype.refillTemplatePool = function (st) {
     const self = this;
     const pool = [];
     B.TEMPLATES.forEach(function (t) {
       if (t.w <= 0 || !self.eligible(t, st)) return;
-      const copies = Math.max(1, Math.round(t.w / 4));
-      for (let i = 0; i < copies; i++) pool.push(t);
+      pool.push(t);
     });
     for (let i = pool.length - 1; i > 0; i--) {
       const j = Math.floor(this.rnd() * (i + 1));
