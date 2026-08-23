@@ -19,7 +19,8 @@
     { id: 'lie',   name: '거짓말',  note: '진실은 비싸고, 거짓말은 즉시 쓸 수 있다.' },
     { id: 'sea',   name: '항해술',  note: '부산에서 바다를 모르면 절반만 사는 것이다.' },
     { id: 'lock',  name: '자물쇠따기', note: '잠긴 것은 대개 값어치가 있다.' },
-    { id: 'read',  name: '독해',    note: '남이 흘린 글자 속에 길이 있다.' }
+    { id: 'read',  name: '독해',    note: '남이 흘린 글자 속에 길이 있다.' },
+    { id: 'sense', name: '직감',    note: '털이 곤두서면 이유는 나중에 안다.' }
   ];
 
   /* ── 아이템 ────────────────────────────────────────
@@ -86,6 +87,56 @@
     { id: 'guilt',    name: '죄책감',        kind: 'mood', val: 0, bad: true },
     { id: 'fever',    name: '열',            kind: 'mood', val: 0, bad: true },
     { id: 'insomnia', name: '불면',          kind: 'mood', val: 0, bad: true },
+    { id: 'hunger',   name: '허기',          kind: 'mood', val: 0, bad: true },
+    { id: 'wound',    name: '상처',          kind: 'mood', val: 0, bad: true },
+    { id: 'fracture', name: '골절',          kind: 'mood', val: 0, bad: true },
+    { id: 'burn',     name: '화상',          kind: 'mood', val: 0, bad: true },
+
+    /* ── 잡동사니 ──────────────────────────────────────
+     * 값도 없고 배도 안 부르지만, 어떤 것들은 나중에 결정적으로 쓰인다.
+     * key: true 인 것은 후반 조건부 사건의 열쇠다. */
+    { id: 'batstick', name: '야구 응원 막대', kind: 'junk', val: 0, key: true, note: '주황색. 아직도 소리가 난다.' },
+    { id: 'ticket',   name: '지하철 승차권',  kind: 'junk', val: 0, key: true, note: '서면 → 다대포. 편도.' },
+    { id: 'teddy',    name: '곰인형',        kind: 'junk', val: 0, key: true, note: '한쪽 눈이 없다.' },
+    { id: 'charm',    name: '부적',          kind: 'junk', val: 0, key: true, note: '붉은 글씨가 절반쯤 지워졌다.' },
+    { id: 'whistle',  name: '호루라기',      kind: 'junk', val: 0, key: true, note: '체육 선생님 것이었던 듯하다.' },
+    { id: 'spray',    name: '페인트 스프레이', kind: 'junk', val: 1, key: true, note: '흔들면 아직 소리가 난다.' },
+    { id: 'compass',  name: '나침반',        kind: 'junk', val: 1, key: true, note: '자침이 가끔 엉뚱한 곳을 가리킨다.' },
+    { id: 'leash',    name: '개 목줄',       kind: 'junk', val: 0, key: true, note: '이름표에 "방울".' },
+    { id: 'stamp',    name: '인감도장',      kind: 'junk', val: 0, key: true, note: '누군가의 성이 새겨져 있다.' },
+    { id: 'studentid', name: '학생증',       kind: 'junk', val: 0, key: true, note: '2014년 발급. 사진 속 얼굴이 앳되다.' },
+    { id: 'tape2',    name: '카세트테이프',  kind: 'junk', val: 0, key: true, note: '라벨에 "여름"이라고만 적혀 있다.' },
+    { id: 'tourmap',  name: '관광 안내도',   kind: 'junk', val: 0, key: true, note: '2013년판. 없어진 건물투성이다.' },
+    { id: 'candle',   name: '향초',          kind: 'junk', val: 0, key: true, note: '반쯤 탔다.' },
+    { id: 'megaphone', name: '확성기',       kind: 'junk', val: 1, key: true, note: '건전지만 있으면 된다.' },
+    { id: 'fishlure', name: '낚시찌',        kind: 'junk', val: 0, key: true, note: '주황색 몸통에 이름이 새겨져 있다.' },
+    { id: 'gum',      name: '껌 한 통',      kind: 'junk', val: 0, note: '딱딱하지만 씹으면 단맛이 난다.' },
+    { id: 'mirror',   name: '자개 손거울',   kind: 'junk', val: 1, note: '오랜만에 본 자기 얼굴이 낯설다.' },
+    { id: 'keyring',  name: '부산타워 열쇠고리', kind: 'junk', val: 0, note: '탑은 아직 서 있다고 들었다.' },
+    { id: 'seaweed2', name: '마른 미역',     kind: 'junk', val: 0, note: '물에 불리면 두 배가 된다.' },
+    { id: 'pen',      name: '볼펜',          kind: 'junk', val: 0, note: '흔들어 쓰면 아직 나온다.' },
+    { id: 'notebook', name: '빈 공책',       kind: 'junk', val: 0, note: '첫 장에 이름이 적혀 있다가 지워졌다.' },
+    { id: 'matches',  name: '성냥갑',        kind: 'junk', val: 0, note: '"다방 미인" 이라고 인쇄되어 있다.' },
+    { id: 'alcowipe', name: '알코올 솜',     kind: 'junk', val: 0, note: '포장이 아직 안 뜯겼다.' },
+    { id: 'glasses',  name: '남의 안경',     kind: 'junk', val: 0, note: '도수가 전혀 안 맞는다.' },
+    { id: 'magnet',   name: '자석',          kind: 'junk', val: 0, note: '쇠붙이를 찾을 때 쓸모가 있다.' },
+    { id: 'needle',   name: '바늘과 실',     kind: 'junk', val: 1, note: '옷이 하루 더 버틴다.' },
+    { id: 'flashdead', name: '죽은 손전등',  kind: 'junk', val: 0, note: '건전지만 있으면.' },
+    { id: 'coinpurse', name: '동전 지갑',    kind: 'junk', val: 1, note: '이제는 쇠붙이일 뿐이다.' },
+    { id: 'drawing',  name: '아이 그림',     kind: 'junk', val: 0, note: '네 식구가 손을 잡고 있다.' },
+    { id: 'candy',    name: '사탕 한 봉지',  kind: 'junk', val: 0, note: '서로 눌어붙었다.' },
+    { id: 'towel',    name: '목욕탕 수건',   kind: 'junk', val: 0, note: '"동래온천" 이라고 박혀 있다.' },
+    { id: 'slipper',  name: '슬리퍼',        kind: 'junk', val: 0, note: '한 짝은 크고 한 짝은 작다.' },
+    { id: 'wallet',   name: '낡은 지갑',     kind: 'junk', val: 1, note: '신분증 사진이 물에 번졌다.' },
+    { id: 'glowstick', name: '야광봉',       kind: 'junk', val: 0, note: '꺾으면 십 분쯤 빛난다.' },
+    { id: 'tapemeasure', name: '줄자',       kind: 'junk', val: 0, note: '3미터에서 멈춘다.' },
+    { id: 'opener',   name: '병따개',        kind: 'junk', val: 0, note: '이것 하나로 저녁이 달라질 때가 있다.' },
+    { id: 'fishline', name: '낚싯줄',        kind: 'junk', val: 1, note: '질기다. 여러모로 쓸모가 있다.' },
+    { id: 'pushpin',  name: '압정 한 통',    kind: 'junk', val: 0, note: '벽에 뭔가 붙이려면 필요하다.' },
+    { id: 'sandpaper', name: '사포',         kind: 'junk', val: 0, note: '녹을 벗겨 낸다.' },
+    { id: 'comb',     name: '이 빠진 빗',    kind: 'junk', val: 0, note: '그래도 머리는 빗어진다.' },
+    { id: 'stub',     name: '영화 반쪽표',   kind: 'junk', val: 0, note: '2015년 8월 6일 19시 30분.' },
+    { id: 'trophy',   name: '작은 트로피',   kind: 'junk', val: 1, note: '"제12회 사내 볼링대회 3위".' },
     /* 열쇠 아이템 — 주요 스토리에서만 나온다 */
     { id: 'shard',    name: '녹은 유리 조각', kind: 'key', val: 0 },
     { id: 'letter',   name: '아버지의 편지',  kind: 'key', val: 0 },
@@ -100,7 +151,12 @@
     { from: 'hope',   to: 'painkill', count: 3, line: '로망을 태워 진통제 세 알을 얻습니다. 남는 장사인지는 모르겠습니다.' },
     { from: 'humor',  to: 'choco',    count: 2, line: '농담 몇 개로 초콜릿 두 개를 얻어냅니다.' },
     { from: 'gold',   to: 'medkit',   count: 1, line: '금니를 의약품과 바꿉니다. 이가 아픈 것보다 낫습니다.' },
-    { from: 'guitar', to: 'hope',     count: 1, line: '기타 줄이 하나 더 끊어졌지만, 노래는 남습니다.' }
+    { from: 'guitar', to: 'hope',     count: 1, line: '기타 줄이 하나 더 끊어졌지만, 노래는 남습니다.' },
+    { from: 'needle', to: 'bandage',  count: 2, line: '천을 찢어 실로 감칩니다. 붕대 두 개가 생겼습니다.' },
+    { from: 'candy',  to: 'humor',    count: 1, line: '사탕 하나를 입에 넣습니다. 별것 아닌데 웃음이 납니다.' },
+    { from: 'mirror', to: 'gloom',    count: 1, line: '거울을 오래 봤습니다. 보지 말걸 그랬습니다.' },
+    { from: 'flashdead', to: 'wire',  count: 1, line: '손전등을 분해해 구리선을 뽑아냅니다.' },
+    { from: 'coinpurse', to: 'magnet', count: 1, line: '동전을 녹여 붙일 수는 없지만, 자석 하나는 건집니다.' }
   ];
 
   const BY_KIND = {};

@@ -173,7 +173,8 @@
       }
       if (need.itemKind) {
         const names = { food: '식량', water: '물', med: '약', ammo: '무기',
-                        part: '부품', lux: '귀중품', doc: '기록', mood: '감정' };
+                        part: '부품', lux: '귀중품', doc: '기록', mood: '감정',
+                        junk: '잡동사니', key: '유품' };
         push('item', names[need.itemKind] || need.itemKind, !!self.hasKind(need.itemKind));
       }
       if (need.money) push('money', '돈', self.st.money >= need.money);
@@ -320,6 +321,7 @@
     if (!this.queue.length) this.produce();
     if (!this.queue.length) return this.beat;
     this.beat = this.queue.shift();
+    if (this.beat && this.beat.text) this.beat.text = B.josa(this.beat.text);
     this.st.page++;
     this.tick();
     this.ensureExit();
@@ -375,11 +377,12 @@
       kind: 'sleep',
       choices: [
         { label: '안전한 곳을 찾아 제대로 잔다.', need: { money: 1 }, cost: { money: 1 },
-          res: ['문이 잠기는 방에서 잡니다. 그것만으로 사람이 됩니다.'],
-          eff: { hp: 1, mp: 1, del: ['insomnia'] }, dc: 0, ok: [], no: [] },
+          res: ['문이 잠기는 방에서 잡니다. 그것만으로 사람이 됩니다.',
+                '아침에 일어나니 어제까지 아프던 데가 조금 덜합니다.'],
+          eff: { hp: 1, mp: 1, del: ['insomnia', 'wound'] }, dc: 0, ok: [], no: [] },
         { label: '불을 피우고 눈을 붙인다.', need: { item: 'lighter' },
           res: ['불빛 앞에서 선잠을 잡니다. 몇 번 깼지만 아침은 옵니다.'],
-          eff: { mp: 1 }, dc: 0, ok: [], no: [] },
+          eff: { mp: 1, del: ['insomnia'] }, dc: 0, ok: [], no: [] },
         { label: '노숙한다.',
           res: ['처마 밑에 몸을 구겨 넣습니다. 추위보다 소리가 더 무섭습니다.'],
           eff: { mp: -1 }, dc: 0, ok: [], no: [] }
@@ -393,9 +396,28 @@
     if (st.mode === 'ending' || st.mode === 'prologue') return;
     if (st.page % MEAL_EVERY === 0) this.queue.unshift(mealBeat(this.rnd));
     else if (st.page % SLEEP_EVERY === 0) this.queue.unshift(sleepBeat(this.rnd));
-    if (st.items.hunger && st.page % 70 === 0) this.hurt('hp', 'hpSub', 2);
-    if (st.items.gloom && st.page % 90 === 0) this.hurt('mp', 'mpSub', 2);
-    if (st.rad >= 3 && st.page % 80 === 0) this.hurt('hp', 'hpSub', 2);
+    /* 몸에 붙은 것들이 조금씩 갉아먹고, 품고 있는 것들이 조금씩 버텨 준다 */
+    if (st.page % 100 === 0) {
+      let wear = 0;
+      if (st.items.hunger) wear += 2;
+      if (st.items.wound) wear += 1;
+      if (st.items.fever) wear += 2;
+      if (st.items.fracture) wear += 1;
+      if (st.items.burn) wear += 1;
+      if (st.rad >= 3) wear += 2;
+      if (wear) this.hurt('hp', 'hpSub', Math.min(3, wear));
+    }
+    if (st.page % 90 === 0) {
+      let wear = 0;
+      if (st.items.gloom) wear += 2;
+      if (st.items.insomnia) wear += 1;
+      if (st.items.guilt) wear += 1;
+      if (st.items.headache) wear += 1;
+      if (st.items.hope) wear -= 2;
+      if (st.items.humor) wear -= 1;
+      if (wear > 0) this.hurt('mp', 'mpSub', Math.min(3, wear));
+      else if (wear < 0) st.mpSub = Math.max(0, (st.mpSub || 0) + wear);
+    }
     /* 몸은 시간이 지나면 조금씩 씻어 낸다 */
     if (st.page % 170 === 0 && st.rad > 0) st.rad = clamp(st.rad - 1, 0, RAD_MAX);
     this.checkDeath();
@@ -462,6 +484,43 @@
     this.beat = null;
     this.checkDeath();
     return this.step();
+  };
+
+
+  /* 소지품에서 직접 쓰기 - 약과 먹을 것은 언제든 쓸 수 있다 */
+  Engine.prototype.canUse = function (id) {
+    const it = B.ITEM_MAP[id];
+    if (!it || !this.has(id)) return false;
+    return !!(it.hp || it.mp || it.rad || it.cures);
+  };
+
+  Engine.prototype.useItem = function (id) {
+    const it = B.ITEM_MAP[id];
+    if (!this.canUse(id)) return null;
+    this.delItem(id, 1);
+    if (it.hp) this.heal('hp', 'hpSub', it.hp);
+    if (it.mp) this.heal('mp', 'mpSub', it.mp);
+    if (it.rad) this.st.rad = clamp(this.st.rad + it.rad, 0, RAD_MAX);
+    let cured = null;
+    if (it.cures && this.has(it.cures)) {
+      this.delItem(it.cures, 1);
+      cured = B.ITEM_MAP[it.cures].name;
+    }
+    /* 붕대와 의약품은 상처를 함께 정리한다 */
+    if ((id === 'bandage' || id === 'medkit') && this.has('wound')) {
+      this.delItem('wound', 1);
+      cured = '상처';
+    }
+    if (id === 'medkit' && this.has('burn')) {
+      this.delItem('burn', 1);
+      cured = cured ? cured + ', 화상' : '화상';
+    }
+    if (it.kind === 'food' && this.has('hunger')) {
+      this.delItem('hunger', 1);
+      cured = cured ? cured + ', 허기' : '허기';
+    }
+    this.checkDeath();
+    return { name: it.name, cured: cured };
   };
 
   Engine.prototype.snapshot = function () {

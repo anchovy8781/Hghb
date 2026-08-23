@@ -302,6 +302,12 @@ html, body {
 }
 .sheet-body .btn.danger { color: var(--red); }
 .sheet-body .muted { color: var(--ink-soft); font-size: 13px; line-height: 1.6; }
+.sheet-body .bad { color: var(--red); }
+.sheet-body .row span.muted { max-width: 58%; text-align: right; font-size: 12px; }
+.sheet-body .use {
+  background: var(--ink); color: var(--bg); border: 0; border-radius: 999px;
+  font: inherit; font-size: 12px; font-weight: 700; padding: 3px 12px; cursor: pointer;
+}
 
 .toast {
   position: fixed;

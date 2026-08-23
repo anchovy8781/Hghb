@@ -116,9 +116,9 @@
   };
 
   function fill(text, ctx) {
-    return text.replace(/\{(\w+)\}/g, function (m, k) {
+    return B.josa(text.replace(/\{(\w+)\}/g, function (m, k) {
       return ctx[k] !== undefined ? ctx[k] : m;
-    });
+    }));
   }
 
   function nameOf(id) {

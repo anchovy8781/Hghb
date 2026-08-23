@@ -301,7 +301,35 @@
     if (this.tab === 'bag') {
       h('소지품');
       if (!s.items.length) note('가진 것이 없습니다.');
-      s.items.forEach(function (it) { row(it.name, '×' + it.n); });
+      s.items.forEach(function (it) {
+        const d = doc.createElement('div');
+        d.className = 'row';
+        const left = doc.createElement('span');
+        left.textContent = it.name + (it.n > 1 ? ' ×' + it.n : '');
+        if (it.bad) left.className = 'bad';
+        const right = doc.createElement('span');
+        if (self.e.canUse(it.id)) {
+          const b = doc.createElement('button');
+          b.className = 'use';
+          b.textContent = '쓰기';
+          b.addEventListener('click', function () {
+            const r = self.e.useItem(it.id);
+            if (!r) return;
+            self.toast(r.cured ? r.name + ' 사용 · ' + r.cured + ' 정리' : r.name + '을(를) 썼습니다.');
+            self.renderHud();
+            self.renderSheet();
+            self.e.save();
+          });
+          right.appendChild(b);
+        } else {
+          const info = B.ITEM_MAP[it.id];
+          right.className = 'muted';
+          right.textContent = info && info.note ? info.note : '';
+        }
+        d.appendChild(left);
+        d.appendChild(right);
+        body.appendChild(d);
+      });
       h('바꿀 수 있는 것');
       let any = false;
       B.CONVERSIONS.forEach(function (cv) {

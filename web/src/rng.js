@@ -83,9 +83,54 @@
     return this.deck(name, items).draw();
   };
 
+
+  /* 한국어 조사 자동 선택
+   *   "{item}을(를)" 처럼 써 두면 앞말 받침을 보고 알맞은 쪽을 고른다.
+   *   ㄹ 받침 뒤의 "으로/로" 같은 예외도 함께 처리한다. */
+  const JOSA_PAIRS = {
+    '은(는)': ['은', '는'], '는(은)': ['은', '는'],
+    '이(가)': ['이', '가'], '가(이)': ['이', '가'],
+    '을(를)': ['을', '를'], '를(을)': ['을', '를'],
+    '과(와)': ['과', '와'], '와(과)': ['과', '와'],
+    '아(야)': ['아', '야'], '야(아)': ['아', '야'],
+    '이었(였)': ['이었', '였'], '이라(라)': ['이라', '라'],
+    '으로(로)': ['으로', '로'], '로(으로)': ['으로', '로'],
+    '이나(나)': ['이나', '나'], '이란(란)': ['이란', '란'],
+    '이야(야)': ['이야', '야'], '이며(며)': ['이며', '며']
+  };
+
+  /* 받침 정보: 0 없음, 8 은 ㄹ */
+  function jongseong(ch) {
+    const c = ch.charCodeAt(0);
+    if (c < 0xAC00 || c > 0xD7A3) return -1;   /* 한글이 아니면 모른다 */
+    return (c - 0xAC00) % 28;
+  }
+
+  const JOSA_RE = /([가-힣A-Za-z0-9])(은\(는\)|는\(은\)|이\(가\)|가\(이\)|을\(를\)|를\(을\)|과\(와\)|와\(과\)|아\(야\)|야\(아\)|이었\(였\)|이라\(라\)|으로\(로\)|로\(으로\)|이나\(나\)|이란\(란\)|이야\(야\)|이며\(며\))/g;
+
+  function josa(text) {
+    if (!text || text.indexOf('(') < 0) return text;
+    return text.replace(JOSA_RE, function (m, ch, pair) {
+      const forms = JOSA_PAIRS[pair];
+      if (!forms) return m;
+      const j = jongseong(ch);
+      let withJong;
+      if (j < 0) {
+        /* 숫자나 영문 뒤에는 자주 쓰는 쪽으로 (받침 없는 형태) */
+        withJong = false;
+      } else {
+        withJong = j !== 0;
+        /* ㄹ 받침은 "으로" 가 아니라 "로" 를 쓴다 */
+        if (j === 8 && (pair === '으로(로)' || pair === '로(으로)')) withJong = false;
+      }
+      return ch + (withJong ? forms[0] : forms[1]);
+    });
+  }
+
   global.B = global.B || {};
   global.B.mulberry32 = mulberry32;
   global.B.hashStr = hashStr;
+  global.B.josa = josa;
   global.B.Deck = Deck;
   global.B.DeckBox = DeckBox;
   global.B.pickWeighted = function (rnd, list, weightOf) {

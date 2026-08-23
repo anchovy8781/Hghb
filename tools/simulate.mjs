@@ -19,6 +19,7 @@ const FILES = [
   'rng.js',
   'data/world.js', 'data/actors.js', 'data/items.js', 'data/fragments.js',
   'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js', 'data/templates5.js',
+  'data/templates6.js', 'data/templates7.js', 'data/templates8.js',
   'data/arcs.js', 'data/arcs2.js',
   'generator.js', 'engine.js'
 ];
@@ -63,6 +64,42 @@ function score(e, c) {
   return v;
 }
 
+/* 사람이라면 위험할 때 가방을 뒤진다 */
+function useItemsIfNeeded(e, B) {
+  const st = e.st;
+  const held = Object.keys(st.items);
+  const heal = (want) => held.filter((id) => {
+    const it = B.ITEM_MAP[id];
+    return it && e.canUse(id) && want(it);
+  })[0];
+
+  if (st.items.wound || st.items.burn) {
+    const id = heal((it) => it.id === 'medkit' || it.id === 'bandage');
+    if (id) { e.useItem(id); return true; }
+  }
+  if (st.items.fever) {
+    const id = heal((it) => it.cures === 'fever');
+    if (id) { e.useItem(id); return true; }
+  }
+  if (st.items.headache) {
+    const id = heal((it) => it.cures === 'headache');
+    if (id) { e.useItem(id); return true; }
+  }
+  if (st.rad >= 3) {
+    const id = heal((it) => it.rad && it.rad < 0);
+    if (id) { e.useItem(id); return true; }
+  }
+  if (st.hp <= 1) {
+    const id = heal((it) => it.hp && it.hp > 0);
+    if (id) { e.useItem(id); return true; }
+  }
+  if (st.mp <= 1) {
+    const id = heal((it) => it.mp && it.mp > 0);
+    if (id) { e.useItem(id); return true; }
+  }
+  return false;
+}
+
 function choose(e, pool) {
   let best = pool[0];
   let bestV = -Infinity;
@@ -78,6 +115,8 @@ function play(B, seed, maxPages = 12000) {
   const seenPage = new Map();     // 본문 -> 처음 나온 페이지
   const dup = [];
   const tplCount = new Map();
+  const tone = { act: new Set(), fun: new Set(), pay: new Set() };
+  const rawJosa = [];
   let beat = null;
   let guard = 0;
 
@@ -95,10 +134,20 @@ function play(B, seed, maxPages = 12000) {
         seenPage.set(text, e.st.page);
       }
     }
-    if (beat.tpl) tplCount.set(beat.tpl, (tplCount.get(beat.tpl) || 0) + 1);
+    if (/[가-힣]\((?:는|가|를|와|과|야|로|으로|였|라)\)/.test(text)) {
+      rawJosa.push(text.slice(0, 40));
+    }
+    if (beat.tpl) {
+      tplCount.set(beat.tpl, (tplCount.get(beat.tpl) || 0) + 1);
+      const g = beat.tpl.slice(0, 4);
+      if (g === 'act_') tone.act.add(beat.tpl);
+      else if (g === 'fun_') tone.fun.add(beat.tpl);
+      else if (g === 'pay_') tone.pay.add(beat.tpl);
+    }
 
     if (beat.choices && beat.choices.length) {
       if (e.st.mode === 'ending') break;              // 엔딩 도달
+      useItemsIfNeeded(e, B);
       const usable = beat.choices.filter((c) => e.checkNeed(c.need));
       if (!usable.length) return { error: '선택 불가 상태', page: e.st.page, beat };
       const pick = choose(e, usable);
@@ -116,6 +165,8 @@ function play(B, seed, maxPages = 12000) {
     chapter: e.st.chapterIdx,
     encounters: e.st.encounters,
     uniqueTexts: seenPage.size,
+    tone: tone,
+    rawJosa: rawJosa,
     dup,
     tplCount,
     hp: e.st.hp, mp: e.st.mp, rad: e.st.rad, money: e.st.money,
@@ -144,16 +195,20 @@ for (let i = 0; i < runs; i++) {
     failed++;
     continue;
   }
-  const ok = r.dup.length === 0;
+  const ok = r.dup.length === 0 && r.rawJosa.length === 0;
   if (!ok) failed++;
   console.log(
     `시드 ${seed} · ${r.page}p · ${r.chapter}장까지 · 인카운터 ${r.encounters} · ` +
     `고유 본문 ${r.uniqueTexts} · 중복 ${r.dup.length} · 엔딩 ${r.endingName || '없음'} ` +
     `(체력${r.hp} 멘탈${r.mp} 피폭${r.rad} 충돌${r.collisions})`
   );
+  if (r.rawJosa.length) {
+    console.log(`   조사 미처리 ${r.rawJosa.length}건: "${r.rawJosa[0]}…"`);
+  }
   if (r.dup.length) {
     r.dup.slice(0, 6).forEach((d) => console.log(`   중복[${d.kind}]: ${d.page}p 와 ${d.first}p — "${d.text}…"`));
   }
+  console.log(`   긴장 ${r.tone.act.size}종 · 유머 ${r.tone.fun.size}종 · 잡동사니 보상 ${r.tone.pay.size}종`);
   if (i === 0) {
     const top = [...r.tplCount.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
     console.log('   자주 나온 템플릿:', top.map(([k, v]) => `${k}(${v})`).join(' '));
