@@ -1,0 +1,4 @@
+build/
+node_modules/
+*.keystore
+.DS_Store

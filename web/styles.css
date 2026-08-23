@@ -1,0 +1,315 @@
+/* 부산 2033 - 화면
+ * 흰 종이 위의 검은 글자. 장식은 최소로, 글이 주인공이 되도록.
+ */
+
+:root {
+  --bg: #ffffff;
+  --ink: #111111;
+  --ink-soft: #666666;
+  --line: #e6e6e6;
+  --belt: #2b2b2b;
+  --belt-ink: #f2f2f2;
+  --green: #00b843;
+  --red: #ff4d5e;
+  --pink: #ff6b8a;
+  --accent: #111111;
+  --choice-bg: #fafafa;
+  --tap: rgba(0, 0, 0, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121212;
+    --ink: #ededed;
+    --ink-soft: #9a9a9a;
+    --line: #2c2c2c;
+    --belt: #000000;
+    --belt-ink: #dcdcdc;
+    --green: #35d06a;
+    --red: #ff6b78;
+    --choice-bg: #1a1a1a;
+    --tap: rgba(255, 255, 255, 0.07);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #121212;
+  --ink: #ededed;
+  --ink-soft: #9a9a9a;
+  --line: #2c2c2c;
+  --belt: #000000;
+  --belt-ink: #dcdcdc;
+  --green: #35d06a;
+  --red: #ff6b78;
+  --choice-bg: #1a1a1a;
+  --tap: rgba(255, 255, 255, 0.07);
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Noto Serif KR", "Nanum Myeongjo", "Apple SD Gothic Neo",
+               "Malgun Gothic", serif;
+  font-size: 17px;
+  line-height: 1.72;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding-top: env(safe-area-inset-top);
+}
+
+/* ── 상단 상태바 ─────────────────────────────── */
+#hud {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 10px 6px;
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+
+.hud-menu {
+  position: relative;
+  background: none;
+  border: 0;
+  padding: 4px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.hud-menu .dot {
+  position: absolute;
+  top: 0; right: 0;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--red);
+}
+
+.hud-menu .dot.off { display: none; }
+
+.ico {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.hud-stats {
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 0;
+}
+
+.stat .pips { display: flex; gap: 1px; height: 21px; align-items: center; }
+.stat .pip { width: 15px; height: 18px; color: var(--ink); }
+.stat .pip.off { opacity: 0.18; }
+.stat .pip svg { width: 100%; height: 100%; fill: none; stroke: currentColor;
+                 stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+.stat .k { font-size: 11px; color: var(--ink-soft); letter-spacing: -0.02em; }
+.stat.danger .pip { color: var(--red); }
+.stat .pip.off { color: var(--ink); }
+
+.hud-badges { display: flex; gap: 4px; align-items: center; flex: 0 0 auto; }
+
+.badge {
+  width: 27px; height: 29px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  background: var(--choice-bg);
+  border: 1px solid var(--line);
+}
+.badge.round { border-radius: 50%; }
+.badge.shield { border-radius: 4px 4px 10px 10px; }
+
+/* ── 본문 ────────────────────────────────────── */
+#story {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 6px 20px 8px;
+  outline: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+#pages p {
+  margin: 0 0 2px;
+  white-space: pre-wrap;
+  word-break: keep-all;
+  animation: fade 0.35s ease both;
+}
+
+#pages p.title {
+  margin: 28px 0 20px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+#pages p.system { color: var(--ink-soft); }
+#pages p.ending { font-size: 18px; }
+
+@keyframes fade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+
+.caret {
+  display: inline-block;
+  width: 0.5em;
+  animation: blink 1s steps(1) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ── 선택지 ──────────────────────────────────── */
+#choices { flex: 0 0 auto; padding: 0 0 2px; }
+
+.choice {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  padding: 14px 20px;
+  cursor: pointer;
+}
+
+.choice:active { background: var(--tap); }
+.choice.locked { cursor: default; }
+.choice.locked .label { color: var(--ink-soft); }
+
+.choice .tag {
+  font-weight: 700;
+  margin-right: 8px;
+  font-size: 15px;
+}
+.choice .tag.ok { color: var(--green); }
+.choice .tag.no { color: var(--red); }
+.choice .tag.dc { color: var(--pink); }
+
+.next-row {
+  border-top: 1px solid var(--line);
+  background: var(--choice-bg);
+  padding: 14px 20px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.next-row:active { background: var(--tap); }
+
+#pageno {
+  flex: 0 0 auto;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-soft);
+  padding: 6px 0 8px;
+  border-top: 1px solid var(--line);
+}
+
+/* ── 하단 소지품 벨트 ────────────────────────── */
+#belt {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 6px;
+  background: var(--belt);
+  color: var(--belt-ink);
+  padding: 14px 12px calc(14px + env(safe-area-inset-bottom));
+  border-radius: 14px 14px 0 0;
+  font-size: 14px;
+  min-height: 52px;
+}
+
+#belt .slot { opacity: 0.95; white-space: nowrap; }
+#belt .slot .n { color: var(--green); margin-left: 3px; font-size: 12px; }
+#belt .slot.bad { color: #ff9aa5; }
+#belt .empty { opacity: 0.35; }
+
+/* ── 메뉴 시트 ───────────────────────────────── */
+.sheet {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 20;
+}
+.sheet.hidden { display: none; }
+
+.sheet-inner {
+  background: var(--bg);
+  width: 100%;
+  max-width: 640px;
+  max-height: 82%;
+  border-radius: 16px 16px 0 0;
+  display: flex;
+  flex-direction: column;
+  animation: up 0.22s ease both;
+}
+@keyframes up { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.sheet-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px 10px; font-size: 17px;
+}
+.sheet-head .x { background: none; border: 0; color: var(--ink-soft); font: inherit; cursor: pointer; }
+
+.sheet-tabs { display: flex; border-bottom: 1px solid var(--line); }
+.sheet-tabs button {
+  flex: 1; background: none; border: 0; padding: 10px 0;
+  color: var(--ink-soft); font: inherit; font-size: 14px; cursor: pointer;
+}
+.sheet-tabs button.on { color: var(--ink); font-weight: 700; box-shadow: inset 0 -2px 0 var(--ink); }
+
+.sheet-body {
+  padding: 14px 18px calc(20px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  font-size: 15px;
+}
+.sheet-body h4 { margin: 14px 0 6px; font-size: 14px; color: var(--ink-soft); font-weight: 700; }
+.sheet-body ul { margin: 0; padding-left: 18px; }
+.sheet-body li { margin: 2px 0; }
+.sheet-body .row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--line); }
+.sheet-body .btn {
+  display: block; width: 100%; margin: 8px 0; padding: 12px;
+  background: var(--choice-bg); border: 1px solid var(--line); color: var(--ink);
+  font: inherit; font-weight: 700; border-radius: 8px; cursor: pointer;
+}
+.sheet-body .btn.danger { color: var(--red); }
+.sheet-body .muted { color: var(--ink-soft); font-size: 13px; line-height: 1.6; }
+
+.toast {
+  position: fixed;
+  left: 50%; bottom: 96px;
+  transform: translateX(-50%);
+  background: var(--belt); color: var(--belt-ink);
+  padding: 10px 16px; border-radius: 999px; font-size: 14px;
+  z-index: 30;
+  animation: fade 0.2s ease both;
+}
+.toast.hidden { display: none; }

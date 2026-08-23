@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>부산 2033</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+
+  <header id="hud">
+    <button id="menuBtn" class="hud-menu" aria-label="메뉴">
+      <svg viewBox="0 0 24 24" class="ico"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      <i class="dot" id="menuDot"></i>
+    </button>
+
+    <div class="hud-stats">
+      <div class="stat" id="statHp">
+        <svg viewBox="0 0 24 24" class="ico"><circle cx="12" cy="4.6" r="2.6"/><path d="M12 7.6c-3 0-4.6 1.8-4.6 4v3.2h1.7l.6 6.2h4.6l.6-6.2h1.7v-3.2c0-2.2-1.6-4-4.6-4z"/></svg>
+        <b class="v">100</b><span class="k">체력</span>
+      </div>
+      <div class="stat" id="statMp">
+        <svg viewBox="0 0 24 24" class="ico"><path d="M12 20.3S3.6 15 3.6 9.4A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 8.4 2.1c0 5.6-8.4 10.9-8.4 10.9z"/></svg>
+        <b class="v">100</b><span class="k">멘탈</span>
+      </div>
+      <div class="stat" id="statMoney">
+        <svg viewBox="0 0 24 24" class="ico"><path d="M9 6.2h6l-1.4-2.4H10.4z"/><path d="M12 6.2c-4 0-6.6 3.6-6.6 7.6S8 21 12 21s6.6-3.2 6.6-7.2S16 6.2 12 6.2z"/><path d="M12 10v7M10.2 11.6h3.1a1.5 1.5 0 0 1 0 3h-2.9a1.5 1.5 0 0 0 0 3h3"/></svg>
+        <b class="v">0</b><span class="k">돈</span>
+      </div>
+      <div class="stat" id="statRad">
+        <svg viewBox="0 0 24 24" class="ico"><circle cx="12" cy="12" r="9.2"/><circle cx="12" cy="12" r="2.4"/><path d="M12 3.4l3.4 5.9M12 3.4L8.6 9.3M20.4 16.2h-6.8M20.4 16.2H13.6M3.6 16.2h6.8"/></svg>
+        <b class="v">0</b><span class="k">피폭</span>
+      </div>
+    </div>
+
+    <div class="hud-badges">
+      <div class="badge round" id="badgeWeapon" title="장비"><span>🔧</span></div>
+      <div class="badge shield" id="badgeRank" title="계급"><span>★</span></div>
+    </div>
+  </header>
+
+  <main id="story" tabindex="0">
+    <div id="pages"></div>
+  </main>
+
+  <section id="choices" aria-live="polite"></section>
+
+  <div id="pageno">- 0 -</div>
+
+  <footer id="belt"></footer>
+
+  <div id="menuSheet" class="sheet hidden">
+    <div class="sheet-inner">
+      <div class="sheet-head">
+        <b>기록실</b>
+        <button id="sheetClose" class="x">닫기</button>
+      </div>
+      <div class="sheet-tabs">
+        <button data-tab="status" class="on">상태</button>
+        <button data-tab="bag">소지품</button>
+        <button data-tab="log">지나온 길</button>
+        <button data-tab="sys">설정</button>
+      </div>
+      <div id="sheetBody" class="sheet-body"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+</div>
+
+<script src="src/rng.js"></script>
+<script src="src/data/world.js"></script>
+<script src="src/data/actors.js"></script>
+<script src="src/data/items.js"></script>
+<script src="src/data/fragments.js"></script>
+<script src="src/data/templates.js"></script>
+<script src="src/data/templates2.js"></script>
+<script src="src/data/templates3.js"></script>
+<script src="src/data/templates4.js"></script>
+<script src="src/data/arcs.js"></script>
+<script src="src/data/arcs2.js"></script>
+<script src="src/generator.js"></script>
+<script src="src/engine.js"></script>
+<script src="src/ui.js"></script>
+<script src="src/main.js"></script>
+</body>
+</html>
