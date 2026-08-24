@@ -17,9 +17,10 @@ const srcDir = path.join(here, '..', 'web', 'src');
 
 const FILES = [
   'rng.js',
-  'data/world.js', 'data/actors.js', 'data/items.js', 'data/fragments.js',
+  'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/fragments.js',
   'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js', 'data/templates5.js',
   'data/templates6.js', 'data/templates7.js', 'data/templates8.js',
+  'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js',
   'data/arcs.js', 'data/arcs2.js',
   'generator.js', 'engine.js'
 ];
@@ -110,50 +111,63 @@ function choose(e, pool) {
   return best;
 }
 
-function play(B, seed, maxPages = 12000) {
+function play(B, seed, maxPages = 4000) {
   const e = new B.Engine(seed);
-  const seenPage = new Map();     // 본문 -> 처음 나온 페이지
+  const seenOpen = new Map();      // 장면 도입 문단 -> 처음 나온 페이지
   const dup = [];
+  const rawJosa = [];
   const tplCount = new Map();
   const tone = { act: new Set(), fun: new Set(), pay: new Set() };
-  const rawJosa = [];
-  let beat = null;
   let guard = 0;
+  let chars = 0;
+  let scenes = 0;
 
-  beat = e.step();
-  while (beat && e.st.page < maxPages && guard < maxPages * 4) {
+  let sc = e.step();
+  while (sc && e.st.page < maxPages && guard < maxPages * 4) {
     guard++;
+    scenes++;
 
-    const text = (beat.text || '').trim();
-    const systemKind = beat.kind === 'sys' || beat.kind === 'title'
-      || beat.kind === 'meal' || beat.kind === 'sleep';
-    if (text && !systemKind) {
-      if (seenPage.has(text)) {
-        dup.push({ page: e.st.page, first: seenPage.get(text), text: text.slice(0, 44), kind: beat.kind });
+    const texts = sc.blocks.filter((b) => b.type === 'text').map((b) => b.text);
+    chars += texts.join('').length;
+    const opening = (texts[0] || '').trim();
+    const systemKind = sc.kind === 'meal' || sc.kind === 'sleep' || sc.kind === 'ending';
+    if (opening && !systemKind) {
+      if (seenOpen.has(opening)) {
+        dup.push({ page: e.st.page, first: seenOpen.get(opening), text: opening.slice(0, 44), kind: sc.kind });
       } else {
-        seenPage.set(text, e.st.page);
+        seenOpen.set(opening, e.st.page);
       }
     }
-    if (/[가-힣]\((?:는|가|를|와|과|야|로|으로|였|라)\)/.test(text)) {
-      rawJosa.push(text.slice(0, 40));
-    }
-    if (beat.tpl) {
-      tplCount.set(beat.tpl, (tplCount.get(beat.tpl) || 0) + 1);
-      const g = beat.tpl.slice(0, 4);
-      if (g === 'act_') tone.act.add(beat.tpl);
-      else if (g === 'fun_') tone.fun.add(beat.tpl);
-      else if (g === 'pay_') tone.pay.add(beat.tpl);
+    texts.forEach((t) => {
+      if (/[가-힣]\((?:는|가|를|와|과|야|로|으로|였|라)\)/.test(t)) rawJosa.push(t.slice(0, 40));
+    });
+    if (sc.tpl) {
+      tplCount.set(sc.tpl, (tplCount.get(sc.tpl) || 0) + 1);
+      const g = sc.tpl.slice(0, 4);
+      if (g === 'act_') tone.act.add(sc.tpl);
+      else if (g === 'fun_') tone.fun.add(sc.tpl);
+      else if (g === 'pay_') tone.pay.add(sc.tpl);
     }
 
-    if (beat.choices && beat.choices.length) {
-      if (e.st.mode === 'ending') break;              // 엔딩 도달
+    if (sc.choices && sc.choices.length) {
+      if (e.st.mode === 'ending') break;
       useItemsIfNeeded(e, B);
-      const usable = beat.choices.filter((c) => e.checkNeed(c.need));
-      if (!usable.length) return { error: '선택 불가 상태', page: e.st.page, beat };
+      const usable = sc.choices.filter((c) => e.checkNeed(c.need));
+      if (!usable.length) return { error: '선택 불가 상태', page: e.st.page };
       const pick = choose(e, usable);
-      beat = e.choose(beat.choices.indexOf(pick));
+      const before = sc.blocks.length;
+      const after = e.choose(sc.choices.indexOf(pick));
+      if (after) {
+        after.blocks.slice(before).forEach((b) => {
+          if (b.type === 'text') {
+            chars += b.text.length;
+            if (/[가-힣]\((?:는|가|를|와|과|야|로|으로|였|라)\)/.test(b.text)) rawJosa.push(b.text.slice(0, 40));
+          }
+        });
+      }
+      sc = e.step();
     } else {
-      beat = e.step();
+      sc = e.step();
     }
   }
 
@@ -164,13 +178,13 @@ function play(B, seed, maxPages = 12000) {
     endingName: e.st.ending ? B.ARCS.ENDINGS[e.st.ending].name : null,
     chapter: e.st.chapterIdx,
     encounters: e.st.encounters,
-    uniqueTexts: seenPage.size,
-    tone: tone,
-    rawJosa: rawJosa,
-    dup,
-    tplCount,
+    uniqueTexts: seenOpen.size,
+    scenes: scenes,
+    chars: chars,
+    dup, rawJosa, tplCount, tone,
     hp: e.st.hp, mp: e.st.mp, rad: e.st.rad, money: e.st.money,
     collisions: e.st.collisions || 0,
+    progress: e.progress(),
     items: Object.keys(e.st.items).length,
     skills: e.st.skills
   };
@@ -199,8 +213,8 @@ for (let i = 0; i < runs; i++) {
   if (!ok) failed++;
   console.log(
     `시드 ${seed} · ${r.page}p · ${r.chapter}장까지 · 인카운터 ${r.encounters} · ` +
-    `고유 본문 ${r.uniqueTexts} · 중복 ${r.dup.length} · 엔딩 ${r.endingName || '없음'} ` +
-    `(체력${r.hp} 멘탈${r.mp} 피폭${r.rad} 충돌${r.collisions})`
+    `장면 ${r.scenes} · 고유 도입 ${r.uniqueTexts} · 중복 ${r.dup.length} · ` +
+    `본문 ${(r.chars / 10000).toFixed(1)}만자 · 엔딩 ${r.endingName || '없음'}`
   );
   if (r.rawJosa.length) {
     console.log(`   조사 미처리 ${r.rawJosa.length}건: "${r.rawJosa[0]}…"`);

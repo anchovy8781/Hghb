@@ -3,75 +3,144 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#111111">
 <title>부산 2033</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div id="app">
 
-  <header id="hud">
-    <button id="menuBtn" class="hud-menu" aria-label="메뉴">
-      <svg viewBox="0 0 24 24" class="ico"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-      <i class="dot" id="menuDot"></i>
-    </button>
+<!-- ══ 메인 메뉴 ══════════════════════════════════ -->
+<div id="menu" class="screen">
+  <div class="menu-sky">
+    <svg class="skyline" viewBox="0 0 400 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="fog" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0000" />
+          <stop offset="100%" stop-color="#000000" stop-opacity="0.85" />
+        </linearGradient>
+      </defs>
+      <g fill="#1b1b1b">
+        <rect x="8" y="120" width="26" height="100"/>
+        <rect x="40" y="96" width="18" height="124"/>
+        <rect x="64" y="140" width="30" height="80"/>
+        <rect x="100" y="72" width="22" height="148"/>
+        <rect x="128" y="132" width="34" height="88"/>
+        <rect x="168" y="108" width="20" height="112"/>
+        <rect x="196" y="150" width="40" height="70"/>
+        <rect x="242" y="88" width="24" height="132"/>
+        <rect x="272" y="128" width="30" height="92"/>
+        <rect x="308" y="60" width="16" height="160"/>
+        <rect x="330" y="144" width="28" height="76"/>
+        <rect x="364" y="112" width="28" height="108"/>
+      </g>
+      <g fill="#2a2a2a">
+        <polygon points="0,180 60,150 120,178 180,158 260,186 340,164 400,184 400,220 0,220"/>
+      </g>
+      <path d="M300 60 L316 20 L332 60 Z" fill="#242424"/>
+      <rect width="400" height="220" fill="url(#fog)"/>
+    </svg>
+  </div>
 
-    <div class="hud-stats">
-      <div class="stat" id="statHp">
-        <svg viewBox="0 0 24 24" class="ico"><circle cx="12" cy="4.6" r="2.6"/><path d="M12 7.6c-3 0-4.6 1.8-4.6 4v3.2h1.7l.6 6.2h4.6l.6-6.2h1.7v-3.2c0-2.2-1.6-4-4.6-4z"/></svg>
-        <b class="v">100</b><span class="k">체력</span>
-      </div>
-      <div class="stat" id="statMp">
-        <svg viewBox="0 0 24 24" class="ico"><path d="M12 20.3S3.6 15 3.6 9.4A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 8.4 2.1c0 5.6-8.4 10.9-8.4 10.9z"/></svg>
-        <b class="v">100</b><span class="k">멘탈</span>
-      </div>
-      <div class="stat" id="statMoney">
-        <svg viewBox="0 0 24 24" class="ico"><path d="M9 6.2h6l-1.4-2.4H10.4z"/><path d="M12 6.2c-4 0-6.6 3.6-6.6 7.6S8 21 12 21s6.6-3.2 6.6-7.2S16 6.2 12 6.2z"/><path d="M12 10v7M10.2 11.6h3.1a1.5 1.5 0 0 1 0 3h-2.9a1.5 1.5 0 0 0 0 3h3"/></svg>
-        <b class="v">0</b><span class="k">돈</span>
-      </div>
-      <div class="stat" id="statRad">
-        <svg viewBox="0 0 24 24" class="ico"><circle cx="12" cy="12" r="9.2"/><circle cx="12" cy="12" r="2.4"/><path d="M12 3.4l3.4 5.9M12 3.4L8.6 9.3M20.4 16.2h-6.8M20.4 16.2H13.6M3.6 16.2h6.8"/></svg>
-        <b class="v">0</b><span class="k">피폭</span>
+  <div class="menu-inner">
+    <div class="menu-top">
+      <div class="menu-title">부산 <span>2033</span></div>
+      <div class="menu-sub">핵이 터진 도시에서, 당신의 이야기</div>
+    </div>
+
+    <div class="radio" id="radio">
+      <div class="radio-body">
+        <div class="radio-dots"><i></i><i></i><i></i></div>
+        <div class="radio-screen">
+          <div class="radio-label">부산 생존 방송 · 89.1</div>
+          <div class="radio-text" id="radioText">…</div>
+        </div>
+        <button class="radio-btn" id="radioNext" aria-label="다음 소식">▾</button>
       </div>
     </div>
 
+    <div class="menu-actions">
+      <button class="big-btn resume hidden" id="btnResume">
+        <span class="b-title">이어하기</span>
+        <span class="b-sub" id="resumeInfo"></span>
+      </button>
+      <button class="big-btn start" id="btnStart">
+        <span class="b-title">게임 시작</span>
+        <span class="b-sub">새로운 여정을 떠납니다</span>
+      </button>
+    </div>
+
+    <div class="menu-nav">
+      <button data-menu="records"><i>🏆</i><span>기록실</span></button>
+      <button data-menu="endings"><i>📖</i><span>엔딩</span></button>
+      <button data-menu="help"><i>❔</i><span>도움말</span></button>
+      <button data-menu="credit"><i>✎</i><span>만든 것</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 진행 화면 ══════════════════════════════════ -->
+<div id="app" class="screen hidden">
+
+  <header id="hud">
+    <button id="menuBtn" class="hud-progress" aria-label="진행도">
+      <span class="p-label">진행도 <b id="progNum">0%</b></span>
+      <span class="p-bar"><i id="progFill"></i></span>
+      <span class="p-tag" id="progTag">서사시</span>
+    </button>
+
+    <div class="hud-stats"></div>
+
     <div class="hud-badges">
-      <div class="badge round" id="badgeWeapon" title="장비"><span>🔧</span></div>
-      <div class="badge shield" id="badgeRank" title="계급"><span>★</span></div>
+      <button class="badge shield" id="badgeRank" title="가젯"><span>★</span></button>
     </div>
   </header>
 
   <main id="story" tabindex="0">
     <div id="pages"></div>
+    <section id="choices" aria-live="polite"></section>
+    <div id="pageno">- 0 -</div>
   </main>
 
-  <section id="choices" aria-live="polite"></section>
-
-  <div id="pageno">- 0 -</div>
-
-  <footer id="belt"></footer>
-
-  <div id="menuSheet" class="sheet hidden">
-    <div class="sheet-inner">
-      <div class="sheet-head">
-        <b>기록실</b>
-        <button id="sheetClose" class="x">닫기</button>
-      </div>
-      <div class="sheet-tabs">
-        <button data-tab="status" class="on">상태</button>
-        <button data-tab="bag">소지품</button>
-        <button data-tab="log">지나온 길</button>
-        <button data-tab="sys">설정</button>
-      </div>
-      <div id="sheetBody" class="sheet-body"></div>
-    </div>
+  <div class="side-tools">
+    <button class="tool" id="btnSave"><span class="ico-t">💾</span>저장</button>
+    <button class="tool gadget" id="btnGadget"><span class="ico-t">🎒</span>소지품<i class="count" id="gadgetCount">0</i></button>
   </div>
 
-  <div id="toast" class="toast hidden"></div>
+  <footer id="belt"></footer>
 </div>
+
+<!-- ══ 가젯 시트 ══════════════════════════════════ -->
+<div id="gadgetSheet" class="gsheet hidden">
+  <div class="gsheet-inner">
+    <div class="gsheet-tabs">
+      <button data-gtab="all" class="on">전체</button>
+      <button data-gtab="skill">능력</button>
+      <button data-gtab="item">아이템</button>
+      <button data-gtab="state">상태</button>
+      <button data-gtab="log">기록</button>
+    </div>
+    <div class="gsheet-body" id="gsheetBody"></div>
+    <div class="gsheet-foot">
+      <button id="gRestart"><i>↻</i><span>재시작</span></button>
+      <button id="gClose" class="x"><i>✕</i></button>
+      <button id="gSort"><i>↓</i><span>최신순</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 안내 시트 ══════════════════════════════════ -->
+<div id="infoSheet" class="gsheet hidden">
+  <div class="gsheet-inner light">
+    <div class="gsheet-head"><b id="infoTitle">기록실</b><button id="infoClose">닫기</button></div>
+    <div class="gsheet-body" id="infoBody"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
 
 <script src="src/rng.js"></script>
 <script src="src/data/world.js"></script>
+<script src="src/data/places.js"></script>
 <script src="src/data/actors.js"></script>
 <script src="src/data/items.js"></script>
 <script src="src/data/fragments.js"></script>
@@ -83,6 +152,9 @@
 <script src="src/data/templates6.js"></script>
 <script src="src/data/templates7.js"></script>
 <script src="src/data/templates8.js"></script>
+<script src="src/data/bodies.js"></script>
+<script src="src/data/bodies2.js"></script>
+<script src="src/data/bodies3.js"></script>
 <script src="src/data/arcs.js"></script>
 <script src="src/data/arcs2.js"></script>
 <script src="src/generator.js"></script>

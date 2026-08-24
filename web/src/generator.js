@@ -133,7 +133,13 @@
     const s = tpl.slots || {};
     const ctx = { zone: zone.name, __zone: zone };
 
-    if (s.place) ctx.place = this.pick('place_' + s.place, W.PLACES[s.place] || W.PLACES.urban);
+    if (s.place) {
+      /* 사건마다 어울리는 장소가 따로 있으면 그것부터 쓴다 */
+      const own = B.PLACESETS && B.PLACESETS[tpl.id];
+      ctx.place = own && own.length
+        ? this.pick('place_' + tpl.id, own)
+        : this.pick('place_' + s.place, W.PLACES[s.place] || W.PLACES.urban);
+    }
     if (s.npc) {
       const p = this.person(typeof s.npc === 'string' ? s.npc : null);
       ctx.npc = p.name;
@@ -142,7 +148,13 @@
       ctx.habit = p.habit;
       ctx.line = p.line;
     }
-    if (s.threat) ctx.threat = this.pick('threat', W.THREATS.map(function (t) { return t.name; }));
+    if (s.threat) {
+      const kinds = B.THREATKINDS && B.THREATKINDS[tpl.id];
+      const pool = W.THREATS.filter(function (t) {
+        return !kinds || kinds.indexOf(t.kind) >= 0;
+      }).map(function (t) { return t.name; });
+      ctx.threat = this.pick('threat_' + tpl.id, pool.length ? pool : W.THREATS.map(function (t) { return t.name; }));
+    }
     if (s.item) ctx.item = this.itemOf(s.item);
     if (s.item2) ctx.item2 = this.itemOf(s.item2);
     return ctx;
@@ -186,95 +198,59 @@
   };
 
 
-  /* 페이지 하나가 과거와 겹치지 않도록, 앞뒤에 붙는 조각을 바꿔 가며 시도한다.
-   * 끝내 못 피하면 그대로 내보내되(진행이 멈추는 것보다 낫다) 통계에 남긴다. */
-  Generator.prototype.uniquePage = function (base, poolName, pool, st, joiner) {
-    const suffixMode = joiner === 'suffix';
-    let h = B.hashStr(base);
-    if (!st.seenText[h]) { st.seenText[h] = 1; return base; }
-
-    /* 1단계: 조각 하나를 붙여 본다 */
-    for (let i = 0; i < pool.length; i++) {
-      const frag = this.pick(poolName, pool);
-      const text = suffixMode ? (base + '\n' + frag) : (frag + '\n' + base);
-      h = B.hashStr(text);
-      if (!st.seenText[h]) { st.seenText[h] = 1; return text; }
-    }
-
-    /* 2단계: 앞뒤로 하나씩 붙여 조합 수를 곱한다 */
-    const tail = suffixMode ? B.FRAG.SENSES : B.FRAG.TRANSITIONS;
-    for (let i = 0; i < 40; i++) {
-      const a = this.pick(poolName, pool);
-      const b = this.pick(suffixMode ? 'sense2' : 'trans2', tail);
-      const text = suffixMode ? (base + '\n' + a + ' ' + b) : (a + '\n' + base + '\n' + b);
-      h = B.hashStr(text);
-      if (!st.seenText[h]) { st.seenText[h] = 1; return text; }
-    }
-
-    st.collisions = (st.collisions || 0) + 1;
-    return base;
-  };
-
-  /* 선택 결과 문단에 여운 한 줄을 붙여 서로 겹치지 않게 만든다 */
-  Generator.prototype.decorate = function (text, st) {
-    const pool = B.FRAG.REFLECTIONS.concat(B.FRAG.TRANSITIONS);
-    return this.uniquePage(text, 'reflect', pool, st, 'suffix');
-  };
-
+  /* 장면 하나를 만든다.
+   *
+   * 한 장면은 문단 여러 개로 이루어진다.
+   *   도입(open) → 본문(body, 템플릿마다 손으로 쓴 긴 문단) → 전개(mid)
+   * 예전처럼 무작위 문장을 앞뒤에 덧붙여 길이를 늘리지 않는다.
+   * 어색해지기 때문이다. 대신 각 문단 자체를 길게 쓴다.
+   */
   Generator.prototype.compose = function (st) {
     let attempt = 0;
+    let fallback = null;
+
     while (attempt < 30) {
       attempt++;
       const tpl = this.drawTemplate(st);
       const ctx = this.buildContext(tpl, st);
       const openIdx = Math.floor(this.rnd() * tpl.open.length);
+      const bodies = B.BODIES[tpl.id];
+      const bodyIdx = bodies && bodies.length ? Math.floor(this.rnd() * bodies.length) : -1;
       const midIdx = tpl.mid ? Math.floor(this.rnd() * tpl.mid.length) : -1;
 
-      const sig = [tpl.id, openIdx, midIdx, ctx.zone, ctx.place || '', ctx.npc || '',
-                   ctx.item || '', ctx.item2 || '', ctx.threat || ''].join('|');
+      const sig = [tpl.id, openIdx, bodyIdx, midIdx, ctx.zone, ctx.place || '',
+                   ctx.npc || '', ctx.item || '', ctx.item2 || '', ctx.threat || ''].join('|');
       const sigHash = B.hashStr(sig);
-      if (st.seenSig[sigHash]) continue;
 
       const textCtx = {};
       for (const k in ctx) textCtx[k] = ctx[k];
       if (ctx.item) textCtx.item = nameOf(ctx.item);
       if (ctx.item2) textCtx.item2 = nameOf(ctx.item2);
 
-      const pages = [];
-      const openBase = fill(tpl.open[openIdx], textCtx);
-      const openHash = B.hashStr(openBase);
-      /* 도입 문단이 이미 나온 적 있으면 다른 조합으로 다시 뽑는다 */
-      if (st.seenText[openHash] && attempt < 24) continue;
-      pages.push(this.uniquePage(openBase, 'opener', B.FRAG.OPENERS, st));
-      if (midIdx >= 0) {
-        const midBase = fill(tpl.mid[midIdx], textCtx);
-        pages.push(this.uniquePage(midBase, 'sense', B.FRAG.SENSES, st));
-      }
+      const pages = [fill(tpl.open[openIdx], textCtx)];
+      if (bodyIdx >= 0) pages.push(fill(bodies[bodyIdx], textCtx));
+      if (midIdx >= 0) pages.push(fill(tpl.mid[midIdx], textCtx));
 
-      st.seenSig[sigHash] = 1;
-
-      return {
+      const built = {
         tplId: tpl.id,
         cat: tpl.cat,
         ctx: ctx,
         pages: pages,
         choices: this.buildChoices(tpl, textCtx, ctx)
       };
+      if (!fallback) fallback = built;
+
+      /* 같은 조합, 같은 도입 문단은 다시 쓰지 않는다 */
+      const openHash = B.hashStr(pages[0]);
+      if (st.seenSig[sigHash] || st.seenText[openHash]) continue;
+
+      st.seenSig[sigHash] = 1;
+      st.seenText[openHash] = 1;
+      return built;
     }
 
-    /* 조합이 고갈되어도 진행은 멈추지 않는다 */
-    const tpl = this.drawTemplate(st);
-    const ctx = this.buildContext(tpl, st);
-    const textCtx = {};
-    for (const k in ctx) textCtx[k] = ctx[k];
-    if (ctx.item) textCtx.item = nameOf(ctx.item);
-    if (ctx.item2) textCtx.item2 = nameOf(ctx.item2);
-    return {
-      tplId: tpl.id, cat: tpl.cat, ctx: ctx,
-      pages: [fill(tpl.open[0], textCtx)],
-      choices: this.buildChoices(tpl, textCtx, ctx),
-      exhausted: true
-    };
+    st.collisions = (st.collisions || 0) + 1;
+    return fallback;
   };
 
   /* 만들어질 수 있는 이야기 조합의 총수(대략) */

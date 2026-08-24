@@ -15,9 +15,10 @@ const srcDir = path.join(here, '..', 'web', 'src');
 
 const FILES = [
   'rng.js',
-  'data/world.js', 'data/actors.js', 'data/items.js', 'data/fragments.js',
+  'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/fragments.js',
   'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js',
   'data/templates5.js', 'data/templates6.js', 'data/templates7.js', 'data/templates8.js',
+  'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js',
   'data/arcs.js', 'data/arcs2.js',
   'generator.js', 'engine.js'
 ].filter((f) => fs.existsSync(path.join(srcDir, f)));
@@ -141,6 +142,23 @@ B.TEMPLATES.forEach((t) => {
 
   (t.open || []).forEach((s, i) => checkPlaceholders(s, slots, `${where} open[${i}]`));
   (t.mid || []).forEach((s, i) => checkPlaceholders(s, slots, `${where} mid[${i}]`));
+
+  if (slots.threat && !(B.THREATKINDS && B.THREATKINDS[t.id])) {
+    errors.push(`${where}: 위협 종류(THREATKINDS)가 지정되지 않음 — 엉뚱한 위협이 들어갑니다`);
+  }
+  if (slots.place && !(B.PLACESETS && B.PLACESETS[t.id])) {
+    warns.push(`${where}: 사건 전용 장소 목록이 없어 큰 분류에서 뽑습니다 (어색한 조합 위험)`);
+  }
+
+  const bodies = B.BODIES[t.id];
+  if (!bodies || !bodies.length) {
+    errors.push(`${where}: 장면 본문(BODIES)이 없음 — 화면이 너무 짧아집니다`);
+  } else {
+    bodies.forEach((s, i) => {
+      checkPlaceholders(s, slots, `${where} body[${i}]`);
+      if (s.length < 60) warns.push(`${where} body[${i}]: 본문이 너무 짧음 (${s.length}자)`);
+    });
+  }
 
   (t.choices || []).forEach((c, i) => {
     const cw = `${where} 선택지[${i}] "${(c.t || '').slice(0, 16)}"`;
