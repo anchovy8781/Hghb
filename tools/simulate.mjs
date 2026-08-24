@@ -21,7 +21,7 @@ const FILES = [
   'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js', 'data/templates5.js',
   'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js',
   'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js', 'data/bodies4.js',
-  'data/specials.js', 'data/specials2.js',
+  'data/specials.js', 'data/specials2.js', 'data/specials3.js', 'data/specials4.js', 'data/specials5.js',
   'data/arcs.js', 'data/arcs2.js',
   'generator.js', 'engine.js'
 ];
@@ -143,7 +143,7 @@ function play(B, seed, maxPages = 4000) {
     const texts = sc.blocks.filter((b) => b.type === 'text').map((b) => b.text);
     chars += texts.join('').length;
     const opening = (texts[0] || '').trim();
-    const systemKind = sc.kind === 'meal' || sc.kind === 'sleep' || sc.kind === 'ending';
+    const systemKind = sc.kind === 'meal' || sc.kind === 'sleep' || sc.kind === 'ending' || sc.kind === 'revive';
     if (opening && !systemKind) {
       if (seenOpen.has(opening)) {
         dup.push({ page: e.st.page, first: seenOpen.get(opening), text: opening.slice(0, 44), kind: sc.kind });

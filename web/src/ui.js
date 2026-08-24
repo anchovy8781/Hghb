@@ -329,9 +329,23 @@
   UI.prototype.renderHud = function () {
     const s = this.e.snapshot();
     const map = { hp: s.hp, mp: s.mp, money: s.money, rad: s.rad };
+    /* 한 칸이 깎이는 중이라는 것을 눈에 보이게 한다.
+     * 마지막으로 켜진 칸이 마모만큼 흐려지다가 꺼진다. */
+    const sub = { hp: s.hpSub, mp: s.mpSub };
     for (const k in this.pips) {
       const g = this.pips[k];
-      for (let i = 0; i < g.nodes.length; i++) g.nodes[i].classList.toggle('off', i >= map[k]);
+      for (let i = 0; i < g.nodes.length; i++) {
+        g.nodes[i].classList.toggle('off', i >= map[k]);
+        g.nodes[i].classList.remove('worn');
+        g.nodes[i].style.opacity = '';
+      }
+      if (sub[k]) {
+        const idx = map[k] - 1;
+        if (idx >= 0) {
+          g.nodes[idx].classList.add('worn');
+          g.nodes[idx].style.opacity = String(1 - (sub[k] / (s.wear || 4)) * 0.68);
+        }
+      }
       const danger = k === 'rad' ? map[k] >= 3 : (k !== 'money' && map[k] <= 1);
       g.wrap.classList.toggle('danger', danger);
     }
@@ -340,9 +354,10 @@
     el('progFill').style.width = s.progress + '%';
     const scKind = this.e.scene && this.e.scene.kind;
     el('progTag').textContent = scKind === 'special' ? '특별 이야기'
+      : (scKind === 'revive' ? '되살아남'
       : (s.mode === 'prologue' ? '도입부'
-      : (s.mode === 'finale' || s.mode === 'ending' ? '종장' : '서사시'));
-    el('progTag').classList.toggle('special', scKind === 'special');
+      : (s.mode === 'finale' || s.mode === 'ending' ? '종장' : '서사시')));
+    el('progTag').classList.toggle('special', scKind === 'special' || scKind === 'revive');
     el('pageno').textContent = '- ' + s.page + ' -';
     el('gadgetCount').textContent = s.items.length + s.skills.length;
 
@@ -586,6 +601,11 @@
       para('체력·멘탈·돈은 각각 세 칸입니다. 한 칸이 깎이려면 네 번 다쳐야 하고, 회복은 한 번에 한 칸씩 돌아옵니다. 체력이나 멘탈이 0이 되면 그 자리에서 끝납니다.');
       h('피폭');
       para('네 칸까지 있습니다. 시간이 지나면 조금씩 빠지지만, 오염 구역에서는 그보다 빨리 찹니다.');
+      h('죽기 직전');
+      para('체력이나 멘탈이 0이 되는 순간, 가방을 한 번 뒤집니다. 의약품·의료용 주사기·생명의 부적이 있으면 그중 하나를 쓰고 그 자리에서 되살아납니다. 의약품은 한 칸, 주사기는 두 칸, 부적은 세 칸까지 돌려주고 상처까지 데려갑니다. 부적은 무당에게 한 여정에 딱 하나만 받을 수 있습니다.');
+      para('되살릴 것이 하나도 없으면 「사망했습니다」가 뜨고 재시작만 남습니다.');
+      h('특별 이야기');
+      para('손으로 쓴 단편·중편 32편이 여정 중간중간 끼어듭니다. 나오는 순서와 페이지는 판마다 다르게 섞이고, 한 여정에서 같은 편이 두 번 나오지는 않습니다.');
       h('잡동사니');
       para('값도 없고 배도 안 부르는 물건들이 있습니다. 그중 몇 가지는 한참 뒤에 그것이 있어야만 열리는 사건을 데려옵니다. 웬만하면 버리지 마세요.');
     }

@@ -12,6 +12,9 @@
   const RAD_MAX = 4;         /* 피폭 한계 */
   const FINAL_PAGE = 1200;   /* 이 페이지에 닿으면 종장이 열린다 */
   const WEAR = 4;            /* 한 칸이 깎이려면 이만큼 다쳐야 한다 */
+  const HIT = 2;             /* 선택지의 -1 은 반 칸(=2)만큼 깎는다 */
+  const SP_FIRST = 30;       /* 첫 특별 이야기는 아무리 빨라도 이 페이지 뒤 */
+  const SP_MIN_GAP = 16;     /* 특별 이야기끼리 이만큼은 떨어뜨린다 */
   const MEAL_EVERY = 28;
   const SLEEP_EVERY = 61;
   const SAVE_KEY = 'busan2033.save.v2';
@@ -47,7 +50,10 @@
       storiesDone: 0,
       spIdx: -1,
       spScene: 0,
+      spOrder: null,      /* 이번 여정에서 특별 이야기가 나올 순서 (섞어 둔다) */
+      spAt: 0,            /* 다음 특별 이야기가 끼어들 페이지 */
       specialsDone: [],
+      revives: 0,
       titles: []
     };
   }
@@ -178,18 +184,27 @@
     return true;
   };
 
+  /* 칸과 마모를 하나의 "누적 피해"로 보고 계산한다.
+   * 예전에는 회복이 마모를 통째로 0 으로 지워서, 한 칸이 도무지 깎이지 않았다.
+   * (로망 하나 들고 다니면 멘탈이 영원히 3칸이었다.)
+   */
+  function damageOf(st, key, subKey) {
+    return (MAX - st[key]) * WEAR + (st[subKey] || 0);
+  }
+  function setDamage(st, key, subKey, dmg) {
+    const d = clamp(dmg, 0, MAX * WEAR);
+    st[key] = MAX - Math.floor(d / WEAR);
+    st[subKey] = d % WEAR;
+    if (st[key] < 0) { st[key] = 0; st[subKey] = 0; }
+  }
+
   Engine.prototype.hurt = function (key, subKey, n) {
-    const st = this.st;
-    st[subKey] = (st[subKey] || 0) + n;
-    while (st[subKey] >= WEAR && st[key] > 0) {
-      st[subKey] -= WEAR;
-      st[key] -= 1;
-    }
+    setDamage(this.st, key, subKey, damageOf(this.st, key, subKey) + n);
   };
 
+  /* 회복 한 점은 딱 한 칸 분량의 피해만 지운다. 남은 마모는 그대로 남는다 */
   Engine.prototype.heal = function (key, subKey, n) {
-    this.st[subKey] = 0;
-    this.st[key] = clamp(this.st[key] + n, 0, MAX);
+    setDamage(this.st, key, subKey, damageOf(this.st, key, subKey) - n * WEAR);
   };
 
   /* 효과를 적용하면서, 화면에 초록색으로 보여 줄 획득 목록을 돌려준다 */
@@ -201,11 +216,11 @@
     const self = this;
 
     if (eff.hp) {
-      if (eff.hp < 0) { this.hurt('hp', 'hpSub', -eff.hp); losses.push('체력'); }
+      if (eff.hp < 0) { this.hurt('hp', 'hpSub', -eff.hp * HIT); losses.push('체력'); }
       else { this.heal('hp', 'hpSub', eff.hp); gains.push('체력'); }
     }
     if (eff.mp) {
-      if (eff.mp < 0) { this.hurt('mp', 'mpSub', -eff.mp); losses.push('멘탈'); }
+      if (eff.mp < 0) { this.hurt('mp', 'mpSub', -eff.mp * HIT); losses.push('멘탈'); }
       else { this.heal('mp', 'mpSub', eff.mp); gains.push('멘탈'); }
     }
     if (eff.money) {
@@ -311,8 +326,8 @@
     const losses = [];
     if (!cost) return losses;
     if (cost.money) { this.st.money = clamp(this.st.money - cost.money, 0, MAX); losses.push('돈'); }
-    if (cost.hp) { this.hurt('hp', 'hpSub', cost.hp); losses.push('체력'); }
-    if (cost.mp) { this.hurt('mp', 'mpSub', cost.mp); losses.push('멘탈'); }
+    if (cost.hp) { this.hurt('hp', 'hpSub', cost.hp * HIT); losses.push('체력'); }
+    if (cost.mp) { this.hurt('mp', 'mpSub', cost.mp * HIT); losses.push('멘탈'); }
     if (cost.item && this.delItem(cost.item, 1)) losses.push(B.ITEM_MAP[cost.item].name);
     if (cost.itemKind) {
       const id = this.hasKind(cost.itemKind);
@@ -431,7 +446,7 @@
       st.mode = 'finale';
       st.sceneIdx = 0;
       if (!st.flags.door_open) {
-        if ((st.specialsDone || []).length >= 7) this.pushEnding('chronicle');
+        if ((st.specialsDone || []).length >= 18) this.pushEnding('chronicle');
         else this.pushEnding(st.flags.dog_pups || st.flags.in_town ? 'settle' : 'wander');
         return;
       }
@@ -463,8 +478,10 @@
       st.phase = st.chapterIdx >= 7 ? 3 : (st.chapterIdx >= 3 ? 2 : 1);
     }
 
-    /* 특별 이야기 — 정해진 페이지에 닿으면 한 편이 통째로 끼어든다 */
+    /* 특별 이야기 — 순서를 섞어 두고, 무작위 간격으로 한 편씩 끼워 넣는다.
+     * 한 여정에서 같은 편이 두 번 나오는 일은 없다. */
     const SP = B.SPECIALS || [];
+    this.ensureSpecialPlan();
     if (st.spIdx >= 0) {
       const cur = SP[st.spIdx];
       if (cur && st.spScene < cur.scenes.length) {
@@ -482,16 +499,24 @@
       }
       st.spIdx = -1;
       st.spScene = 0;
-    } else {
-      for (let i = 0; i < SP.length; i++) {
-        const sp = SP[i];
-        if (st.specialsDone.indexOf(sp.id) >= 0) continue;
-        if (st.page < sp.at) continue;
+    } else if (st.page >= st.spAt && st.spOrder && st.spOrder.length) {
+      /* 조건이 걸린 편은 조건이 찰 때까지 순서에서 건너뛴다 (버려지지는 않는다) */
+      for (let k = 0; k < st.spOrder.length; k++) {
+        const id = st.spOrder[k];
+        if (st.specialsDone.indexOf(id) >= 0) { st.spOrder.splice(k, 1); k--; continue; }
+        let idx = -1;
+        for (let i = 0; i < SP.length; i++) if (SP[i].id === id) { idx = i; break; }
+        if (idx < 0) { st.spOrder.splice(k, 1); k--; continue; }
+        const sp = SP[idx];
         if (sp.req && sp.req.flag && !st.flags[sp.req.flag]) continue;
-        st.spIdx = i;
+        st.spOrder.splice(k, 1);
+        st.spIdx = idx;
         st.spScene = 0;
+        this.scheduleNextSpecial();
         return this.produce();
       }
+      /* 전부 조건에 걸렸다면 조금 뒤에 다시 본다 */
+      st.spAt = st.page + 12;
     }
 
     /* 체력이 바닥이면 회복 계열이 잘 나오게 손본다 */
@@ -516,10 +541,14 @@
     st.mode = 'ending';
     st.ending = id;
     Engine.pushRecord(id, st.page, st);
+    const dead = id.indexOf('death_') === 0;
     const pages = e.pages.slice();
-    pages.push('— ' + e.name + ' —\n\n' + st.page + '페이지를 걸었습니다.');
+    if (dead) pages.unshift('__TITLE__사망했습니다');
+    pages.push('— ' + e.name + ' —\n\n' + st.page + '페이지를 걸었습니다.'
+      + (dead ? '\n되살릴 것이 가방에 없었습니다.' : ''));
     this.queue.push(scene(pages, [{
-      label: '새로운 여정을 시작한다.', restart: true, need: null, cost: null,
+      label: dead ? '재시작하기' : '새로운 여정을 시작한다.',
+      restart: true, need: null, cost: null,
       dc: 0, ok: [], no: [], res: [], eff: null
     }], 'ending'));
   };
@@ -549,6 +578,34 @@
     }]);
   };
 
+  /* 여정을 시작할 때 특별 이야기 순서를 한 번 섞어 둔다.
+   * 예전에는 편마다 고정 페이지가 박혀 있어서, 몇 판을 해도 같은 자리에서 같은 편이 나왔다. */
+  Engine.prototype.ensureSpecialPlan = function () {
+    const st = this.st;
+    const SP = B.SPECIALS || [];
+    if (st.spOrder) return;
+    const ids = SP.filter(function (sp) {
+      return st.specialsDone.indexOf(sp.id) < 0;
+    }).map(function (sp) { return sp.id; });
+    for (let i = ids.length - 1; i > 0; i--) {          /* 피셔-예이츠 */
+      const j = Math.floor(this.rnd() * (i + 1));
+      const t = ids[i]; ids[i] = ids[j]; ids[j] = t;
+    }
+    st.spOrder = ids;
+    st.spAt = SP_FIRST + Math.floor(this.rnd() * SP_FIRST);
+  };
+
+  /* 남은 편 수로 남은 페이지를 나눠, 그 간격을 흔들어 잡는다 */
+  Engine.prototype.scheduleNextSpecial = function () {
+    const st = this.st;
+    const left = st.spOrder ? st.spOrder.length : 0;
+    if (!left) { st.spAt = FINAL_PAGE * 2; return; }
+    const room = Math.max(1, FINAL_PAGE - st.page);
+    const gap = Math.max(SP_MIN_GAP, Math.floor(room / (left + 1)));
+    const jitter = Math.floor((this.rnd() - 0.5) * gap * 0.6);
+    st.spAt = st.page + Math.max(SP_MIN_GAP, gap + jitter);
+  };
+
   Engine.prototype.tick = function () {
     const st = this.st;
     if (st.mode === 'ending' || st.mode === 'prologue') return;
@@ -572,21 +629,85 @@
       if (st.items.insomnia) wear += 1;
       if (st.items.guilt) wear += 1;
       if (st.items.headache) wear += 1;
-      if (st.items.hope) wear -= 2;
+      if (st.items.hope) wear -= 1;
       if (st.items.humor) wear -= 1;
       if (wear > 0) this.hurt('mp', 'mpSub', Math.min(3, wear));
-      else if (wear < 0) st.mpSub = Math.max(0, (st.mpSub || 0) + wear);
+      else if (wear < 0) this.heal('mp', 'mpSub', 0.25);   /* 한 칸이 아니라 마모 한 눈금만 */
     }
     if (st.page % 43 === 0 && st.rad > 0) st.rad = clamp(st.rad - 1, 0, RAD_MAX);
     this.checkDeath();
   };
 
+  /* 죽기 직전에 가방을 뒤진다.
+   * 의약품 · 의료용 주사기 · 무당이 준 생명의 부적이 있으면 한 번은 되돌아온다.
+   * 되돌릴 것이 없으면 그대로 끝난다. */
+  const REVIVE_ORDER = ['lifecharm', 'syringe', 'medkit'];
+
+  Engine.prototype.reviveItem = function () {
+    const st = this.st;
+    /* 값이 싼 것부터 쓴다. 부적은 마지막까지 아낀다 */
+    const held = REVIVE_ORDER.filter(function (id) { return (st.items[id] || 0) > 0; });
+    if (!held.length) return null;
+    held.sort(function (a, b) {
+      return (B.ITEM_MAP[a].revive || 0) - (B.ITEM_MAP[b].revive || 0);
+    });
+    return held[0];
+  };
+
+  Engine.prototype.tryRevive = function (cause) {
+    const st = this.st;
+    const id = this.reviveItem();
+    if (!id) return false;
+    const it = B.ITEM_MAP[id];
+    const back = it.revive || 1;          /* 되돌아오는 칸 수 */
+
+    this.delItem(id, 1);
+    if (cause === 'hp') setDamage(st, 'hp', 'hpSub', (MAX - back) * WEAR);
+    else if (cause === 'mp') setDamage(st, 'mp', 'mpSub', (MAX - back) * WEAR);
+    st.rad = clamp(st.rad - back, 0, RAD_MAX);
+    if (back >= 3) {
+      /* 부적은 상처까지 데려갑니다 */
+      ['wound', 'fracture', 'burn', 'fever', 'hunger', 'gloom'].forEach(function (b) {
+        delete st.items[b];
+      });
+      setDamage(st, 'hp', 'hpSub', 0);
+      setDamage(st, 'mp', 'mpSub', 0);
+    }
+    st.revives = (st.revives || 0) + 1;
+
+    const why = cause === 'hp' ? '몸이 먼저 꺼졌습니다.'
+      : (cause === 'mp' ? '머리가 먼저 꺼졌습니다.' : '피폭이 몸을 다 갉았습니다.');
+    const how = id === 'lifecharm'
+      ? ['품 안에서 뭔가 뜨거워집니다. 무당이 쥐여 준 부적입니다.\n"이거 한 번은 대신 죽어 준다." 그때는 웃고 넘겼습니다.',
+         '부적이 손안에서 재가 됩니다. 재를 털어 내고 일어섭니다. 아픈 데가 하나도 없습니다.\n그게 제일 무섭습니다.']
+      : (id === 'syringe'
+        ? ['가방 바닥에 주사기가 하나 굴러다닙니다. 언제 주웠는지 기억도 안 납니다.',
+           '허벅지에 그대로 찔러 넣습니다. 삼 초 뒤에 심장이 다시 일을 시작합니다.\n손이 떨리고 이가 부딪힙니다. 살아 있다는 뜻입니다.']
+        : ['의약품 봉지를 이로 뜯습니다. 손이 말을 안 들어서 이로 뜯을 수밖에 없습니다.',
+           '피를 멈추고, 숨을 고르고, 벽에 기대 앉습니다. 한참 뒤에 다리에 힘이 돌아옵니다.']);
+
+    this.queue = [];
+    this.queue.push(scene(
+      ['__TITLE__여기서 끝날 뻔했습니다'].concat([why]).concat(how)
+        .concat(['— ' + it.name + '을(를) 썼습니다. 남은 것은 없습니다. —']),
+      [{ label: '다시 걷는다.', need: null, cost: null, dc: 0, ok: [], no: [],
+         res: ['일어섭니다. 아직 갈 데가 남았습니다.'], eff: {} }],
+      'revive'
+    ));
+    return true;
+  };
+
   Engine.prototype.checkDeath = function () {
     const st = this.st;
     if (st.mode === 'ending') return;
-    if (st.hp <= 0) { this.queue = []; this.pushEnding('death_hp'); }
-    else if (st.mp <= 0) { this.queue = []; this.pushEnding('death_mp'); }
-    else if (st.rad >= RAD_MAX) { this.queue = []; this.pushEnding('death_rad'); }
+    let cause = null;
+    if (st.hp <= 0) cause = 'hp';
+    else if (st.mp <= 0) cause = 'mp';
+    else if (st.rad >= RAD_MAX) cause = 'rad';
+    if (!cause) return;
+    if (this.tryRevive(cause)) return;
+    this.queue = [];
+    this.pushEnding(cause === 'hp' ? 'death_hp' : (cause === 'mp' ? 'death_mp' : 'death_rad'));
   };
 
   /* 선택 - 장면을 바꾸지 않고 아래로 이어 붙인다 */
@@ -708,6 +829,7 @@
     }
     return {
       page: st.page, hp: st.hp, mp: st.mp, money: st.money, rad: st.rad,
+      hpSub: st.hpSub || 0, mpSub: st.mpSub || 0, wear: WEAR,
       max: MAX, radMax: RAD_MAX, progress: this.progress(),
       items: items, skills: skills, rep: st.rep, flags: st.flags,
       mode: st.mode, chapter: st.chapterIdx, ending: st.ending,

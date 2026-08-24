@@ -63,6 +63,7 @@
     const r = tpl.req;
     if (!r) return true;
     if (r.flag && !st.flags[r.flag]) return false;
+    if (r.noflag && st.flags[r.noflag]) return false;   /* 한 여정에 한 번만 나오는 자리 */
     if (r.item && !st.items[r.item]) return false;
     if (r.radMin && st.rad < r.radMin) return false;
     if (r.title && (st.titles || []).indexOf(r.title) < 0) return false;
