@@ -338,8 +338,11 @@
 
     el('progNum').textContent = s.progress + '%';
     el('progFill').style.width = s.progress + '%';
-    el('progTag').textContent = s.mode === 'prologue' ? '도입부'
-      : (s.mode === 'finale' || s.mode === 'ending' ? '종장' : '서사시');
+    const scKind = this.e.scene && this.e.scene.kind;
+    el('progTag').textContent = scKind === 'special' ? '특별 이야기'
+      : (s.mode === 'prologue' ? '도입부'
+      : (s.mode === 'finale' || s.mode === 'ending' ? '종장' : '서사시'));
+    el('progTag').classList.toggle('special', scKind === 'special');
     el('pageno').textContent = '- ' + s.page + ' -';
     el('gadgetCount').textContent = s.items.length + s.skills.length;
 
@@ -445,6 +448,14 @@
       return;
     }
 
+    if ((this.gtab === 'all' || this.gtab === 'skill') && s.titles && s.titles.length) {
+      const tt = doc.createElement('div');
+      tt.className = 'g-note';
+      tt.style.paddingTop = '0';
+      tt.textContent = '불리는 이름: ' + s.titles.map(function (x) { return '「' + x + '」'; }).join(' ');
+      body.appendChild(tt);
+    }
+
     let cells = [];
     if (this.gtab === 'all' || this.gtab === 'skill') {
       cells = cells.concat(s.skills.map(function (sk) {
@@ -527,6 +538,7 @@
       body.appendChild(d);
     }
     function para(t) { const p = doc.createElement('div'); p.className = 'info-p'; p.textContent = t; body.appendChild(p); }
+    function note0(t) { const p = doc.createElement('div'); p.className = 'info-p'; p.textContent = t; body.appendChild(p); }
 
     if (which === 'records') {
       el('infoTitle').textContent = '기록실';
@@ -534,6 +546,20 @@
       row('시작한 여정', (rec.runs || 0) + '번');
       row('가장 멀리 간 페이지', (rec.best || 0) + '페이지');
       row('본 엔딩', Object.keys(rec.endings || {}).length + ' / ' + Object.keys(B.ARCS.ENDINGS).length);
+      h('특별 이야기');
+      (B.SPECIALS || []).forEach(function (sp) {
+        const seen = (rec.specials || {})[sp.id];
+        row(seen ? sp.title.replace('특별 이야기 · ', '') : '???',
+            seen ? '완료 ' + seen + '회' : '아직');
+      });
+      const spDone = Object.keys(rec.specials || {}).length;
+      para('특별 이야기 ' + spDone + ' / ' + (B.SPECIALS || []).length + '편을 보았습니다.');
+
+      h('얻은 칭호');
+      const titles = (rec.titles || []);
+      if (!titles.length) note0('아직 불리는 이름이 없습니다.');
+      titles.forEach(function (t2) { row('「' + t2 + '」', ''); });
+
       h('이 도시에 있는 것들');
       row('사건', B.TEMPLATES.length + '종');
       row('가젯', (B.ITEMS.length + B.SKILLS.length) + '종');

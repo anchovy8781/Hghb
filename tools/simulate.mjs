@@ -19,8 +19,9 @@ const FILES = [
   'rng.js',
   'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
   'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js', 'data/templates5.js',
-  'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js',
-  'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js',
+  'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js',
+  'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js', 'data/bodies4.js',
+  'data/specials.js', 'data/specials2.js',
   'data/arcs.js', 'data/arcs2.js',
   'generator.js', 'engine.js'
 ];
@@ -127,7 +128,8 @@ function play(B, seed, maxPages = 4000) {
   const dup = [];
   const rawJosa = [];
   const tplCount = new Map();
-  const tone = { act: new Set(), fun: new Set(), pay: new Set() };
+  const tone = { act: new Set(), fun: new Set(), pay: new Set(), ttl: new Set() };
+  const specials = new Set();
   let guard = 0;
   let crafted = 0;
   let chars = 0;
@@ -152,12 +154,14 @@ function play(B, seed, maxPages = 4000) {
     texts.forEach((t) => {
       if (/[가-힣]\((?:는|가|를|와|과|야|로|으로|였|라)\)/.test(t)) rawJosa.push(t.slice(0, 40));
     });
+    if (sc.sp) specials.add(sc.sp);
     if (sc.tpl) {
       tplCount.set(sc.tpl, (tplCount.get(sc.tpl) || 0) + 1);
       const g = sc.tpl.slice(0, 4);
       if (g === 'act_') tone.act.add(sc.tpl);
       else if (g === 'fun_') tone.fun.add(sc.tpl);
       else if (g === 'pay_') tone.pay.add(sc.tpl);
+      else if (g === 'ttl_') tone.ttl.add(sc.tpl);
     }
 
     if (sc.choices && sc.choices.length) {
@@ -194,6 +198,8 @@ function play(B, seed, maxPages = 4000) {
     scenes: scenes,
     chars: chars,
     dup, rawJosa, tplCount, tone,
+    specials: specials,
+    titles: e.st.titles || [],
     hp: e.st.hp, mp: e.st.mp, rad: e.st.rad, money: e.st.money,
     collisions: e.st.collisions || 0,
     crafted: crafted,
@@ -235,7 +241,8 @@ for (let i = 0; i < runs; i++) {
   if (r.dup.length) {
     r.dup.slice(0, 6).forEach((d) => console.log(`   중복[${d.kind}]: ${d.page}p 와 ${d.first}p — "${d.text}…"`));
   }
-  console.log(`   긴장 ${r.tone.act.size}종 · 유머 ${r.tone.fun.size}종 · 잡동사니 보상 ${r.tone.pay.size}종 · 만든 물건 ${r.crafted}개`);
+  console.log(`   긴장 ${r.tone.act.size}종 · 유머 ${r.tone.fun.size}종 · 잡동사니 보상 ${r.tone.pay.size}종 · 칭호 사건 ${r.tone.ttl.size}종 · 만든 물건 ${r.crafted}개`);
+  console.log(`   특별 이야기 ${r.specials.size}/${(B.SPECIALS || []).length}편 · 칭호 ${r.titles.length}개${r.titles.length ? ' (' + r.titles.slice(0, 3).join(', ') + ')' : ''}`);
   if (i === 0) {
     const top = [...r.tplCount.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
     console.log('   자주 나온 템플릿:', top.map(([k, v]) => `${k}(${v})`).join(' '));

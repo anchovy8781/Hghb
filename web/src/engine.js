@@ -44,7 +44,11 @@
       log: [],
       ending: null,
       encounters: 0,
-      storiesDone: 0
+      storiesDone: 0,
+      spIdx: -1,
+      spScene: 0,
+      specialsDone: [],
+      titles: []
     };
   }
 
@@ -59,6 +63,7 @@
   /* ── 저장 ────────────────────────────────────── */
   Engine.prototype.save = function () {
     if (this.st.page <= 0) return false;   /* 시작도 안 한 여정은 저장하지 않는다 */
+    Engine.markProgress(this.st);
     try {
       global.localStorage.setItem(SAVE_KEY, JSON.stringify({
         st: this.st, queue: this.queue, scene: this.scene, recent: this.gen.recent
@@ -94,16 +99,45 @@
   /* 엔딩 기록은 새 여정을 시작해도 남는다 */
   Engine.records = function () {
     try {
-      return JSON.parse(global.localStorage.getItem(RECORD_KEY) || '{"endings":{},"best":0,"runs":0}');
-    } catch (e) { return { endings: {}, best: 0, runs: 0 }; }
+      return JSON.parse(global.localStorage.getItem(RECORD_KEY)
+        || '{"endings":{},"specials":{},"titles":[],"best":0,"runs":0}');
+    } catch (e) { return { endings: {}, specials: {}, titles: [], best: 0, runs: 0 }; }
   };
 
-  Engine.pushRecord = function (endingId, page) {
+  Engine.markTitle = function (name) {
+    try {
+      const r = Engine.records();
+      r.titles = r.titles || [];
+      if (r.titles.indexOf(name) < 0) r.titles.push(name);
+      global.localStorage.setItem(RECORD_KEY, JSON.stringify(r));
+    } catch (e) { /* 무시 */ }
+  };
+
+  Engine.markSpecial = function (id) {
+    try {
+      const r = Engine.records();
+      r.specials = r.specials || {};
+      r.specials[id] = (r.specials[id] || 0) + 1;
+      global.localStorage.setItem(RECORD_KEY, JSON.stringify(r));
+    } catch (e) { /* 무시 */ }
+  };
+
+  /* 여정 도중에도 기록실이 살아 있도록, 저장할 때마다 갱신한다 */
+  Engine.markProgress = function (st) {
+    try {
+      const r = Engine.records();
+      if (!st.counted) { r.runs = (r.runs || 0) + 1; st.counted = 1; }
+      r.best = Math.max(r.best || 0, st.page || 0);
+      global.localStorage.setItem(RECORD_KEY, JSON.stringify(r));
+    } catch (e) { /* 무시 */ }
+  };
+
+  Engine.pushRecord = function (endingId, page, st) {
     try {
       const r = Engine.records();
       r.endings[endingId] = (r.endings[endingId] || 0) + 1;
       r.best = Math.max(r.best || 0, page);
-      r.runs = (r.runs || 0) + 1;
+      if (!st || !st.counted) { r.runs = (r.runs || 0) + 1; if (st) st.counted = 1; }
       global.localStorage.setItem(RECORD_KEY, JSON.stringify(r));
     } catch (e) { /* 무시 */ }
   };
@@ -202,6 +236,11 @@
         if (f) (eff.rep[k] > 0 ? gains : losses).push(f.name + ' 평판');
       }
     }
+    if (eff.title && st.titles.indexOf(eff.title) < 0) {
+      st.titles.push(eff.title);
+      gains.push('칭호 「' + eff.title + '」');
+      Engine.markTitle(eff.title);
+    }
     if (eff.flag) st.flags[eff.flag] = 1;
     if (eff.chain) st.chain = eff.chain;
     return { gains: gains, losses: losses };
@@ -215,6 +254,8 @@
     if (need.itemBase && !this.hasBase(need.itemBase)) return false;
     if (need.money && this.st.money < need.money) return false;
     if (need.flag && !this.st.flags[need.flag]) return false;
+    if (need.title && (this.st.titles || []).indexOf(need.title) < 0) return false;
+    if (need.specials && (this.st.specialsDone || []).length < need.specials) return false;
     if (need.rep) {
       for (const k in need.rep) if ((this.st.rep[k] || 0) < need.rep[k]) return false;
     }
@@ -250,6 +291,11 @@
       }
       if (need.money) push('money', '돈', self.st.money >= need.money);
       if (need.flag) push('flag', '단서', !!self.st.flags[need.flag]);
+      if (need.title) push('title', '「' + need.title + '」', (self.st.titles || []).indexOf(need.title) >= 0);
+      if (need.specials) {
+        push('title', '특별 이야기 ' + need.specials + '편',
+             (self.st.specialsDone || []).length >= need.specials);
+      }
       if (need.rep) {
         for (const k in need.rep) {
           const f = B.WORLD.FACTIONS.filter(function (x) { return x.id === k; })[0];
@@ -385,7 +431,8 @@
       st.mode = 'finale';
       st.sceneIdx = 0;
       if (!st.flags.door_open) {
-        this.pushEnding(st.flags.dog_pups || st.flags.in_town ? 'settle' : 'wander');
+        if ((st.specialsDone || []).length >= 7) this.pushEnding('chronicle');
+        else this.pushEnding(st.flags.dog_pups || st.flags.in_town ? 'settle' : 'wander');
         return;
       }
     }
@@ -416,6 +463,37 @@
       st.phase = st.chapterIdx >= 7 ? 3 : (st.chapterIdx >= 3 ? 2 : 1);
     }
 
+    /* 특별 이야기 — 정해진 페이지에 닿으면 한 편이 통째로 끼어든다 */
+    const SP = B.SPECIALS || [];
+    if (st.spIdx >= 0) {
+      const cur = SP[st.spIdx];
+      if (cur && st.spScene < cur.scenes.length) {
+        const sc = cur.scenes[st.spScene++];
+        const pages = sc.pages.slice();
+        if (st.spScene === 1) pages.unshift('__TITLE__' + cur.title);
+        this.queue.push(scene(pages, this.gen.buildChoices({ choices: sc.choices }, {}, {}),
+                              'special', { sp: cur.id }));
+        return;
+      }
+      if (cur) {
+        if (st.specialsDone.indexOf(cur.id) < 0) st.specialsDone.push(cur.id);
+        st.flags['sp_' + cur.id] = 1;
+        Engine.markSpecial(cur.id);
+      }
+      st.spIdx = -1;
+      st.spScene = 0;
+    } else {
+      for (let i = 0; i < SP.length; i++) {
+        const sp = SP[i];
+        if (st.specialsDone.indexOf(sp.id) >= 0) continue;
+        if (st.page < sp.at) continue;
+        if (sp.req && sp.req.flag && !st.flags[sp.req.flag]) continue;
+        st.spIdx = i;
+        st.spScene = 0;
+        return this.produce();
+      }
+    }
+
     /* 체력이 바닥이면 회복 계열이 잘 나오게 손본다 */
     if (st.hp <= 1) {
       B.TEMPLATES.forEach(function (t) {
@@ -437,7 +515,7 @@
     const e = B.ARCS.ENDINGS[id] || B.ARCS.ENDINGS.wander;
     st.mode = 'ending';
     st.ending = id;
-    Engine.pushRecord(id, st.page);
+    Engine.pushRecord(id, st.page, st);
     const pages = e.pages.slice();
     pages.push('— ' + e.name + ' —\n\n' + st.page + '페이지를 걸었습니다.');
     this.queue.push(scene(pages, [{
@@ -581,7 +659,6 @@
   /* ── 만들기 ──────────────────────────────────── */
   Engine.prototype.craftList = function () {
     const items = this.snapshot().items;
-    const self = this;
     return B.RECIPES.map(function (r) {
       const use = B.findMaterials(items, r.need);
       return {
@@ -593,7 +670,6 @@
         ok: !!use
       };
     }).sort(function (a, b) { return (b.ok ? 1 : 0) - (a.ok ? 1 : 0); });
-    void self;
   };
 
   Engine.prototype.craft = function (recipeId) {
@@ -635,6 +711,7 @@
       max: MAX, radMax: RAD_MAX, progress: this.progress(),
       items: items, skills: skills, rep: st.rep, flags: st.flags,
       mode: st.mode, chapter: st.chapterIdx, ending: st.ending,
+      titles: st.titles || [], specialsDone: st.specialsDone || [],
       chapterTitle: (B.ARCS.CHAPTERS[st.chapterIdx] || {}).title || '종장'
     };
   };

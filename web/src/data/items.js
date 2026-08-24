@@ -137,6 +137,16 @@
     { id: 'comb',     name: '이 빠진 빗',    kind: 'junk', val: 0, note: '그래도 머리는 빗어진다.' },
     { id: 'stub',     name: '영화 반쪽표',   kind: 'junk', val: 0, note: '2015년 8월 6일 19시 30분.' },
     { id: 'trophy',   name: '작은 트로피',   kind: 'junk', val: 1, note: '"제12회 사내 볼링대회 3위".' },
+    /* ── 특별 이야기에서만 나오는 것 ─────────── */
+    { id: 'aptreceipt', name: '관리비 영수증',  kind: 'key', val: 0, key: true, note: '도장까지 찍혀 있다. 이 동네에서는 신분증이다.' },
+    { id: 'lasttrain',  name: '막차 승차권',    kind: 'key', val: 0, key: true, note: '기관사가 직접 끊어 준 표.' },
+    { id: 'gukbap',     name: '이 빠진 국밥 그릇', kind: 'key', val: 0, key: true, note: '아침마다 누가 씻어 엎어 둔다.' },
+    { id: 'mic',        name: '마이크',          kind: 'key', val: 0, key: true, note: '선이 잘려 있지만 쥐면 말이 나온다.' },
+    { id: 'cityseal',   name: '시청 직인',       kind: 'key', val: 0, key: true, note: '아무 힘도 없고, 그래서 다들 무서워한다.' },
+    { id: 'tourposter', name: '순회공연 포스터', kind: 'key', val: 0, key: true, note: '부산 · 울산 · 경주. 날짜 칸은 비어 있다.' },
+    { id: 'lodgekey',   name: '산장 열쇠',       kind: 'key', val: 0, key: true, note: '나무 열쇠고리에 고도가 새겨져 있다.' },
+    { id: 'usgear',     name: '미군 군장',       kind: 'key', val: 0, key: true, note: '이름표 자리에 다른 나라 글자가 있다.' },
+    { id: 'factorykey', name: '공장 마스터키',   kind: 'key', val: 0, key: true, note: '이 열쇠 하나로 문 마흔 개가 열린다.' },
     /* 열쇠 아이템 — 주요 스토리에서만 나온다 */
     { id: 'shard',    name: '녹은 유리 조각', kind: 'key', val: 0 },
     { id: 'letter',   name: '아버지의 편지',  kind: 'key', val: 0 },

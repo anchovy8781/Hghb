@@ -17,8 +17,9 @@ const FILES = [
   'rng.js',
   'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
   'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js',
-  'data/templates5.js', 'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js',
-  'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js',
+  'data/templates5.js', 'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js',
+  'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js', 'data/bodies4.js',
+  'data/specials.js', 'data/specials2.js',
   'data/arcs.js', 'data/arcs2.js',
   'generator.js', 'engine.js'
 ].filter((f) => fs.existsSync(path.join(srcDir, f)));
@@ -78,6 +79,12 @@ function checkEff(eff, where) {
   }
   if (eff.chain && !tplIds.has(eff.chain)) errors.push(`${where}: 없는 연결 사건 "${eff.chain}"`);
   if (eff.flag) flagsSet.add(eff.flag);
+  if (eff.title && typeof eff.title !== 'string') errors.push(`${where}: 칭호가 문자열이 아님`);
+  const KNOWN = ['hp', 'mp', 'money', 'rad', 'add', 'add2', 'del', 'skillUp',
+                 'rep', 'flag', 'chain', 'title'];
+  Object.keys(eff).forEach((k) => {
+    if (KNOWN.indexOf(k) < 0) errors.push(`${where}: 알 수 없는 효과 키 "${k}"`);
+  });
   ['hp', 'mp', 'money', 'rad'].forEach((k) => {
     if (eff[k] !== undefined && typeof eff[k] !== 'number') errors.push(`${where}: ${k} 값이 숫자가 아님`);
   });
@@ -97,6 +104,20 @@ function checkNeed(need, where) {
   }
   if (need.itemKind && !kinds.has(need.itemKind)) errors.push(`${where}: 없는 분류 "${need.itemKind}"`);
   if (need.flag) noteFlagUse(need.flag, where);
+  if (need.specials && typeof need.specials !== 'number') errors.push(`${where}: specials 조건이 숫자가 아님`);
+  if (need.title) {
+    const known = [];
+    const collect = (eff) => { if (eff && eff.title) known.push(eff.title); };
+    (B.SPECIALS || []).forEach((sp) => sp.scenes.forEach((sc) => (sc.choices || []).forEach((c) => {
+      collect(c.eff); collect(c.okEff); collect(c.noEff);
+    })));
+    B.TEMPLATES.forEach((t) => (t.choices || []).forEach((c) => {
+      collect(c.eff); collect(c.okEff); collect(c.noEff);
+    }));
+    if (known.indexOf(need.title) < 0) {
+      errors.push(`${where}: 아무 데서도 주지 않는 칭호 "${need.title}"`);
+    }
+  }
   if (need.rep) {
     Object.keys(need.rep).forEach((k) => {
       if (!factionIds.has(k)) errors.push(`${where}: 없는 세력 "${k}"`);
@@ -147,6 +168,11 @@ B.TEMPLATES.forEach((t) => {
       Object.keys(t.req.rep).forEach((k) => {
         if (!factionIds.has(k)) errors.push(`${where}: 없는 세력 "${k}"`);
       });
+    }
+    /* 칭호로 열리는 사건은, 그 칭호를 어디선가 실제로 줘야 열린다 */
+    if (t.req.title) checkNeed({ title: t.req.title }, where);
+    if (t.req.specials !== undefined && typeof t.req.specials !== 'number') {
+      errors.push(`${where}: specials 조건이 숫자가 아님`);
     }
   }
 
@@ -210,6 +236,30 @@ B.ARCS.CHAPTERS.forEach((ch) => {
   ch.scenes.forEach((sc) => checkScene(sc, `${ch.title} ${sc.id}`));
 });
 B.ARCS.FINALE.scenes.forEach((sc) => checkScene(sc, `종장 ${sc.id}`));
+
+/* ── 특별 이야기 ─────────────────────────────── */
+const spIds = new Set();
+(B.SPECIALS || []).forEach((sp) => {
+  if (spIds.has(sp.id)) errors.push(`특별 이야기 id 중복: ${sp.id}`);
+  spIds.add(sp.id);
+  if (!sp.title) errors.push(`특별 이야기 ${sp.id}: 제목 없음`);
+  if (typeof sp.at !== 'number') errors.push(`특별 이야기 ${sp.id}: 등장 페이지(at) 없음`);
+  if (!sp.scenes || sp.scenes.length < 2) errors.push(`특별 이야기 ${sp.id}: 장면이 너무 적음`);
+  (sp.scenes || []).forEach((sc, i) => {
+    checkScene(sc, `${sp.title} 장면[${i}]`);
+    if (!sc.choices || !sc.choices.length) errors.push(`${sp.title} 장면[${i}]: 선택지 없음`);
+    (sc.pages || []).forEach((t, j) => {
+      if (/\{\w+\}/.test(t)) errors.push(`${sp.title} 장면[${i}] 문단[${j}]: 치환자가 남아 있음`);
+      if (t.length < 40) warns.push(`${sp.title} 장면[${i}] 문단[${j}]: 문단이 짧음`);
+    });
+  });
+  /* 마지막 장면은 반드시 완주 가능해야 한다 */
+  const last = (sp.scenes || [])[(sp.scenes || []).length - 1];
+  if (last && (last.choices || []).every((c) => c.need)) {
+    errors.push(`특별 이야기 ${sp.id}: 마지막 장면에 조건 없는 선택지가 없어 막힐 수 있음`);
+  }
+});
+console.log(`특별 이야기 ${spIds.size}편 · 장면 ${(B.SPECIALS || []).reduce((a, s) => a + s.scenes.length, 0)}`);
 
 /* 엔진이 직접 쓰는 아이템 */
 ['hunger', 'gloom', 'headache', 'insomnia', 'hope', 'painkill'].forEach((id) => {

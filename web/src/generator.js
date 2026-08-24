@@ -65,6 +65,8 @@
     if (r.flag && !st.flags[r.flag]) return false;
     if (r.item && !st.items[r.item]) return false;
     if (r.radMin && st.rad < r.radMin) return false;
+    if (r.title && (st.titles || []).indexOf(r.title) < 0) return false;
+    if (r.specials && (st.specialsDone || []).length < r.specials) return false;
     if (r.rep) {
       for (const k in r.rep) {
         if ((st.rep[k] || 0) < r.rep[k]) return false;
