@@ -388,6 +388,43 @@
     const self = this;
     body.innerHTML = '';
 
+    if (this.gtab === 'craft') {
+      const list = this.e.craftList();
+      const okCount = list.filter(function (r) { return r.ok; }).length;
+      const head = doc.createElement('div');
+      head.className = 'g-note';
+      head.style.paddingTop = '0';
+      head.textContent = '지금 만들 수 있는 것 ' + okCount + '가지 · 잡동사니는 재질로 쓰입니다';
+      body.appendChild(head);
+
+      list.forEach(function (r) {
+        const row = doc.createElement('button');
+        row.className = 'craft-row' + (r.ok ? '' : ' off');
+        const left = doc.createElement('div');
+        left.className = 'c-main';
+        left.innerHTML = '<b></b><span class="c-need"></span>';
+        left.querySelector('b').textContent = r.name;
+        left.querySelector('.c-need').textContent = r.need.join(' + ');
+        const right = doc.createElement('div');
+        right.className = 'c-make';
+        right.textContent = '→ ' + r.makes + (r.n > 1 ? ' ×' + r.n : '');
+        row.appendChild(left);
+        row.appendChild(right);
+        if (r.ok) {
+          row.addEventListener('click', function () {
+            const res = self.e.craft(r.id);
+            if (!res) { self.toast('재료가 모자랍니다.'); return; }
+            self.toast(res.made + (res.n > 1 ? ' ×' + res.n : '') + ' 완성');
+            self.renderHud();
+            self.renderGadget();
+            self.e.save();
+          });
+        }
+        body.appendChild(row);
+      });
+      return;
+    }
+
     if (this.gtab === 'log') {
       const log = s.page ? this.e.st.log.slice(-40) : [];
       if (!log.length) {

@@ -112,6 +112,17 @@
   Engine.prototype.skillLv = function (id) { return this.st.skills[id] || 0; };
   Engine.prototype.has = function (id) { return (this.st.items[id] || 0) > 0; };
 
+  /* 뼈대(만화책, 보온병 …)로 찾는다. 상태가 어떻든 만화책은 만화책이다. */
+  Engine.prototype.hasBase = function (baseId) {
+    const st = this.st;
+    for (const id in st.items) {
+      if (!st.items[id]) continue;
+      const it = B.ITEM_MAP[id];
+      if (it && (it.base === baseId || it.id === baseId)) return id;
+    }
+    return null;
+  };
+
   Engine.prototype.hasKind = function (kind) {
     const st = this.st;
     for (const id in st.items) {
@@ -201,6 +212,7 @@
     if (need.skill && this.skillLv(need.skill) < (need.lv || 1)) return false;
     if (need.item && !this.has(need.item)) return false;
     if (need.itemKind && !this.hasKind(need.itemKind)) return false;
+    if (need.itemBase && !this.hasBase(need.itemBase)) return false;
     if (need.money && this.st.money < need.money) return false;
     if (need.flag && !this.st.flags[need.flag]) return false;
     if (need.rep) {
@@ -231,6 +243,11 @@
                         junk: '잡동사니', key: '유품' };
         push('item', names[need.itemKind] || need.itemKind, !!self.hasKind(need.itemKind));
       }
+      if (need.itemBase) {
+        const base = (B.JUNK_BASE_LIST || []).filter(function (b) { return b.id === need.itemBase; })[0];
+        const nm = base ? base.name : ((B.ITEM_MAP[need.itemBase] || {}).name || need.itemBase);
+        push('item', nm, !!self.hasBase(need.itemBase));
+      }
       if (need.money) push('money', '돈', self.st.money >= need.money);
       if (need.flag) push('flag', '단서', !!self.st.flags[need.flag]);
       if (need.rep) {
@@ -254,6 +271,21 @@
     if (cost.itemKind) {
       const id = this.hasKind(cost.itemKind);
       if (id && this.delItem(id, 1)) losses.push(B.ITEM_MAP[id].name);
+    }
+    if (cost.itemBase) {
+      const id = this.hasBase(cost.itemBase);
+      if (id && this.delItem(id, 1)) losses.push(B.ITEM_MAP[id].name);
+    }
+    if (cost.junkAll) {
+      const self2 = this;
+      const junk = Object.keys(this.st.items).filter(function (id) {
+        const it = B.ITEM_MAP[id];
+        return it && it.kind === 'junk' && !it.key;
+      });
+      let n = 0;
+      junk.forEach(function (id) { n += self2.st.items[id]; self2.delItem(id, self2.st.items[id]); });
+      if (n) losses.push('잡동사니 ' + n + '개');
+      this.lastSold = n;
     }
     return losses;
   };
@@ -545,6 +577,43 @@
     return Math.min(100, Math.round(Math.max(byPage, byChapter * 0.9) * 100));
   };
 
+
+  /* ── 만들기 ──────────────────────────────────── */
+  Engine.prototype.craftList = function () {
+    const items = this.snapshot().items;
+    const self = this;
+    return B.RECIPES.map(function (r) {
+      const use = B.findMaterials(items, r.need);
+      return {
+        id: r.id,
+        name: r.name,
+        makes: (B.ITEM_MAP[r.make] || {}).name || r.make,
+        n: r.n || 1,
+        need: r.need.map(B.materialLabel),
+        ok: !!use
+      };
+    }).sort(function (a, b) { return (b.ok ? 1 : 0) - (a.ok ? 1 : 0); });
+    void self;
+  };
+
+  Engine.prototype.craft = function (recipeId) {
+    const r = B.RECIPES.filter(function (x) { return x.id === recipeId; })[0];
+    if (!r) return null;
+    const items = this.snapshot().items;
+    const use = B.findMaterials(items, r.need);
+    if (!use) return null;
+    const self = this;
+    use.forEach(function (id) { self.delItem(id, 1); });
+    for (let i = 0; i < (r.n || 1); i++) this.addItem(r.make, 1);
+    this.st.log.push('만들기 · ' + r.name);
+    return {
+      name: r.name,
+      made: (B.ITEM_MAP[r.make] || {}).name || r.make,
+      n: r.n || 1,
+      line: r.line
+    };
+  };
+
   Engine.prototype.snapshot = function () {
     const st = this.st;
     const items = [];
@@ -552,7 +621,8 @@
       const it = B.ITEM_MAP[id];
       if (it) {
         items.push({ id: id, name: it.name, n: st.items[id], kind: it.kind,
-                     bad: !!it.bad, key: !!it.key, note: it.note || '' });
+                     bad: !!it.bad, key: !!it.key, note: it.note || '',
+                     tag: it.tag || '', base: it.base || '' });
       }
     }
     const skills = [];

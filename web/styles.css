@@ -296,7 +296,7 @@ html, body {
 
 .gsheet-tabs { display: flex; padding: 14px 8px 0; gap: 2px; }
 .gsheet-tabs button {
-  flex: 1; background: none; border: 0; color: #8b8b8b; font: inherit; font-size: 15px;
+  flex: 1; min-width: 0; padding-left: 0; padding-right: 0; background: none; border: 0; color: #8b8b8b; font: inherit; font-size: 15px;
   padding: 6px 0 10px; cursor: pointer;
 }
 .gsheet-tabs button.on { color: #fff; font-weight: 800; box-shadow: inset 0 -2px 0 #fff; }
@@ -318,6 +318,19 @@ html, body {
 .g-cell .n { font-size: 13px; opacity: 0.7; }
 .g-empty { color: #7a7a7a; text-align: center; padding: 24px 0; }
 .g-note { color: #8b8b8b; font-size: 12px; text-align: center; padding: 12px 0 0; line-height: 1.6; }
+.craft-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  width: 100%; text-align: left; background: none; color: #e4e4e4;
+  border: 0; border-bottom: 1px solid #2a2a2a; padding: 11px 2px;
+  font: inherit; cursor: pointer;
+}
+.craft-row.off { color: #6f6f6f; cursor: default; }
+.craft-row .c-main b { display: block; font-size: 15px; }
+.craft-row .c-need { font-size: 12px; color: #8b8b8b; }
+.craft-row.off .c-need { color: #5d5d5d; }
+.craft-row .c-make { font-size: 13px; color: var(--gold); white-space: nowrap; }
+.craft-row.off .c-make { color: #6a6252; }
+
 .g-log { list-style: none; margin: 0; padding: 0; }
 .g-log li { padding: 6px 0; border-bottom: 1px solid #2a2a2a; font-size: 14px; color: #cfcfcf; }
 

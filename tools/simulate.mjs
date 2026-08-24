@@ -17,9 +17,9 @@ const srcDir = path.join(here, '..', 'web', 'src');
 
 const FILES = [
   'rng.js',
-  'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/fragments.js',
+  'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
   'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js', 'data/templates5.js',
-  'data/templates6.js', 'data/templates7.js', 'data/templates8.js',
+  'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js',
   'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js',
   'data/arcs.js', 'data/arcs2.js',
   'generator.js', 'engine.js'
@@ -43,6 +43,7 @@ function loadGame() {
     const fn = new Function('window', 'globalThis', 'localStorage', 'B', code + '\nreturn window.B;');
     sandbox.B = fn(sandbox, sandbox, sandbox.localStorage, sandbox.B);
   }
+  if (sandbox.B.buildJunkCatalog) sandbox.B.buildJunkCatalog();
   return sandbox.B;
 }
 
@@ -101,6 +102,15 @@ function useItemsIfNeeded(e, B) {
   return false;
 }
 
+/* 사람이라면 재료가 모이면 만들어 본다 */
+function craftIfPossible(e) {
+  const list = e.craftList().filter((r) => r.ok);
+  if (!list.length) return 0;
+  let made = 0;
+  list.slice(0, 2).forEach((r) => { if (e.craft(r.id)) made++; });
+  return made;
+}
+
 function choose(e, pool) {
   let best = pool[0];
   let bestV = -Infinity;
@@ -119,6 +129,7 @@ function play(B, seed, maxPages = 4000) {
   const tplCount = new Map();
   const tone = { act: new Set(), fun: new Set(), pay: new Set() };
   let guard = 0;
+  let crafted = 0;
   let chars = 0;
   let scenes = 0;
 
@@ -152,6 +163,7 @@ function play(B, seed, maxPages = 4000) {
     if (sc.choices && sc.choices.length) {
       if (e.st.mode === 'ending') break;
       useItemsIfNeeded(e, B);
+      if (e.st.page % 12 === 0) crafted += craftIfPossible(e);
       const usable = sc.choices.filter((c) => e.checkNeed(c.need));
       if (!usable.length) return { error: '선택 불가 상태', page: e.st.page };
       const pick = choose(e, usable);
@@ -184,6 +196,7 @@ function play(B, seed, maxPages = 4000) {
     dup, rawJosa, tplCount, tone,
     hp: e.st.hp, mp: e.st.mp, rad: e.st.rad, money: e.st.money,
     collisions: e.st.collisions || 0,
+    crafted: crafted,
     progress: e.progress(),
     items: Object.keys(e.st.items).length,
     skills: e.st.skills
@@ -222,7 +235,7 @@ for (let i = 0; i < runs; i++) {
   if (r.dup.length) {
     r.dup.slice(0, 6).forEach((d) => console.log(`   중복[${d.kind}]: ${d.page}p 와 ${d.first}p — "${d.text}…"`));
   }
-  console.log(`   긴장 ${r.tone.act.size}종 · 유머 ${r.tone.fun.size}종 · 잡동사니 보상 ${r.tone.pay.size}종`);
+  console.log(`   긴장 ${r.tone.act.size}종 · 유머 ${r.tone.fun.size}종 · 잡동사니 보상 ${r.tone.pay.size}종 · 만든 물건 ${r.crafted}개`);
   if (i === 0) {
     const top = [...r.tplCount.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
     console.log('   자주 나온 템플릿:', top.map(([k, v]) => `${k}(${v})`).join(' '));

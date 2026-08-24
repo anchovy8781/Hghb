@@ -4,6 +4,8 @@
   const B = global.B;
 
   function boot() {
+    if (B.buildJunkCatalog) B.buildJunkCatalog();
+
     const engine = B.Engine.load() || new B.Engine();
     const ui = new B.UI(engine);
     global.__b2033 = { engine: engine, ui: ui };

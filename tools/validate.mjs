@@ -15,9 +15,9 @@ const srcDir = path.join(here, '..', 'web', 'src');
 
 const FILES = [
   'rng.js',
-  'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/fragments.js',
+  'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
   'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js',
-  'data/templates5.js', 'data/templates6.js', 'data/templates7.js', 'data/templates8.js',
+  'data/templates5.js', 'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js',
   'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js',
   'data/arcs.js', 'data/arcs2.js',
   'generator.js', 'engine.js'
@@ -33,6 +33,7 @@ function loadGame() {
     const fn = new Function('window', 'globalThis', 'localStorage', 'B', code + '\nreturn window.B;');
     sb.B = fn(sb, sb, sb.localStorage, sb.B);
   }
+  if (sb.B.buildJunkCatalog) sb.B.buildJunkCatalog();
   return sb.B;
 }
 
@@ -87,7 +88,13 @@ function checkNeed(need, where) {
   if (need.skill && !skillIds.has(need.skill)) {
     errors.push(`${where}: 없는 능력 "${need.skill}"  ← 화면에 영문 id 가 그대로 나옵니다`);
   }
-  if (need.item && !itemIds.has(need.item)) errors.push(`${where}: 없는 아이템 "${need.item}"`);
+  if (need.item && !itemIds.has(need.item) && need.item !== '{item}' && need.item !== '{item2}') {
+    errors.push(`${where}: 없는 아이템 "${need.item}"`);
+  }
+  if (need.itemBase && need.itemBase !== '{base}' && !itemIds.has(need.itemBase)
+      && !(B.JUNK_BASE_LIST || []).some((b) => b.id === need.itemBase)) {
+    errors.push(`${where}: 없는 물건 종류 "${need.itemBase}"`);
+  }
   if (need.itemKind && !kinds.has(need.itemKind)) errors.push(`${where}: 없는 분류 "${need.itemKind}"`);
   if (need.flag) noteFlagUse(need.flag, where);
   if (need.rep) {
@@ -99,7 +106,9 @@ function checkNeed(need, where) {
 
 function checkCost(cost, where) {
   if (!cost) return;
-  if (cost.item && !itemIds.has(cost.item)) errors.push(`${where}: 없는 아이템 "${cost.item}"`);
+  if (cost.item && !itemIds.has(cost.item) && cost.item !== '{item}' && cost.item !== '{item2}') {
+    errors.push(`${where}: 없는 아이템 "${cost.item}"`);
+  }
   if (cost.itemKind && !kinds.has(cost.itemKind)) errors.push(`${where}: 없는 분류 "${cost.itemKind}"`);
 }
 
@@ -112,6 +121,7 @@ function checkPlaceholders(text, slots, where) {
   if (slots.threat) provided.add('threat');
   if (slots.item) provided.add('item');
   if (slots.item2) provided.add('item2');
+  if (slots.base) { provided.add('basename'); provided.add('basenote'); }
   found.forEach((f) => {
     const key = f.slice(1, -1);
     if (!provided.has(key)) errors.push(`${where}: 채울 수 없는 치환자 ${f}`);

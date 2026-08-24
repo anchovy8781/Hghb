@@ -45,6 +45,14 @@
   };
 
   Generator.prototype.itemOf = function (kind) {
+    /* 잡동사니는 이천 가지가 넘는다. 그냥 뽑으면 나중에 쓸모가 있는
+     * 열쇠 물건이 영영 안 나오므로, 다섯 번에 한 번은 그쪽에서 뽑는다. */
+    if (kind === 'junk' && this.rnd() < 0.35) {
+      const keys = (B.ITEMS_BY_KIND.junk || []).filter(function (id) {
+        return B.ITEM_MAP[id] && B.ITEM_MAP[id].key;
+      });
+      if (keys.length) return this.pick('item_junkkey', keys);
+    }
     const pool = B.ITEMS_BY_KIND[kind] || B.ITEMS_BY_KIND.food;
     return this.pick('item_' + kind, pool);
   };
@@ -155,6 +163,14 @@
       }).map(function (t) { return t.name; });
       ctx.threat = this.pick('threat_' + tpl.id, pool.length ? pool : W.THREATS.map(function (t) { return t.name; }));
     }
+    if (s.base) {
+      const bases = B.JUNK_BASE_LIST || [];
+      const b = this.pick('junkbase', bases.map(function (x) { return x.id; }));
+      const found = bases.filter(function (x) { return x.id === b; })[0];
+      ctx.__base = b;
+      ctx.basename = found ? found.name : b;
+      ctx.basenote = found ? found.note : '';
+    }
     if (s.item) ctx.item = this.itemOf(s.item);
     if (s.item2) ctx.item2 = this.itemOf(s.item2);
     return ctx;
@@ -162,6 +178,18 @@
 
   Generator.prototype.buildChoices = function (tpl, textCtx, ctx) {
     return tpl.choices.map(function (c) {
+      function resolveSlot(v) {
+        if (v === '{base}') return ctx.__base;
+        if (v === '{item}') return ctx.item;
+        if (v === '{item2}') return ctx.item2;
+        return v;
+      }
+      function resolveCond(c2) {
+        if (!c2) return c2;
+        const out = {};
+        for (const k in c2) out[k] = (k === 'itemBase' || k === 'item') ? resolveSlot(c2[k]) : c2[k];
+        return out;
+      }
       function resolveEff(eff) {
         if (!eff) return null;
         const e = {};
@@ -183,8 +211,8 @@
       }
       return {
         label: fill(c.t, textCtx),
-        need: c.need || null,
-        cost: c.cost || null,
+        need: resolveCond(c.need) || null,
+        cost: resolveCond(c.cost) || null,
         dc: c.dc || 0,
         end: c.end || null,
         ok: resolveText(c.ok),
