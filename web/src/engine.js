@@ -14,6 +14,8 @@
   const WEAR = 4;            /* 한 칸이 깎이려면 이만큼 다쳐야 한다 */
   const HIT = 4;             /* 다치면 한 칸이 통째로 날아간다. 세 번 맞으면 끝이다 */
   const TOIL = 2;            /* 힘을 쓰는 대가는 그 절반. 짐을 지는 것과 총 맞는 것은 다르다 */
+  /* 도입부는 아직 여정이 시작되기 전이다. 여기서 죽어서 끝나면 안 된다 */
+  Engine.prototype.hitScale = function () { return this.st.mode === 'prologue' ? TOIL : HIT; };
   const SP_FIRST = 30;       /* 첫 특별 이야기는 아무리 빨라도 이 페이지 뒤 */
   const SP_MIN_GAP = 16;     /* 특별 이야기끼리 이만큼은 떨어뜨린다 */
   const MEAL_EVERY = 22;
@@ -236,12 +238,17 @@
     const self = this;
 
     if (eff.hp) {
-      if (eff.hp < 0) { this.hurt('hp', 'hpSub', -eff.hp * HIT); losses.push('체력'); }
+      if (eff.hp < 0) { this.hurt('hp', 'hpSub', -eff.hp * this.hitScale()); losses.push('체력'); }
       else { this.heal('hp', 'hpSub', eff.hp); gains.push('체력'); }
     }
     if (eff.mp) {
-      if (eff.mp < 0) { this.hurt('mp', 'mpSub', -eff.mp * HIT); losses.push('멘탈'); }
+      if (eff.mp < 0) { this.hurt('mp', 'mpSub', -eff.mp * this.hitScale()); losses.push('멘탈'); }
       else { this.heal('mp', 'mpSub', eff.mp); gains.push('멘탈'); }
+    }
+    if (eff.wear) {
+      /* 다친 게 아니라 깎이는 것. 칸이 아니라 눈금으로 센다 */
+      if (eff.wear.hp) { this.hurt('hp', 'hpSub', eff.wear.hp); losses.push('체력'); }
+      if (eff.wear.mp) { this.hurt('mp', 'mpSub', eff.wear.mp); losses.push('멘탈'); }
     }
     if (eff.money) {
       st.money = clamp(st.money + eff.money, 0, MAX);
@@ -478,7 +485,7 @@
         res: ['천천히 씹습니다. 맛은 오래전에 포기했고, 이제는 삼키는 감각만 남았습니다.\n배가 부르지는 않지만, 오늘은 이걸로 됩니다.'],
         eff: { hp: 1, del: ['hunger'] }, dc: 0, ok: [], no: [] },
       { label: '굶는다.', res: ['물만 한 모금 마시고 허리띠를 한 칸 조입니다.\n위장이 자기 자신을 갉는 감각에는 끝까지 익숙해지지 않습니다. 내일은 뭐라도 찾아야 합니다.'],
-        eff: { hp: -1, add: ['hunger'] }, dc: 0, ok: [], no: [] }
+        eff: { wear: { hp: 2 }, add: ['hunger'] }, dc: 0, ok: [], no: [] }
     ], 'meal');
   }
 
@@ -491,7 +498,7 @@
         res: ['젖은 나무가 한참 만에 붙습니다. 불빛 앞에서 무릎을 안고 앉아 선잠을 잡니다.\n몇 번 깼고, 깰 때마다 불이 아직 살아 있는지부터 확인했습니다. 그래도 아침은 옵니다.'],
         eff: { mp: 1, del: ['insomnia'] }, dc: 0, ok: [], no: [] },
       { label: '노숙한다.', res: ['처마 밑에 몸을 구겨 넣습니다. 추위보다 소리가 더 무섭습니다.\n밤새 열 번쯤 눈을 뜨고, 열 번 다 아무것도 없었습니다. 그게 다행인지 아닌지 모르겠습니다.'],
-        eff: { mp: -1 }, dc: 0, ok: [], no: [] }
+        eff: { wear: { mp: 2 } }, dc: 0, ok: [], no: [] }
     ], 'sleep');
   }
 

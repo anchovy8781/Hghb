@@ -18,8 +18,8 @@ const FILES = [
   'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/items2.js', 'data/items3.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
   'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js',
   'data/templates5.js', 'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js', 'data/templates13.js', 'data/templates14.js',
-  'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js', 'data/bodies4.js',
-  'data/specials.js', 'data/specials2.js', 'data/specials3.js', 'data/specials4.js', 'data/specials5.js', 'data/specials6.js', 'data/specials7.js',
+  'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js', 'data/bodies4.js', 'data/bodies5.js',
+  'data/specials.js', 'data/specials2.js', 'data/specials3.js', 'data/specials4.js', 'data/specials5.js', 'data/specials6.js', 'data/specials7.js', 'data/specials8.js',
   'data/arcs.js', 'data/arcs2.js',
   'generator.js', 'engine.js'
 ].filter((f) => fs.existsSync(path.join(srcDir, f)));
@@ -80,8 +80,14 @@ function checkEff(eff, where) {
   if (eff.chain && !tplIds.has(eff.chain)) errors.push(`${where}: 없는 연결 사건 "${eff.chain}"`);
   if (eff.flag) flagsSet.add(eff.flag);
   if (eff.title && typeof eff.title !== 'string') errors.push(`${where}: 칭호가 문자열이 아님`);
-  const KNOWN = ['hp', 'mp', 'money', 'rad', 'add', 'add2', 'del', 'skillUp',
+  const KNOWN = ['hp', 'mp', 'money', 'rad', 'wear', 'add', 'add2', 'del', 'skillUp',
                  'rep', 'flag', 'chain', 'title'];
+  if (eff.wear) {
+    Object.keys(eff.wear).forEach((k) => {
+      if (k !== 'hp' && k !== 'mp') errors.push(`${where}: wear 에 쓸 수 없는 값 "${k}"`);
+      if (typeof eff.wear[k] !== 'number') errors.push(`${where}: wear.${k} 가 숫자가 아님`);
+    });
+  }
   Object.keys(eff).forEach((k) => {
     if (KNOWN.indexOf(k) < 0) errors.push(`${where}: 알 수 없는 효과 키 "${k}"`);
   });
