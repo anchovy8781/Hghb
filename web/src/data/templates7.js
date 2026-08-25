@@ -242,7 +242,7 @@
     ],
     mid: ['점수가 나오는 기능도 아직 됩니다.\n사람들이 그 점수에 목숨을 겁니다.'],
     choices: [
-      { t: '한 곡 부른다.', need: { itemKind: 'food' }, cost: { itemKind: 'food' }, dc: 1,
+      { t: '한 곡 부른다.', need: { itemKind: 'food', skill: 'music' }, cost: { itemKind: 'food' }, dc: 1,
         ok: ['98점.\n지하가 무너질 것처럼 함성이 터집니다. 낯선 사람들이 어깨동무를 합니다.',
                '오늘 밤은 아무도 세상이 망한 이야기를 하지 않습니다.'],
         okEff: { mp: 1, add: ['humor', 'hope'], rep: { free: 1 } },

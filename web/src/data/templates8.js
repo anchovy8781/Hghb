@@ -370,7 +370,7 @@
       { t: '{npc}에게 맡긴다.', need: { money: 1 }, cost: { money: 1 },
         res: ['{npc}이(가) 상처를 보더니 혀를 찹니다. "며칠만 더 뒀으면 팔을 잘랐을 거요."\n치료비가 아깝지 않습니다.'],
         eff: { del: ['wound'], hp: 1, mp: 1 } },
-      { t: '바늘과 실로 대충 꿰맨다.', need: { item: 'needle' }, cost: { item: 'needle' }, dc: 1,
+      { t: '바늘과 실로 대충 꿰맨다.', need: { item: 'needle', skill: 'hand' }, cost: { item: 'needle' }, dc: 1,
         ok: ['옷 꿰매는 실로 살을 꿰맵니다. 아무도 추천하지 않는 방법이지만 됩니다.'],
         okEff: { del: ['wound'], add: ['grit'] },
         no: ['실이 끊어지고 상처가 더 벌어집니다. 안 하느니만 못했습니다.'],

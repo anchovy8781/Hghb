@@ -606,6 +606,17 @@
     st.spAt = st.page + Math.max(SP_MIN_GAP, gap + jitter);
   };
 
+  /* 몸을 갉는 것들과 머리를 갉는 것들. 뒤 숫자가 한 번에 깎는 눈금 수 */
+  const HP_BAD = [['hunger', 2], ['wound', 1], ['fever', 2], ['fracture', 1], ['burn', 1],
+                  ['cold', 1], ['infection', 2], ['bleeding', 2], ['pain', 1], ['poison', 2],
+                  ['headshot', 3], ['riddled', 2], ['modified', 1], ['coldweak', 1]];
+  const MP_BAD = [['gloom', 2], ['insomnia', 1], ['guilt', 1], ['headache', 1],
+                  ['depress', 2], ['mad', 2], ['emptiness', 2], ['cursed', 1], ['wanted', 1],
+                  ['anger', 1], ['bugfear', 1], ['hopeaddict', 1], ['uglyscar', 1],
+                  ['jobless', 1], ['baldness', 1], ['racoontgt', 1], ['popetgt', 1],
+                  ['usbad', 1], ['hardmode', 1], ['greedy', 1]];
+  const MP_GOOD = ['hope', 'humor', 'goodrep', 'blessed', 'beauty', 'stable', 'narciss'];
+
   Engine.prototype.tick = function () {
     const st = this.st;
     if (st.mode === 'ending' || st.mode === 'prologue') return;
@@ -615,22 +626,14 @@
 
     if (st.page % 25 === 0) {
       let wear = 0;
-      if (st.items.hunger) wear += 2;
-      if (st.items.wound) wear += 1;
-      if (st.items.fever) wear += 2;
-      if (st.items.fracture) wear += 1;
-      if (st.items.burn) wear += 1;
+      HP_BAD.forEach(function (p2) { if (st.items[p2[0]]) wear += p2[1]; });
       if (st.rad >= 3) wear += 2;
       if (wear) this.hurt('hp', 'hpSub', Math.min(3, wear));
     }
     if (st.page % 23 === 0) {
       let wear = 0;
-      if (st.items.gloom) wear += 2;
-      if (st.items.insomnia) wear += 1;
-      if (st.items.guilt) wear += 1;
-      if (st.items.headache) wear += 1;
-      if (st.items.hope) wear -= 1;
-      if (st.items.humor) wear -= 1;
+      MP_BAD.forEach(function (p2) { if (st.items[p2[0]]) wear += p2[1]; });
+      MP_GOOD.forEach(function (id) { if (st.items[id]) wear -= 1; });
       if (wear > 0) this.hurt('mp', 'mpSub', Math.min(3, wear));
       else if (wear < 0) this.heal('mp', 'mpSub', 0.25);   /* 한 칸이 아니라 마모 한 눈금만 */
     }
@@ -641,12 +644,13 @@
   /* 죽기 직전에 가방을 뒤진다.
    * 의약품 · 의료용 주사기 · 무당이 준 생명의 부적이 있으면 한 번은 되돌아온다.
    * 되돌릴 것이 없으면 그대로 끝난다. */
-  const REVIVE_ORDER = ['lifecharm', 'syringe', 'medkit'];
-
   Engine.prototype.reviveItem = function () {
     const st = this.st;
-    /* 값이 싼 것부터 쓴다. 부적은 마지막까지 아낀다 */
-    const held = REVIVE_ORDER.filter(function (id) { return (st.items[id] || 0) > 0; });
+    /* 되살릴 수 있는 물건은 전부 후보다. 값이 싼 것부터 쓰고 부적은 마지막까지 아낀다 */
+    const held = Object.keys(st.items).filter(function (id) {
+      const it = B.ITEM_MAP[id];
+      return it && it.revive && st.items[id] > 0;
+    });
     if (!held.length) return null;
     held.sort(function (a, b) {
       return (B.ITEM_MAP[a].revive || 0) - (B.ITEM_MAP[b].revive || 0);
