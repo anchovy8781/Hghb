@@ -17,11 +17,11 @@ const srcDir = path.join(here, '..', 'web', 'src');
 
 const FILES = [
   'rng.js',
-  'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/items2.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
+  'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/items2.js', 'data/items3.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
   'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js', 'data/templates5.js',
-  'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js',
+  'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js', 'data/templates13.js',
   'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js', 'data/bodies4.js',
-  'data/specials.js', 'data/specials2.js', 'data/specials3.js', 'data/specials4.js', 'data/specials5.js', 'data/specials6.js',
+  'data/specials.js', 'data/specials2.js', 'data/specials3.js', 'data/specials4.js', 'data/specials5.js', 'data/specials6.js', 'data/specials7.js',
   'data/arcs.js', 'data/arcs2.js',
   'generator.js', 'engine.js'
 ];
@@ -55,14 +55,15 @@ function score(e, c) {
   const effs = [c.eff, c.okEff, c.noEff].filter(Boolean);
   for (const eff of effs) {
     const w = eff === c.noEff ? 0.4 : 1;
-    if (eff.hp) v += eff.hp * w * (st.hp <= 1 ? 6 : 2);
-    if (eff.mp) v += eff.mp * w * (st.mp <= 1 ? 6 : 2);
+    /* 한 대에 한 칸이 날아가므로, 사람이라면 깎이는 선택을 훨씬 더 피한다 */
+    if (eff.hp) v += eff.hp * w * (eff.hp < 0 ? (st.hp <= 1 ? 30 : 9) : (st.hp < 3 ? 7 : 2));
+    if (eff.mp) v += eff.mp * w * (eff.mp < 0 ? (st.mp <= 1 ? 30 : 9) : (st.mp < 3 ? 7 : 2));
     if (eff.rad) v -= eff.rad * w * (st.rad >= 2 ? 6 : 2);
     if (eff.money) v += eff.money * w * 0.6;
     if (eff.add) v += eff.add.length * 0.5 * w;
   }
-  if (c.cost && c.cost.hp) v -= st.hp <= 1 ? 6 : 1.5;
-  if (c.cost && c.cost.mp) v -= st.mp <= 1 ? 6 : 1.5;
+  if (c.cost && c.cost.hp) v -= st.hp <= 1 ? 30 : 8;
+  if (c.cost && c.cost.mp) v -= st.mp <= 1 ? 30 : 8;
   if (c.cost && c.cost.money) v -= 0.4;
   return v;
 }
@@ -92,11 +93,11 @@ function useItemsIfNeeded(e, B) {
     const id = heal((it) => it.rad && it.rad < 0);
     if (id) { e.useItem(id); return true; }
   }
-  if (st.hp <= 1) {
+  if (st.hp <= 2) {
     const id = heal((it) => it.hp && it.hp > 0);
     if (id) { e.useItem(id); return true; }
   }
-  if (st.mp <= 1) {
+  if (st.mp <= 2) {
     const id = heal((it) => it.mp && it.mp > 0);
     if (id) { e.useItem(id); return true; }
   }

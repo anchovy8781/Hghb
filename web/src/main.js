@@ -11,7 +11,10 @@
     global.__b2033 = { engine: engine, ui: ui };
 
     /* 안드로이드 셸에서 부르는 갈고리 */
-    global.__b2033Save = function () { global.__b2033.engine.save(); };
+    global.__b2033Save = function () {
+      if (B.RESETTING) return;
+      global.__b2033.engine.save();
+    };
     global.__b2033Back = function () {
       const doc = global.document;
       const gsheet = doc.getElementById('gadgetSheet');
@@ -29,8 +32,8 @@
 
     ui.showMenu();
 
-    global.addEventListener('pagehide', function () { global.__b2033.engine.save(); });
-    global.addEventListener('visibilitychange', function () { global.__b2033.engine.save(); });
+    global.addEventListener('pagehide', function () { global.__b2033Save(); });
+    global.addEventListener('visibilitychange', function () { global.__b2033Save(); });
   }
 
   if (global.document.readyState === 'loading') {

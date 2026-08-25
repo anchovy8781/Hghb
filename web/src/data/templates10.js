@@ -231,7 +231,7 @@
 
   /* ── 무당 — 한 여정에 딱 한 번 ───────────────── */
   T.push({
-    id: 'once_shaman', cat: '칭호', phase: [1, 2, 3], w: 7,
+    id: 'once_shaman', cat: '칭호', phase: [1, 2, 3], w: 10,
     req: { noflag: 'charm_given' },
     slots: { place: 'urban', npc: 'cultist' },
     open: [
@@ -270,7 +270,7 @@
 
   /* ── 진료소 — 주사기가 나오는 자리 ───────────── */
   T.push({
-    id: 'once_clinic', cat: '칭호', phase: [1, 2, 3], w: 8,
+    id: 'once_clinic', cat: '칭호', phase: [1, 2, 3], w: 11,
     slots: { place: 'indoor', npc: 'medic', item: 'med' },
     open: [
       '{place}에 붉은 십자가 그려진 천이 걸려 있습니다. 페인트가 아니라 뭔가 다른 걸로 그렸습니다.\n안에서 {npc}이(가) 기구를 끓이고 있습니다. 물이 팔팔 끓습니다. 소독입니다.',

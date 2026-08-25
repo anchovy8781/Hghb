@@ -5,6 +5,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -34,6 +35,8 @@ public class MainActivity extends Activity {
         s.setMediaPlaybackRequiresUserGesture(false);
 
         web.setWebViewClient(new WebViewClient());
+        /* 이것이 없으면 WebView 안에서 confirm() 이 아무것도 안 띄우고 false 를 준다 */
+        web.setWebChromeClient(new WebChromeClient());
         web.setOverScrollMode(View.OVER_SCROLL_NEVER);
         web.setBackgroundColor(0xFFFFFFFF);
 

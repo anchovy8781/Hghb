@@ -127,9 +127,9 @@
       self.renderGadget();
     });
     el('gRestart').addEventListener('click', function () {
-      if (!global.confirm('진행한 기록이 사라집니다. 처음부터 다시 시작할까요?')) return;
-      B.Engine.clearSave();
-      global.location.reload();
+      self.ask('진행한 기록이 사라집니다. 처음부터 다시 시작할까요?', function () {
+        self.hardReset();
+      });
     });
     Array.prototype.forEach.call(doc.querySelectorAll('.gsheet-tabs button'), function (b) {
       b.addEventListener('click', function () {
@@ -162,14 +162,22 @@
   };
 
   UI.prototype.onStart = function () {
-    if (B.Engine.hasSave() &&
-        !global.confirm('저장된 여정이 있습니다. 새로 시작하면 사라집니다. 계속할까요?')) return;
-    B.Engine.clearSave();
-    const engine = new B.Engine();
-    this.e = engine;
-    global.__b2033.engine = engine;
-    this.showPlay();
-    this.advance();
+    const self = this;
+    function go() {
+      B.RESETTING = true;
+      B.Engine.clearSave();
+      const engine = new B.Engine();
+      self.e = engine;
+      global.__b2033.engine = engine;
+      B.RESETTING = false;
+      self.showPlay();
+      self.advance();
+    }
+    if (B.Engine.hasSave()) {
+      this.ask('저장된 여정이 있습니다. 새로 시작하면 사라집니다. 계속할까요?', go);
+      return;
+    }
+    go();
   };
 
   UI.prototype.onResume = function () {
@@ -385,6 +393,41 @@
     }
   };
 
+  /* 안드로이드 WebView 에는 confirm() 을 띄워 줄 것이 없어서 늘 false 가 돌아왔다.
+   * 그래서 "재시작"이 눌러도 아무 일이 없었다. 확인창을 직접 그린다. */
+  UI.prototype.ask = function (msg, onYes) {
+    const box = el('ask');
+    el('askText').textContent = msg;
+    box.classList.remove('hidden');
+    const yes = el('askYes');
+    const no = el('askNo');
+    function close() {
+      box.classList.add('hidden');
+      yes.removeEventListener('click', ok);
+      no.removeEventListener('click', close);
+    }
+    function ok() { close(); onYes(); }
+    yes.addEventListener('click', ok);
+    no.addEventListener('click', close);
+  };
+
+  /* 여정을 통째로 새로 시작한다.
+   * 예전에는 location.reload() 로 했는데, 새로고침이 pagehide 를 부르고
+   * 그 pagehide 가 방금 지운 저장을 도로 써 넣어서 초기화가 안 됐다. */
+  UI.prototype.hardReset = function () {
+    B.RESETTING = true;
+    B.Engine.clearSave();
+    const engine = new B.Engine();
+    this.e = engine;
+    global.__b2033.engine = engine;
+    this.closeGadget();
+    el('infoSheet').classList.add('hidden');
+    B.RESETTING = false;
+    this.showPlay();
+    this.advance();
+    this.toast('처음부터 다시 시작합니다.');
+  };
+
   UI.prototype.toast = function (msg) {
     const t = el('toast');
     t.textContent = msg;
@@ -463,6 +506,21 @@
       return;
     }
 
+    /* 총은 맞는 탄이 있어야 총이다. 지금 쏠 수 있는지 위에 적어 준다 */
+    if (this.gtab === 'all' || this.gtab === 'item') {
+      const guns = s.items.filter(function (i) { return i.gun; });
+      if (guns.length) {
+        const g = doc.createElement('div');
+        g.className = 'g-note';
+        g.style.paddingTop = '0';
+        const loaded = guns.filter(function (i) { return self.e.armed(i.gun); });
+        g.textContent = loaded.length
+          ? '지금 쏠 수 있는 총: ' + loaded.map(function (i) { return i.name; }).join(', ')
+          : '총은 있는데 맞는 탄이 없습니다. 탄부터 구해야 합니다.';
+        body.appendChild(g);
+      }
+    }
+
     if ((this.gtab === 'all' || this.gtab === 'skill') && s.titles && s.titles.length) {
       const tt = doc.createElement('div');
       tt.className = 'g-note';
@@ -480,8 +538,9 @@
     if (this.gtab === 'all' || this.gtab === 'item') {
       cells = cells.concat(s.items.filter(function (i) { return i.kind !== 'mood'; })
         .map(function (i) {
-          return { name: i.name, n: i.n, id: i.id, kind: 'item',
-                   cls: i.key ? 'key' : '', use: self.e.canUse(i.id), note: i.note };
+          const loaded = i.gun && self.e.armed(i.gun);
+          return { name: i.name + (loaded ? ' · 장전됨' : ''), n: i.n, id: i.id, kind: 'item',
+                   cls: i.key ? 'key' : (loaded ? 'key' : ''), use: self.e.canUse(i.id), note: i.note };
         }));
     }
     if (this.gtab === 'all' || this.gtab === 'state') {
@@ -538,6 +597,7 @@
 
   /* ── 메뉴 안내 시트 ──────────────────────────── */
   UI.prototype.openInfo = function (which) {
+    const self2 = this;
     const body = el('infoBody');
     const rec = B.Engine.records();
     body.innerHTML = '';
@@ -636,9 +696,14 @@
       nb.className = 'info-btn danger';
       nb.textContent = '저장된 여정 지우기';
       nb.addEventListener('click', function () {
-        if (!global.confirm('저장된 여정을 지울까요?')) return;
-        B.Engine.clearSave();
-        global.location.reload();
+        self2.ask('저장된 여정을 지울까요?', function () {
+          B.RESETTING = true;
+          B.Engine.clearSave();
+          B.RESETTING = false;
+          el('infoSheet').classList.add('hidden');
+          self2.showMenu();
+          self2.toast('저장된 여정을 지웠습니다.');
+        });
       });
       body.appendChild(nb);
     }

@@ -15,11 +15,11 @@ const srcDir = path.join(here, '..', 'web', 'src');
 
 const FILES = [
   'rng.js',
-  'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/items2.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
+  'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/items2.js', 'data/items3.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
   'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js',
-  'data/templates5.js', 'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js',
+  'data/templates5.js', 'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js', 'data/templates13.js',
   'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js', 'data/bodies4.js',
-  'data/specials.js', 'data/specials2.js', 'data/specials3.js', 'data/specials4.js', 'data/specials5.js', 'data/specials6.js',
+  'data/specials.js', 'data/specials2.js', 'data/specials3.js', 'data/specials4.js', 'data/specials5.js', 'data/specials6.js', 'data/specials7.js',
   'data/arcs.js', 'data/arcs2.js',
   'generator.js', 'engine.js'
 ].filter((f) => fs.existsSync(path.join(srcDir, f)));
@@ -103,6 +103,9 @@ function checkNeed(need, where) {
     errors.push(`${where}: 없는 물건 종류 "${need.itemBase}"`);
   }
   if (need.itemKind && !kinds.has(need.itemKind)) errors.push(`${where}: 없는 분류 "${need.itemKind}"`);
+  if (need.gun && need.gun !== true && !B.GUN_CLASSES[need.gun]) {
+    errors.push(`${where}: 없는 총 분류 "${need.gun}"`);
+  }
   if (need.flag) noteFlagUse(need.flag, where);
   if (need.specials && typeof need.specials !== 'number') errors.push(`${where}: specials 조건이 숫자가 아님`);
   if (need.title) {
@@ -126,6 +129,12 @@ function checkNeed(need, where) {
 }
 
 function checkCost(cost, where) {
+  if (cost && cost.ammo && cost.ammo !== true && !B.GUN_CLASSES[cost.ammo]) {
+    errors.push(`${where}: 없는 총 분류 "${cost.ammo}"`);
+  }
+  if (cost && cost.throwable && cost.throwable !== true && !itemIds.has(cost.throwable)) {
+    errors.push(`${where}: 없는 던질 것 "${cost.throwable}"`);
+  }
   if (!cost) return;
   if (cost.item && !itemIds.has(cost.item) && cost.item !== '{item}' && cost.item !== '{item2}') {
     errors.push(`${where}: 없는 아이템 "${cost.item}"`);
@@ -248,6 +257,13 @@ const spIds = new Set();
   (sp.scenes || []).forEach((sc, i) => {
     checkScene(sc, `${sp.title} 장면[${i}]`);
     if (!sc.choices || !sc.choices.length) errors.push(`${sp.title} 장면[${i}]: 선택지 없음`);
+    (sc.choices || []).forEach((c, ci) => {
+      [].concat([c.t || ''], c.res || [], c.ok || [], c.no || []).forEach((t) => {
+        if (/\{\w+\}/.test(t)) {
+          errors.push(`${sp.title} 장면[${i}] 선택지[${ci}]: 치환자가 남아 있음 — 특별 이야기에는 슬롯이 없습니다`);
+        }
+      });
+    });
     (sc.pages || []).forEach((t, j) => {
       if (/\{\w+\}/.test(t)) errors.push(`${sp.title} 장면[${i}] 문단[${j}]: 치환자가 남아 있음`);
       if (t.length < 40) warns.push(`${sp.title} 장면[${i}] 문단[${j}]: 문단이 짧음`);

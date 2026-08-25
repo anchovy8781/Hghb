@@ -12,11 +12,12 @@
   const RAD_MAX = 4;         /* 피폭 한계 */
   const FINAL_PAGE = 1200;   /* 이 페이지에 닿으면 종장이 열린다 */
   const WEAR = 4;            /* 한 칸이 깎이려면 이만큼 다쳐야 한다 */
-  const HIT = 2;             /* 선택지의 -1 은 반 칸(=2)만큼 깎는다 */
+  const HIT = 4;             /* 다치면 한 칸이 통째로 날아간다. 세 번 맞으면 끝이다 */
+  const TOIL = 2;            /* 힘을 쓰는 대가는 그 절반. 짐을 지는 것과 총 맞는 것은 다르다 */
   const SP_FIRST = 30;       /* 첫 특별 이야기는 아무리 빨라도 이 페이지 뒤 */
   const SP_MIN_GAP = 16;     /* 특별 이야기끼리 이만큼은 떨어뜨린다 */
-  const MEAL_EVERY = 28;
-  const SLEEP_EVERY = 61;
+  const MEAL_EVERY = 22;
+  const SLEEP_EVERY = 45;
   const SAVE_KEY = 'busan2033.save.v2';
   const RECORD_KEY = 'busan2033.records.v1';
 
@@ -68,6 +69,7 @@
 
   /* ── 저장 ────────────────────────────────────── */
   Engine.prototype.save = function () {
+    if (B.RESETTING) return false;         /* 초기화 중에는 도로 써 넣지 않는다 */
     if (this.st.page <= 0) return false;   /* 시작도 안 한 여정은 저장하지 않는다 */
     Engine.markProgress(this.st);
     try {
@@ -153,6 +155,24 @@
   Engine.prototype.has = function (id) { return (this.st.items[id] || 0) > 0; };
 
   /* 뼈대(만화책, 보온병 …)로 찾는다. 상태가 어떻든 만화책은 만화책이다. */
+  /* 총은 맞는 탄이 있어야 총이다.
+   * 들고 있는 총 중에서 탄이 맞는 것을 하나 골라 준다. */
+  Engine.prototype.armed = function (klass) {
+    const st = this.st;
+    const ids = Object.keys(st.items);
+    for (let i = 0; i < ids.length; i++) {
+      const g = B.ITEM_MAP[ids[i]];
+      if (!g || g.kind !== 'gun' || !st.items[ids[i]]) continue;
+      if (klass && klass !== true && g.gun !== klass) continue;
+      const rounds = ids.filter(function (a) {
+        const it = B.ITEM_MAP[a];
+        return it && it.caliber === g.caliber && st.items[a] > 0;
+      })[0];
+      if (rounds) return { gun: ids[i], ammo: rounds };
+    }
+    return null;
+  };
+
   Engine.prototype.hasBase = function (baseId) {
     const st = this.st;
     for (const id in st.items) {
@@ -270,6 +290,15 @@
     if (need.money && this.st.money < need.money) return false;
     if (need.flag && !this.st.flags[need.flag]) return false;
     if (need.title && (this.st.titles || []).indexOf(need.title) < 0) return false;
+    if (need.gun && !this.armed(need.gun)) return false;
+    if (need.throwable) {
+      const st2 = this.st;
+      const has = Object.keys(st2.items).some(function (id) {
+        const it = B.ITEM_MAP[id];
+        return it && it.thrown !== undefined && st2.items[id] > 0;
+      });
+      if (!has) return false;
+    }
     if (need.specials && (this.st.specialsDone || []).length < need.specials) return false;
     if (need.rep) {
       for (const k in need.rep) if ((this.st.rep[k] || 0) < need.rep[k]) return false;
@@ -304,6 +333,19 @@
         const nm = base ? base.name : ((B.ITEM_MAP[need.itemBase] || {}).name || need.itemBase);
         push('item', nm, !!self.hasBase(need.itemBase));
       }
+      if (need.gun) {
+        const label = need.gun === true ? '장전된 총'
+          : ((B.GUN_CLASSES || {})[need.gun] || need.gun) + ' · 탄';
+        push('item', label, !!self.armed(need.gun === true ? null : need.gun));
+      }
+      if (need.throwable) {
+        const st4 = self.st;
+        const has = Object.keys(st4.items).some(function (id) {
+          const it = B.ITEM_MAP[id];
+          return it && it.thrown !== undefined && st4.items[id] > 0;
+        });
+        push('item', '던질 것', has);
+      }
       if (need.money) push('money', '돈', self.st.money >= need.money);
       if (need.flag) push('flag', '단서', !!self.st.flags[need.flag]);
       if (need.title) push('title', '「' + need.title + '」', (self.st.titles || []).indexOf(need.title) >= 0);
@@ -326,8 +368,35 @@
     const losses = [];
     if (!cost) return losses;
     if (cost.money) { this.st.money = clamp(this.st.money - cost.money, 0, MAX); losses.push('돈'); }
-    if (cost.hp) { this.hurt('hp', 'hpSub', cost.hp * HIT); losses.push('체력'); }
-    if (cost.mp) { this.hurt('mp', 'mpSub', cost.mp * HIT); losses.push('멘탈'); }
+    if (cost.hp) { this.hurt('hp', 'hpSub', cost.hp * TOIL); losses.push('체력'); }
+    if (cost.mp) { this.hurt('mp', 'mpSub', cost.mp * TOIL); losses.push('멘탈'); }
+    if (cost.ammo) {
+      const a = this.armed(cost.ammo === true ? null : cost.ammo);
+      if (a) {
+        this.delItem(a.ammo, 1);
+        losses.push(B.ITEM_MAP[a.ammo].name);
+        this.lastGun = B.ITEM_MAP[a.gun].name;
+      }
+    }
+    if (cost.throwable) {
+      const st3 = this.st;
+      const ids = Object.keys(st3.items).filter(function (id) {
+        const it = B.ITEM_MAP[id];
+        return it && it.thrown !== undefined && st3.items[id] > 0;
+      });
+      /* 백린탄처럼 위험한 것은 마지막에 쓴다 */
+      ids.sort(function (a, b) {
+        return (B.ITEM_MAP[a].selfHurt || 0) - (B.ITEM_MAP[b].selfHurt || 0);
+      });
+      const pick = cost.throwable === true ? ids[0] : (ids.indexOf(cost.throwable) >= 0 ? cost.throwable : ids[0]);
+      if (pick) {
+        const it = B.ITEM_MAP[pick];
+        this.delItem(pick, 1);
+        losses.push(it.name);
+        this.lastThrow = it.name;
+        if (it.selfHurt) { this.hurt('hp', 'hpSub', it.selfHurt * HIT); losses.push('체력'); }
+      }
+    }
     if (cost.item && this.delItem(cost.item, 1)) losses.push(B.ITEM_MAP[cost.item].name);
     if (cost.itemKind) {
       const id = this.hasKind(cost.itemKind);
@@ -372,6 +441,7 @@
     if (id === 'medkit' && this.has('burn')) { this.delItem('burn', 1); mark('화상'); }
     if (it.kind === 'food' && this.has('hunger')) { this.delItem('hunger', 1); mark('허기'); }
     this.checkDeath();
+    this.ensureExit();      /* 방금 쓴 물건이 유일한 선택지의 조건이었을 수 있다 */
     return { name: it.name, cured: cured };
   };
 
@@ -567,6 +637,8 @@
     return this.scene;
   };
 
+  /* 소지품을 쓰거나 만들다가 유일하게 열려 있던 선택지가 잠길 수 있다.
+   * 그러면 화면이 통째로 막히므로, 그때마다 빠져나갈 길을 다시 확인한다. */
   Engine.prototype.ensureExit = function () {
     const s = this.scene;
     if (!s || !s.choices || !s.choices.length) return;
@@ -807,6 +879,7 @@
     use.forEach(function (id) { self.delItem(id, 1); });
     for (let i = 0; i < (r.n || 1); i++) this.addItem(r.make, 1);
     this.st.log.push('만들기 · ' + r.name);
+    this.ensureExit();      /* 재료가 선택지 조건이었을 수 있다 */
     return {
       name: r.name,
       made: (B.ITEM_MAP[r.make] || {}).name || r.make,
@@ -823,6 +896,8 @@
       if (it) {
         items.push({ id: id, name: it.name, n: st.items[id], kind: it.kind,
                      bad: !!it.bad, key: !!it.key, note: it.note || '',
+                     gun: it.gun || '', caliber: it.caliber || '',
+                     thrown: it.thrown, melee: it.melee || 0,
                      tag: it.tag || '', base: it.base || '' });
       }
     }
