@@ -19,7 +19,7 @@ const FILES = [
   'rng.js',
   'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/items2.js', 'data/items3.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
   'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js', 'data/templates5.js',
-  'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js', 'data/templates13.js',
+  'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js', 'data/templates13.js', 'data/templates14.js',
   'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js', 'data/bodies4.js',
   'data/specials.js', 'data/specials2.js', 'data/specials3.js', 'data/specials4.js', 'data/specials5.js', 'data/specials6.js', 'data/specials7.js',
   'data/arcs.js', 'data/arcs2.js',
@@ -61,6 +61,7 @@ function score(e, c) {
     if (eff.rad) v -= eff.rad * w * (st.rad >= 2 ? 6 : 2);
     if (eff.money) v += eff.money * w * 0.6;
     if (eff.add) v += eff.add.length * 0.5 * w;
+    if (eff.del) v += eff.del.length * 2 * w;      /* 붙은 것을 떼는 선택은 값이 높다 */
   }
   if (c.cost && c.cost.hp) v -= st.hp <= 1 ? 30 : 8;
   if (c.cost && c.cost.mp) v -= st.mp <= 1 ? 30 : 8;
@@ -68,7 +69,7 @@ function score(e, c) {
   return v;
 }
 
-/* 사람이라면 위험할 때 가방을 뒤진다 */
+/* (참고) 예전 방식 — 지금은 쓰지 않는다. 회복은 전부 선택지로 한다 */
 function useItemsIfNeeded(e, B) {
   const st = e.st;
   const held = Object.keys(st.items);
@@ -167,7 +168,7 @@ function play(B, seed, maxPages = 4000) {
 
     if (sc.choices && sc.choices.length) {
       if (e.st.mode === 'ending') break;
-      useItemsIfNeeded(e, B);
+      /* 소지품에서 바로 쓰는 기능은 없앴다. 회복은 이야기 안에서만 한다 */
       if (e.st.page % 12 === 0) crafted += craftIfPossible(e);
       const usable = sc.choices.filter((c) => e.checkNeed(c.need));
       if (!usable.length) return { error: '선택 불가 상태', page: e.st.page };

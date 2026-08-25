@@ -107,17 +107,19 @@
 
     el('story').addEventListener('click', function (ev) {
       if (ev.target.closest('#choices')) return;
+      if (B.Sound) B.Sound.page();
       self.tap();
     });
-    el('menuBtn').addEventListener('click', function () { self.openGadget(); });
-    el('badgeRank').addEventListener('click', function () { self.openGadget(); });
-    el('btnGadget').addEventListener('click', function () { self.openGadget(); });
+    el('menuBtn').addEventListener('click', function () { if (B.Sound) B.Sound.soft(); self.openGadget(); });
+    el('badgeRank').addEventListener('click', function () { if (B.Sound) B.Sound.soft(); self.openGadget(); });
+    el('btnGadget').addEventListener('click', function () { if (B.Sound) B.Sound.soft(); self.openGadget(); });
     el('btnSave').addEventListener('click', function () {
+      if (B.Sound) B.Sound.soft();
       self.e.save();
       self.toast('저장했습니다. ' + self.e.st.page + '페이지');
     });
 
-    el('gClose').addEventListener('click', function () { self.closeGadget(); });
+    el('gClose').addEventListener('click', function () { if (B.Sound) B.Sound.soft(); self.closeGadget(); });
     el('gadgetSheet').addEventListener('click', function (ev) {
       if (ev.target === el('gadgetSheet')) self.closeGadget();
     });
@@ -163,6 +165,7 @@
 
   UI.prototype.onStart = function () {
     const self = this;
+    if (B.Sound) B.Sound.click();
     function go() {
       B.RESETTING = true;
       B.Engine.clearSave();
@@ -181,6 +184,7 @@
   };
 
   UI.prototype.onResume = function () {
+    if (B.Sound) B.Sound.click();
     const saved = B.Engine.load();
     if (!saved) { this.toast('저장된 여정이 없습니다.'); return; }
     this.e = saved;
@@ -305,7 +309,11 @@
       const row = doc.createElement('div');
       row.className = 'next-row';
       row.textContent = '다음';
-      row.addEventListener('click', function (ev) { ev.stopPropagation(); self.advance(); });
+      row.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        if (B.Sound) B.Sound.page();
+        self.advance();
+      });
       box.appendChild(row);
       return;
     }
@@ -327,7 +335,8 @@
       btn.addEventListener('click', function (ev) {
         /* 이 클릭이 본문 영역까지 올라가면 곧바로 다음 장면으로 넘어가 버린다 */
         ev.stopPropagation();
-        if (!ok) { self.toast('필요한 것이 없습니다.'); return; }
+        if (!ok) { if (B.Sound) B.Sound.soft(); self.toast('필요한 것이 없습니다.'); return; }
+        if (B.Sound) B.Sound.click();
         self.choose(i);
       });
       box.appendChild(btn);
@@ -540,7 +549,7 @@
         .map(function (i) {
           const loaded = i.gun && self.e.armed(i.gun);
           return { name: i.name + (loaded ? ' · 장전됨' : ''), n: i.n, id: i.id, kind: 'item',
-                   cls: i.key ? 'key' : (loaded ? 'key' : ''), use: self.e.canUse(i.id), note: i.note };
+                   cls: i.key ? 'key' : (loaded ? 'key' : ''), note: i.note };
         }));
     }
     if (this.gtab === 'all' || this.gtab === 'state') {
@@ -565,7 +574,7 @@
     grid.className = 'g-grid';
     cells.forEach(function (c) {
       const b = doc.createElement('button');
-      b.className = 'g-cell ' + (c.cls || '') + (c.use ? ' usable' : '');
+      b.className = 'g-cell ' + (c.cls || '');
       b.textContent = c.name;
       if (c.n > 1) {
         const n = doc.createElement('span');
@@ -573,16 +582,7 @@
         n.textContent = ' x ' + c.n;
         b.appendChild(n);
       }
-      if (c.use) {
-        b.addEventListener('click', function () {
-          const r = self.e.useItem(c.id);
-          if (!r) return;
-          self.toast(r.cured ? r.name + ' 사용 · ' + r.cured + ' 정리' : r.name + '을(를) 썼습니다.');
-          self.renderHud();
-          self.renderGadget();
-          self.e.save();
-        });
-      } else if (c.note) {
+      if (c.note) {
         b.addEventListener('click', function () { self.toast(c.name + ' — ' + c.note); });
       }
       grid.appendChild(b);
@@ -591,7 +591,7 @@
 
     const note = doc.createElement('div');
     note.className = 'g-note';
-    note.textContent = '밑줄 친 것은 눌러서 바로 쓸 수 있습니다. 노란 것은 언젠가 쓸 데가 있습니다.';
+    note.textContent = '가진 것은 이야기 안에서 씁니다. 쓸 자리가 오면 선택지 앞에 이름이 붙습니다. 노란 것은 언젠가 쓸 데가 있습니다.';
     body.appendChild(note);
   };
 
@@ -663,12 +663,24 @@
       el('infoTitle').textContent = '도움말';
       h('읽는 법');
       para('화면을 누르면 다음 문단이 한 번에 나옵니다. 선택지는 아래에 나타납니다.');
+      h('가진 것을 쓰는 법');
+      para('소지품 창에서는 바로 못 씁니다. 쓸 자리가 이야기 안에서 옵니다. 붕대가 필요한 자리에 오면 선택지 앞에 「붕대」가 초록으로 붙고, 그것을 고르면 그때 쓰입니다.');
+      para('죽기 직전에만 예외입니다. 그때는 가방을 알아서 뒤집니다.');
       h('선택지 앞의 글씨');
       para('초록은 가지고 있는 것, 빨강은 없는 것입니다. 빨간 선택지는 고를 수 없습니다. 분홍색 "판정"은 능력 수치로 성패가 갈린다는 뜻입니다.');
       h('세 칸짜리 자원');
       para('체력·멘탈·돈은 각각 세 칸입니다. 한 칸이 깎이려면 네 번 다쳐야 하고, 회복은 한 번에 한 칸씩 돌아옵니다. 체력이나 멘탈이 0이 되면 그 자리에서 끝납니다.');
       h('피폭');
       para('네 칸까지 있습니다. 시간이 지나면 조금씩 빠지지만, 오염 구역에서는 그보다 빨리 찹니다.');
+      h('소리');
+      para('선택할 때마다 짧게 딸깍 소리가 납니다. 파일이 아니라 그때그때 만들어 내는 소리라 용량은 늘지 않습니다.');
+      const sb = doc.createElement('button');
+      sb.className = 'info-btn';
+      function label() { sb.textContent = (B.Sound && B.Sound.isOn()) ? '소리 끄기' : '소리 켜기'; }
+      label();
+      sb.addEventListener('click', function () { if (B.Sound) B.Sound.toggle(); label(); });
+      body.appendChild(sb);
+
       h('몸에 남는 것');
       para('감기·감염·출혈·중독 같은 것은 진료소에서 떨어집니다. 화·죄책감·불면·수배는 목욕탕과 모닥불에서 떨어집니다.');
       para('다만 떨어지지 않는 것도 있습니다. 머리에 총상, 벌집이 됨, 개조됨, 탈모, 하드 모드 같은 것들은 그대로 남습니다. 그것도 이 도시를 지나온 기록입니다.');

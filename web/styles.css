@@ -320,7 +320,6 @@ html, body {
 }
 .g-cell.key { color: var(--gold); border-color: #5c4f22; background: rgba(214, 179, 74, 0.07); }
 .g-cell.bad { color: #ff9aa5; }
-.g-cell.usable { cursor: pointer; text-decoration: underline dotted rgba(255,255,255,0.3); }
 .g-cell .n { font-size: 13px; opacity: 0.7; }
 .g-empty { color: #7a7a7a; text-align: center; padding: 24px 0; }
 .g-note { color: #8b8b8b; font-size: 12px; text-align: center; padding: 12px 0 0; line-height: 1.6; }
