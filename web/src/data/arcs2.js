@@ -66,7 +66,7 @@
           eff: { flag: 'killed_hook', mp: -1, add: ['guilt'], rep: { free: -1 } } },
         { t: '살려 두고 데려간다.', need: { flag: 'hook_captured' },
           res: ['자경단에 넘깁니다. 재판이라는 걸 하겠다고 합니다. 이 도시에 아직 그런 게 남아 있습니다.'],
-          eff: { flag: 'spared_hook', mp: 1, rep: { free: 2 }, add: ['hope'] } }
+          eff: { flag: 'spared_hook', mp: 1, rep: { free: 2 }, add: ['stable'] } }
       ] }
     ]
   });

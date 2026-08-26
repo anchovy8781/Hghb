@@ -21,10 +21,10 @@
       { t: '응원 막대를 두드려 본다.',
         res: ['막대를 두 번 칩니다. 딱, 딱.\n보초가 반사적으로 세 번째를 칩니다. 딱.',
                '"…어디 사람이오?" 총구가 내려갑니다. 그날 저녁 관중석에서 밥을 얻어먹습니다. 사람들이 이십 년 전 경기 이야기를 합니다. 이길 뻔했던 경기랍니다.'],
-        eff: { hp: 1, mp: 1, add: ['preserve', 'hope'], rep: { free: 2 }, flag: 'ballpark' } },
+        eff: { hp: 1, mp: 1, add: ['preserve', 'stable'], rep: { free: 2 }, flag: 'ballpark' } },
       { t: '막대를 건넨다.',
         res: ['보초가 막대를 받아 들고 한참 봅니다. 그러고는 아이를 부릅니다.\n아이가 막대를 흔듭니다. 소리가 납니다. 아이는 이 소리를 처음 듣습니다.'],
-        eff: { del: ['batstick'], mp: 1, add: ['hope', 'humor'], rep: { free: 2 } } },
+        eff: { del: ['batstick'], mp: 1, add: ['stable', 'humor'], rep: { free: 2 } } },
       { t: '모른 척한다.', res: ['가방을 몸 뒤로 돌립니다. 괜한 일에 엮이고 싶지 않습니다.'], eff: {} }
     ]
   });
@@ -63,11 +63,11 @@
       { t: '곰인형을 꺼내 아이에게 준다.',
         res: ['제일 작은 아이에게 건넵니다. 아이가 두 손으로 받아 가슴에 안습니다.\n무리 전체의 공기가 바뀝니다. {npc}이(가) 돌을 내려놓습니다.',
                '"…따라오쇼. 오늘 밤은 여기서 자도 됩니다."'],
-        eff: { del: ['teddy'], mp: 1, hp: 1, add: ['hope', 'hope'], rep: { free: 2 }, flag: 'kids_trust' } },
+        eff: { del: ['teddy'], mp: 1, hp: 1, add: ['stable', 'relief'], rep: { free: 2 }, flag: 'kids_trust' } },
       { t: '인형 이름을 물어본다.', need: { skill: 'talk' },
         res: ['"이 인형 이름 아는 사람?"\n한 아이가 작게 말합니다. "…단추." 정확합니다. 인형 배에 단추가 하나 달려 있습니다.',
                '그 인형이 원래 누구 것이었는지, 아이들이 전부 압니다.'],
-        eff: { del: ['teddy'], mp: 1, add: ['hope'], rep: { free: 2 }, flag: 'kids_trust' } },
+        eff: { del: ['teddy'], mp: 1, add: ['relief'], rep: { free: 2 }, flag: 'kids_trust' } },
       { t: '가진 것을 내주고 인형은 지킨다.',
         res: ['식량을 넘기고 인형은 가방 깊이 넣습니다.\n{npc}이(가) 이상한 눈으로 봅니다. 설명할 수 없습니다.'],
         eff: { money: -1, mp: -1 } }
@@ -90,7 +90,7 @@
         eff: { rep: { cult: 2 }, mp: 1, flag: 'cult_pass' } },
       { t: '부적을 앞사람에게 건넨다.',
         res: ['끌려가던 사람 손에 부적을 쥐여 줍니다. 그가 그것을 들어 보입니다.\n검문이 갈라지고 둘 다 지나갑니다. 그 사람이 당신 이름을 묻습니다.'],
-        eff: { del: ['charm'], mp: 1, add: ['hope'], rep: { free: 2, cult: 1 } } },
+        eff: { del: ['charm'], mp: 1, add: ['relief'], rep: { free: 2, cult: 1 } } },
       { t: '부적을 감추고 다른 말을 한다.', need: { skill: 'lie' }, dc: 1,
         ok: ['"저는 아무것도 안 믿습니다." {npc}이(가) 고개를 끄덕입니다. "정직하군요. 지나가십시오."'],
         okEff: { mp: 1, add: ['humor'] },
@@ -112,7 +112,7 @@
         res: ['삑—\n짧게, 세 번. 소리가 골목을 찢습니다.',
                '이십 초 만에 마을 전체가 깨어납니다. 습격은 시작도 못 하고 끝납니다.',
                '아침에 자경단장이 당신을 찾아옵니다. "그 소리 당신이오?"'],
-        eff: { mp: 1, add: ['hope', 'grit'], rep: { free: 2, market: 1 }, flag: 'saved_town' } },
+        eff: { mp: 1, add: ['warmth', 'grit'], rep: { free: 2, market: 1 }, flag: 'saved_town' } },
       { t: '보초를 깨우러 뛴다.', dc: 2,
         ok: ['소리 없이 달려가 보초의 입을 막고 흔들어 깨웁니다. 아슬아슬하게 늦지 않았습니다.'],
         okEff: { rep: { free: 1 }, hp: -1 },
@@ -139,7 +139,7 @@
         eff: { mp: 1, add: ['grit'], skillUp: 'sense', flag: 'marked_tunnels' } },
       { t: '표시를 크게 남겨 남들도 쓰게 한다.',
         res: ['갈림길마다 커다랗게 그립니다. 출구 방향에는 화살표 세 개.\n몇 달 뒤 그 표시를 따라 나온 사람들이 당신을 찾아옵니다. 이름 대신 "화살표"라고 부릅니다.'],
-        eff: { del: ['spray'], mp: 1, add: ['hope'], rep: { free: 2, market: 1 } } },
+        eff: { del: ['spray'], mp: 1, add: ['warmth'], rep: { free: 2, market: 1 } } },
       { t: '벽을 짚고 한쪽으로만 간다.',
         res: ['오른손을 벽에서 떼지 않고 걷습니다. 오래 걸리지만 원리는 맞습니다.\n네 시간 만에 나옵니다.'],
         eff: { hp: -1, mp: -1 } }
@@ -161,7 +161,7 @@
         eff: { mp: 1, add: ['grit'] } },
       { t: '나침반과 지도를 함께 본다.', need: { item: 'map' },
         res: ['지도 위에 자침을 얹고 각도를 잽니다. 학교에서 배운 것이 이십 년 만에 쓸모가 있습니다.\n가장 빠른 길로 빠져나옵니다. 계기가 조용해집니다.'],
-        eff: { mp: 1, skillUp: 'sense', add: ['hope'] } },
+        eff: { mp: 1, skillUp: 'sense', add: ['stable'] } },
       { t: '자리에 앉아 안개가 걷히기를 기다린다.',
         res: ['옷으로 얼굴을 감싸고 웅크립니다. 세 시간.\n안개는 걷혔지만 몸에 남은 것은 안 걷힙니다.'],
         eff: { rad: 1, hp: -1 } }
@@ -227,13 +227,13 @@
       { t: '향초를 꺼내 불을 붙인다.', need: { item: 'lighter' },
         res: ['심지에 불이 붙습니다. 사람들이 하나씩 다가와 자기 손을 그 앞에 댑니다.\n불 하나로 이백 명이 서 있습니다.',
                '누가 노래를 시작합니다. 아무도 울지 않기로 약속한 것처럼 부릅니다.'],
-        eff: { del: ['candle'], mp: 1, add: ['hope', 'hope'], rep: { free: 2, cult: 1 } } },
+        eff: { del: ['candle'], mp: 1, add: ['stable', 'stable'], rep: { free: 2, cult: 1 } } },
       { t: '향초만 놓고 조용히 나온다.',
         res: ['담벼락 아래 초를 세워 두고 돌아섭니다.\n뒤에서 불이 켜지는 소리가 납니다.'],
-        eff: { del: ['candle'], mp: 1, add: ['hope'] } },
+        eff: { del: ['candle'], mp: 1, add: ['relief'] } },
       { t: '가족 이름을 적는다.', need: { item: 'pen' },
         res: ['담벼락 빈 자리에 아버지와 어머니의 이름을 적습니다.\n처음으로, 그 이름을 소리 내지 않고 적기만 하는데도 손이 떨립니다.'],
-        eff: { mp: 1, add: ['hope'], del: ['guilt'], flag: 'wrote_names' } }
+        eff: { mp: 1, add: ['relief'], del: ['guilt'], flag: 'wrote_names' } }
     ]
   });
 
@@ -250,14 +250,14 @@
       { t: '확성기로 순서를 정리한다.', need: { item: 'battery' }, cost: { item: 'battery' },
         res: ['"뒤에서부터 열 명씩! 아이 있는 집 먼저!"\n놀랍게도 사람들이 따릅니다. 사람은 누가 정해 주기를 기다립니다.',
                '한 시간 뒤 줄이 정리되고, 아무도 다치지 않았습니다. {npc}이(가) 당신 손을 잡습니다.'],
-        eff: { mp: 1, add: ['hope'], rep: { free: 2, market: 2 }, flag: 'crowd_hero' } },
+        eff: { mp: 1, add: ['relief'], rep: { free: 2, market: 2 }, flag: 'crowd_hero' } },
       { t: '확성기를 넘겨준다.',
         res: ['{npc}에게 확성기를 건넵니다. 그가 목소리를 되찾습니다.\n당신은 뒤로 물러섭니다. 잘한 일은 남이 하게 두는 편이 나을 때가 있습니다.'],
         eff: { del: ['megaphone'], mp: 1, rep: { free: 1 } } },
       { t: '농담을 한다.', need: { item: 'humor' },
         res: ['확성기를 켜고 아주 오래된 농담 하나를 합니다.\n삼 초 정적. 그리고 뒷줄에서 누가 웃습니다. 웃음이 앞으로 번집니다.',
                '싸움은 그것으로 끝났습니다.'],
-        eff: { mp: 1, add: ['hope', 'humor'], rep: { free: 2 } } }
+        eff: { mp: 1, add: ['warmth', 'humor'], rep: { free: 2 } } }
     ]
   });
 
@@ -274,7 +274,7 @@
       { t: '찌를 보여 준다.',
         res: ['{npc}이(가) 찌를 받아 이름을 읽습니다. 손이 멈춥니다.\n"…이거 우리 형 겁니다. 어디서 났소."',
                '그날 밤 배 위에서 형 이야기를 세 시간 듣습니다. 아침에 연합의 이름이 적힌 종이를 받습니다.'],
-        eff: { del: ['fishlure'], mp: 1, add: ['chart', 'hope'], rep: { dock: 2 }, flag: 'dock_friend' } },
+        eff: { del: ['fishlure'], mp: 1, add: ['chart', 'warmth'], rep: { dock: 2 }, flag: 'dock_friend' } },
       { t: '찌로 낚시 실력을 증명한다.', need: { skill: 'sea' },
         res: ['찌를 달고 던집니다. 십 분 만에 한 마리.\n뱃사람들이 조용해집니다. 실력은 어디서나 말보다 빠릅니다.'],
         eff: { add: ['dried', 'dried'], rep: { dock: 1 }, skillUp: 'sea' } },
@@ -298,7 +298,7 @@
         eff: { add: ['preserve', 'medkit', 'battery', 'gasmask'], mp: 1, flag: 'found_arcade' } },
       { t: '전망대 위치를 확인한다.',
         res: ['안내도의 전망대 표시를 보고 올라갑니다. 도시 전체가 보입니다.\n어디가 살아 있고 어디가 죽었는지, 처음으로 한눈에 봅니다.'],
-        eff: { add: ['map', 'hope'], mp: 1, skillUp: 'sense' } },
+        eff: { add: ['map', 'stable'], mp: 1, skillUp: 'sense' } },
       { t: '지도를 팔아 넘긴다.', need: { skill: 'talk' },
         res: ['이십 년 전 지도를 사겠다는 사람이 줄을 섭니다. 값이 제법 나갑니다.'],
         eff: { del: ['tourmap'], money: 1, add: ['humor'] } }
@@ -318,10 +318,10 @@
       { t: '그림을 아이 옆에 놓아 준다.',
         res: ['말없이 그림을 펴서 옆에 놓습니다. 그리고 기다립니다.\n한참 뒤 아이가 그림을 끌어당깁니다. 그리고 손가락으로 사람 하나를 짚습니다.',
                '"…엄마." 사흘 만의 첫마디입니다.'],
-        eff: { del: ['drawing'], mp: 1, add: ['hope', 'hope'], rep: { free: 2, market: 1 } } },
+        eff: { del: ['drawing'], mp: 1, add: ['stable', 'stable'], rep: { free: 2, market: 1 } } },
       { t: '같이 그림을 그린다.', need: { item: 'pen' },
         res: ['종이 뒷면에 아무거나 그립니다. 고래를 그렸는데 개처럼 보입니다.\n아이가 웃습니다. 소리는 안 나지만 웃습니다.'],
-        eff: { mp: 1, add: ['hope', 'humor'] } },
+        eff: { mp: 1, add: ['relief', 'humor'] } },
       { t: '의사에게 맡기고 나온다.', res: ['전문가가 할 일이라고 생각합니다. 아마 아닐 겁니다.'], eff: { add: ['guilt'] } }
     ]
   });
@@ -339,7 +339,7 @@
       { t: '트로피를 꺼내 놓는다.',
         res: ['탁, 하고 상 위에 올려놓습니다. 좌중이 조용해집니다.\n"…3위요?" "3위입니다."',
                '그날 밤 트로피를 걸고 병뚜껑 볼링 대회가 열립니다. 우승자는 여든두 살입니다.'],
-        eff: { del: ['trophy'], mp: 1, add: ['humor', 'hope'], rep: { free: 1 } } },
+        eff: { del: ['trophy'], mp: 1, add: ['humor', 'relief'], rep: { free: 1 } } },
       { t: '{npc}에게 선물한다.',
         res: ['트로피를 건넵니다. {npc}이(가) 두 손으로 받습니다.\n그날 이후 그 천막에 갈 때마다 밥이 나옵니다.'],
         eff: { del: ['trophy'], hp: 1, mp: 1, rep: { free: 1 }, flag: 'elder_friend' } },

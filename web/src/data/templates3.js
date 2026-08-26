@@ -130,7 +130,7 @@
       { t: '식사를 한다.', need: { itemKind: 'food' }, cost: { itemKind: 'food' },
         res: ['천천히 씹습니다. 이게 오늘의 전부지만, 오늘은 이걸로 됩니다.'], eff: { hp: 1 } },
       { t: '노래를 부른다.', need: { item: 'guitar' },
-        res: ['줄이 세 개뿐이라 반은 틀립니다. 그래도 끝까지 부릅니다.'], eff: { mp: 1, add: ['hope'] } },
+        res: ['줄이 세 개뿐이라 반은 틀립니다. 그래도 끝까지 부릅니다.'], eff: { mp: 1, add: ['relief'] } },
       { t: '어둠 속에서 그냥 눕는다.',
         res: ['눈을 감아도 잠은 오지 않습니다. 천장 얼룩을 세다가 새벽을 맞습니다.'],
         eff: { hp: 1, mp: -1, add: ['insomnia'] } }
@@ -171,7 +171,7 @@
         eff: { add: ['note'], flag: 'heard_signal', mp: -1 } },
       { t: '응답을 보낸다.', need: { skill: 'tech' }, dc: 2,
         ok: ['잡음 너머에서 누군가 숨을 삼키는 소리가 들립니다. 그리고 "…살아 있는 사람이 있다"는 말이 들립니다.'],
-        okEff: { mp: 1, add: ['hope'], flag: 'answered_signal' },
+        okEff: { mp: 1, add: ['warmth'], flag: 'answered_signal' },
         no: ['보내는 쪽이 되자마자 신호가 끊깁니다. 잡음만 남습니다.'], noEff: { mp: -1 } },
       { t: '전원을 끈다.', res: ['목소리가 사라집니다. 그게 더 나을 때도 있습니다.'], eff: {} }
     ]
@@ -209,7 +209,7 @@
         eff: { add: ['{item}'], mp: -1, add2: ['gloom'] } },
       { t: '묻어 준다.', need: { skill: 'force' }, cost: { hp: 1 },
         res: ['땅이 딱딱해 한참을 팝니다. 이름도 모르지만, 그래도 묻습니다.'],
-        eff: { mp: 1, add: ['hope'], del: ['guilt'], rep: { free: 1 } } },
+        eff: { mp: 1, add: ['warmth'], del: ['guilt'], rep: { free: 1 } } },
       { t: '사인을 살핀다.', need: { skill: 'medic' },
         res: ['총상입니다. 뒤에서 맞았습니다. 이 근처에 총을 쓰는 무리가 있다는 뜻입니다.'],
         eff: { flag: 'armed_nearby', mp: -1 } },
@@ -231,7 +231,7 @@
         eff: { mp: -1, add: ['grit'] } },
       { t: '가진 것을 놓아둔다.', need: { itemKind: 'food' }, cost: { itemKind: 'food' },
         res: ['통조림 하나를 올려놓습니다. 누가 가져가도 상관없습니다. 그러라고 두는 겁니다.'],
-        eff: { mp: 1, add: ['hope'] } },
+        eff: { mp: 1, add: ['stable'] } },
       { t: '제단에서 물건을 가져간다.',
         res: ['물병과 초를 챙깁니다. 산 사람이 먼저라고 스스로에게 말합니다.'],
         eff: { add: ['water', 'lighter'], mp: -1, add2: ['guilt'] } },
@@ -288,7 +288,7 @@
     choices: [
       { t: '가서 함께 듣는다.',
         res: ['모르는 사람 대여섯이 둘러앉아 있습니다. 아무도 말을 하지 않고, 노래만 세 곡을 듣습니다.'],
-        eff: { mp: 1, add: ['hope'] } },
+        eff: { mp: 1, add: ['stable'] } },
       { t: '노래를 청한다.', need: { skill: 'talk' },
         res: ['옛날 노래 하나를 부탁합니다. 아는 사람이 있습니다. 다 함께 부릅니다.'],
         eff: { mp: 1, add: ['humor'] } },

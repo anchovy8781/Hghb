@@ -40,7 +40,7 @@
         res: ['짐을 지고 반나절을 걷습니다. 삯은 정직하게 나옵니다.'], eff: { money: 1 } },
       { t: '수리 일을 맡는다.', need: { skill: 'tech' },
         res: ['발전기를 손봅니다. 불이 들어오자 사람들이 박수를 칩니다.'],
-        eff: { money: 1, rep: { market: 1 }, add: ['hope'], skillUp: 'tech' } },
+        eff: { money: 1, rep: { market: 1 }, add: ['stable'], skillUp: 'tech' } },
       { t: '호위를 맡는다.', need: { skill: 'shoot' }, dc: 1,
         ok: ['상단을 다음 마을까지 데려다줍니다. 아무 일도 없었고, 그게 제일 좋은 결과입니다.'],
         okEff: { money: 1, rep: { market: 1 } },
@@ -149,7 +149,7 @@
     choices: [
       { t: '진통제를 먹는다.', need: { item: 'painkill' }, cost: { item: 'painkill' },
         res: ['이십 분쯤 지나자 세상이 조용해집니다.'], eff: { del: ['headache'], mp: 1 } },
-      { t: '로망을 태워 진통제를 만든다.', need: { item: 'hope' }, cost: { item: 'hope' },
+      { t: '로망을 태워 진통제를 만든다.', need: { item: 'relief' }, cost: { item: 'relief' },
         res: ['품고 있던 것을 하나 내려놓습니다. 대신 알약 세 개가 생깁니다.'],
         eff: { add: ['painkill', 'painkill', 'painkill'], mp: -1 } },
       { t: '참는다.', res: ['참는 것도 능력입니다. 다만 값이 나중에 청구됩니다.'], eff: { hp: -1, mp: -1 } }
@@ -173,7 +173,7 @@
         eff: { del: ['gloom'], mp: 1 } },
       { t: '사진을 본다.', need: { item: 'photo' },
         res: ['사진 속 사람들은 여전히 웃고 있습니다. 그게 위로가 되기도, 안 되기도 합니다.'],
-        eff: { mp: 1, add: ['hope'] } },
+        eff: { mp: 1, add: ['relief'] } },
       { t: '그냥 걷는다.', res: ['걷다 보면 어떻게든 됩니다. 대개는요.'], eff: { hp: -1 } }
     ]
   });
@@ -230,10 +230,10 @@
     choices: [
       { t: '개를 믿고 돌아간다.',
         res: ['개가 이끄는 쪽으로 갑니다. 나중에 알았지만, 앞쪽 길에는 {threat}이(가) 진을 치고 있었습니다.'],
-        eff: { mp: 1, add: ['hope'], chain: 'story_dog3' } },
+        eff: { mp: 1, add: ['warmth'], chain: 'story_dog3' } },
       { t: '그래도 앞으로 간다.',
         res: ['개가 따라오지 않습니다. 백 걸음쯤 갔을 때, 왜 안 따라왔는지 알게 됩니다.'],
-        eff: { hp: -1, mp: -1, del: ['hope'] } }
+        eff: { hp: -1, mp: -1, del: ['warmth'] } }
     ]
   });
 
@@ -248,10 +248,10 @@
     choices: [
       { t: '옆을 지킨다.',
         res: ['새끼 넷이 태어납니다. 세상이 이런데도 태어납니다. 당신은 아무 말도 못 하고 한참을 봅니다.'],
-        eff: { mp: 1, add: ['hope', 'hope'], flag: 'dog_pups' } },
+        eff: { mp: 1, add: ['stable', 'stable'], flag: 'dog_pups' } },
       { t: '먹을 것을 구해 온다.', need: { itemKind: 'food' }, cost: { itemKind: 'food' },
         res: ['가진 것을 전부 내려놓습니다. 오늘 당신은 굶지만, 넷은 삽니다.'],
-        eff: { hp: -1, mp: 1, add: ['hope', 'hope'], flag: 'dog_pups' } }
+        eff: { hp: -1, mp: 1, add: ['stable', 'relief'], flag: 'dog_pups' } }
     ]
   });
 
@@ -285,7 +285,7 @@
     choices: [
       { t: '얼굴을 마주한다.',
         res: ['{npc}입니다. 서로 아무 관계도 없지만, 글씨를 주고받은 사이입니다. 그것으로 충분합니다.'],
-        eff: { mp: 1, add: ['hope'], rep: { free: 1 } } },
+        eff: { mp: 1, add: ['relief'], rep: { free: 1 } } },
       { t: '멀리서 지켜만 본다.', need: { skill: 'sneak' },
         res: ['한 시간을 지켜봅니다. 그 사람은 계속 누군가를 기다립니다. 결국 당신은 나서지 않습니다.'],
         eff: { mp: -1, add: ['gloom'] } }

@@ -292,7 +292,16 @@
     if (!need) return true;
     if (need.skill && this.skillLv(need.skill) < (need.lv || 1)) return false;
     if (need.item && !this.has(need.item)) return false;
-    if (need.itemKind && !this.hasKind(need.itemKind)) return false;
+    if (need.itemKind) {
+      const want = need.itemKindN || 1;
+      let have = 0;
+      const st5 = this.st;
+      Object.keys(st5.items).forEach(function (id) {
+        const it = B.ITEM_MAP[id];
+        if (it && it.kind === need.itemKind) have += st5.items[id];
+      });
+      if (have < want) return false;
+    }
     if (need.itemBase && !this.hasBase(need.itemBase)) return false;
     if (need.money && this.st.money < need.money) return false;
     if (need.flag && !this.st.flags[need.flag]) return false;
@@ -406,8 +415,11 @@
     }
     if (cost.item && this.delItem(cost.item, 1)) losses.push(B.ITEM_MAP[cost.item].name);
     if (cost.itemKind) {
-      const id = this.hasKind(cost.itemKind);
-      if (id && this.delItem(id, 1)) losses.push(B.ITEM_MAP[id].name);
+      const n = cost.itemKindN || 1;
+      for (let k = 0; k < n; k++) {
+        const id = this.hasKind(cost.itemKind);
+        if (id && this.delItem(id, 1)) losses.push(B.ITEM_MAP[id].name);
+      }
     }
     if (cost.itemBase) {
       const id = this.hasBase(cost.itemBase);
@@ -452,6 +464,39 @@
     return { name: it.name, cured: cured };
   };
 
+  /* 몸으로 익히는 것들. 일부러 배우지 않아도 쓰다 보면 는다 */
+  Engine.prototype.learnFrom = function (c, success) {
+    const st = this.st;
+    const id = c.need && c.need.skill;
+    if (!id) return;
+    const lv = this.skillLv(id);
+    if (lv >= 3) return;
+    /* 성공하면 조금, 실패하면 더 조금. 처음 쓰는 능력일수록 빨리 는다 */
+    const chance = (success ? 0.16 : 0.09) * (lv === 0 ? 1.6 : (lv === 1 ? 1 : 0.55));
+    if (this.rnd() >= chance) return;
+    st.skills[id] = lv + 1;
+    const s2 = B.SKILL_MAP[id];
+    st.log.push('익힘 · ' + (s2 ? s2.name : id) + ' Lv.' + st.skills[id]);
+    this.justLearned = (s2 ? s2.name : id) + ' Lv.' + st.skills[id];
+  };
+
+  /* 총은 한 번 쐈다고 없어지지 않는다. 다만 무리하면 걸리고, 드물게 못 쓰게 된다 */
+  Engine.prototype.gunMishap = function (res) {
+    const a = this.armed(null);
+    if (!a) return;
+    const r = this.rnd();
+    if (r < 0.10) {
+      const g = B.ITEM_MAP[a.gun];
+      this.delItem(a.gun, 1);
+      this.addItem('brokengun', 1);
+      if (res && res.losses) res.losses.push(g.name + ' 파손');
+      this.st.log.push('파손 · ' + g.name);
+    } else if (r < 0.28) {
+      this.addItem('gunjam', 1);
+      if (res && res.losses) res.losses.push('탄 걸림');
+    }
+  };
+
   /* ── 장면 만들기 ─────────────────────────────── */
   function scene(paragraphs, choices, kind, extra) {
     const s = {
@@ -478,9 +523,11 @@
 
   function mealScene(rnd) {
     return scene([MEAL_LINES[Math.floor(rnd() * MEAL_LINES.length)]], [
-      { label: '호화로운 식사를 한다.', need: { itemKind: 'food' }, cost: { itemKind: 'food' },
-        res: ['식량을 넉넉히 펼치고 물까지 곁들입니다. 깡통 바닥까지 손가락으로 훑어 먹습니다.\n이런 날은 한 달에 한 번 있을까 말까입니다. 배가 부르니 세상이 잠깐 견딜 만해 보입니다.'],
-        eff: { hp: 1, mp: 1, del: ['hunger'] }, dc: 0, ok: [], no: [] },
+      { label: '호화로운 식사를 한다.', need: { itemKind: 'food', itemKindN: 2 },
+        cost: { itemKind: 'food', itemKindN: 2 },
+        res: ['식량을 두 몫 펼치고 물까지 곁들입니다. 깡통 바닥까지 손가락으로 훑어 먹습니다.\n이런 날은 한 달에 한 번 있을까 말까입니다. 배가 부르니 세상이 잠깐 견딜 만해 보입니다.',
+               '두 몫을 한 번에 먹는 것은 사치이면서 계산이기도 합니다. 오늘 걷는 거리가 달라집니다.'],
+        eff: { hp: 2, mp: 1, del: ['hunger'], add: ['relief'] }, dc: 0, ok: [], no: [] },
       { label: '식량을 먹는다.', need: { itemKind: 'food' }, cost: { itemKind: 'food' },
         res: ['천천히 씹습니다. 맛은 오래전에 포기했고, 이제는 삼키는 감각만 남았습니다.\n배가 부르지는 않지만, 오늘은 이걸로 됩니다.'],
         eff: { hp: 1, del: ['hunger'] }, dc: 0, ok: [], no: [] },
@@ -586,6 +633,14 @@
         if (idx < 0) { st.spOrder.splice(k, 1); k--; continue; }
         const sp = SP[idx];
         if (sp.req && sp.req.flag && !st.flags[sp.req.flag]) continue;
+        if (sp.req && sp.req.items) {
+          let ok2 = true;
+          for (let q = 0; q < sp.req.items.length; q++) {
+            if (!st.items[sp.req.items[q]]) { ok2 = false; break; }
+          }
+          if (!ok2) continue;
+        }
+        if (sp.req && sp.req.pageMin && st.page < sp.req.pageMin) continue;
         st.spOrder.splice(k, 1);
         st.spIdx = idx;
         st.spScene = 0;
@@ -694,7 +749,7 @@
                   ['anger', 1], ['bugfear', 1], ['hopeaddict', 1], ['uglyscar', 1],
                   ['jobless', 1], ['baldness', 1], ['racoontgt', 1], ['popetgt', 1],
                   ['usbad', 1], ['hardmode', 1], ['greedy', 1]];
-  const MP_GOOD = ['hope', 'humor', 'goodrep', 'blessed', 'beauty', 'stable', 'narciss'];
+  const MP_GOOD = ['humor', 'goodrep', 'blessed', 'beauty', 'stable', 'relief', 'warmth', 'narciss'];
 
   Engine.prototype.tick = function () {
     const st = this.st;
@@ -819,15 +874,19 @@
 
     if (c.dc) {
       const lv = c.need && c.need.skill ? this.skillLv(c.need.skill) : 1;
-      const p = Math.max(0.15, Math.min(0.92, 0.5 + 0.22 * (lv - c.dc)));
+      /* 능력 한 단계가 성패를 크게 가른다. Lv.3 이면 웬만한 판정은 넘어간다 */
+      const p = Math.max(0.22, Math.min(0.95, 0.58 + 0.26 * (lv - c.dc)));
       const success = this.rnd() < p;
       texts = success ? c.ok : c.no;
       res = this.applyEff(success ? c.okEff : c.noEff);
       this.st.log.push((success ? '성공 · ' : '실패 · ') + c.label);
+      this.learnFrom(c, success);
+      if (!success && c.cost && c.cost.ammo) this.gunMishap(res);
     } else {
       texts = c.res && c.res.length ? c.res : [];
       res = this.applyEff(c.eff);
       this.st.log.push(c.label);
+      this.learnFrom(c, true);
     }
     if (this.st.log.length > 80) this.st.log.shift();
 

@@ -81,7 +81,10 @@
     { id: 'key',      name: '이름 없는 열쇠', kind: 'doc', val: 1 },
     { id: 'ledger',   name: '조합 장부',     kind: 'doc',  val: 2 },
     /* 감정 — 소지품처럼 들고 다닌다 */
-    { id: 'hope',     name: '로망',          kind: 'mood', val: 1, mp: 1 },
+    { id: 'hope',     name: '로망',          kind: 'mood', val: 3, mp: 2, drug: true,
+      note: '이십 년 전 사람들이 좋았던 기억이라고 부르던 것. 지금은 한 알에 집 한 채 값이다. 쓰면 멘탈이 두 칸 돌아오고, 몸이 그것을 기억한다.' },
+    { id: 'relief',   name: '안도',          kind: 'mood', val: 1, mp: 1, note: '오늘은 아무 일도 안 일어났다는 감각.' },
+    { id: 'warmth',   name: '온기',          kind: 'mood', val: 1, mp: 1, note: '누가 자리를 비켜 준 기억. 며칠은 간다.' },
     { id: 'humor',    name: '유머',          kind: 'mood', val: 1, mp: 1 },
     { id: 'grit',     name: '오기',          kind: 'mood', val: 1 },
     { id: 'gloom',    name: '우울함',        kind: 'mood', val: 0, bad: true },

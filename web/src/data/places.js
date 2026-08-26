@@ -10,7 +10,8 @@
 
   /* 사건마다 어울리는 위협 종류.
    * 이것이 없으면 "약탈단" 자리에 "지반 침하" 가 들어가는 일이 생긴다. */
-  B.THREATKINDS = {
+  const TK = B.THREATKINDS = B.THREATKINDS || {};
+  const TK_ADD = {
     meet_raider: ['사람'],
     haz_dogs: ['짐승'],
     odd_gull: ['짐승'],
@@ -28,7 +29,8 @@
     gun_fight: ['사람']
   };
 
-  B.PLACESETS = {
+  const PS = B.PLACESETS = B.PLACESETS || {};
+  const PS_ADD = {
     /* ── 탐색 ─────────────────────────────── */
     scav_store: ['무너진 편의점', '셔터가 반쯤 내려온 슈퍼', '유리가 다 깨진 문구점',
                  '불탄 프랜차이즈 치킨집', '간판만 남은 반찬가게', '털린 지 오래인 잡화점'],
@@ -351,4 +353,6 @@
     rest_camp: ['길이 갈라지는 자리', '들판 한복판', '강가 둔치',
                 '산 중턱', '고개 위']
   };
+  Object.keys(TK_ADD).forEach(function (k) { TK[k] = TK_ADD[k]; });
+  Object.keys(PS_ADD).forEach(function (k) { PS[k] = PS_ADD[k]; });
 })(typeof window !== 'undefined' ? window : globalThis);

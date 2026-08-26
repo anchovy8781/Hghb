@@ -172,7 +172,7 @@
       { t: '교대해 준다.', cost: { hp: 1 },
         res: ['삼십 분을 뜁니다. 다리가 터질 것 같습니다.\n전구에 불이 들어오자 온 건물 사람들이 박수를 칩니다. 전구 하나에.',
                '이상하게 눈물이 날 것 같습니다.'],
-        eff: { mp: 1, add: ['hope', 'humor'], rep: { free: 1 } } },
+        eff: { mp: 1, add: ['stable', 'humor'], rep: { free: 1 } } },
       { t: '자전거를 연결하자고 제안한다.', need: { skill: 'tech' },
         res: ['자전거 두 대를 발전기에 물려 효율을 세 배로 올립니다.\n{npc}이(가) 당신을 스승이라고 부르기 시작합니다. 부담스럽습니다.'],
         eff: { add: ['battery', 'wire'], rep: { market: 1 }, skillUp: 'tech' } },
@@ -202,7 +202,7 @@
       { t: '개 목줄을 꺼내 보인다.', need: { item: 'leash' },
         res: ['목줄을 들어 보이자 보스가 벌떡 일어섭니다. 이름표를 보더니 낑낑거립니다.\n"방울"은 이 무리의 누군가였던 모양입니다.',
                '개들이 당신을 어딘가로 데려갑니다. 무덤 같은 자리에 목줄을 놓아 줍니다.'],
-        eff: { del: ['leash'], mp: 1, add: ['hope', 'hope'], flag: 'dog_respect' } },
+        eff: { del: ['leash'], mp: 1, add: ['relief', 'relief'], flag: 'dog_respect' } },
       { t: '돌아간다.', res: ['조직과 척지지 않는 것이 상책입니다.'], eff: {} }
     ]
   });
@@ -245,13 +245,13 @@
       { t: '한 곡 부른다.', need: { itemKind: 'food', skill: 'music' }, cost: { itemKind: 'food' }, dc: 1,
         ok: ['98점.\n지하가 무너질 것처럼 함성이 터집니다. 낯선 사람들이 어깨동무를 합니다.',
                '오늘 밤은 아무도 세상이 망한 이야기를 하지 않습니다.'],
-        okEff: { mp: 1, add: ['humor', 'hope'], rep: { free: 1 } },
+        okEff: { mp: 1, add: ['humor', 'relief'], rep: { free: 1 } },
         no: ['41점.\n기계가 "다음 기회에" 라고 말합니다. 이 상황에서도 기계는 정직합니다.', '사람들이 위로해 줍니다. 그게 더 아픕니다.'],
         noEff: { mp: -1, add: ['humor'] } },
       { t: '테이프를 넣어 달라고 한다.', need: { item: 'tape2' },
         res: ['카세트테이프를 건넵니다. 라벨에는 "여름"이라고만 적혀 있습니다.\n누군가의 옛날 노래들입니다. 아무도 모르는 노래인데 다들 끝까지 듣습니다.',
                '테이프 주인이 어떤 사람이었을지 스무 명이 각자 상상합니다.'],
-        eff: { del: ['tape2'], mp: 1, add: ['hope', 'hope'], rep: { free: 1 } } },
+        eff: { del: ['tape2'], mp: 1, add: ['warmth', 'warmth'], rep: { free: 1 } } },
       { t: '기계를 손봐 준다.', need: { skill: 'tech' },
         res: ['음정이 반음 낮게 나오던 걸 잡아 줍니다.\n{npc}이(가) 당신을 평생 무료 회원으로 지정합니다. 증서까지 써 줍니다.'],
         eff: { add: ['note', 'humor'], rep: { free: 1 }, mp: 1 } },

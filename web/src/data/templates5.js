@@ -110,7 +110,7 @@
         eff: { add: ['biscuit', 'battery'], rep: { free: 1 } } },
       { t: '전갈을 부탁한다.', need: { money: 1 }, cost: { money: 1 },
         res: ['짧은 전갈 하나를 맡깁니다. 닿을지는 모르지만, 보냈다는 사실이 중요합니다.'],
-        eff: { mp: 1, add: ['hope'] } },
+        eff: { mp: 1, add: ['relief'] } },
       { t: '비켜 준다.', res: ['달리는 사람을 붙잡으면 안 됩니다. 이유가 있어서 달리는 겁니다.'], eff: {} }
     ]
   });
@@ -133,7 +133,7 @@
         eff: { add: ['seed'] } },
       { t: '물을 대 준다.', need: { item: 'boiled' }, cost: { item: 'boiled' },
         res: ['물통을 통째로 부어 줍니다. 흙이 검게 젖는 걸 둘이 함께 봅니다.'],
-        eff: { mp: 1, add: ['hope'], rep: { free: 1 } } },
+        eff: { mp: 1, add: ['warmth'], rep: { free: 1 } } },
       { t: '구경만 하고 내려온다.', res: ['초록색을 오래 보다가 내려옵니다.'], eff: { mp: 1 } }
     ]
   });
@@ -156,7 +156,7 @@
         eff: { del: ['guilt'], mp: 1 } },
       { t: '음식을 나눈다.', need: { itemKind: 'food' }, cost: { itemKind: 'food' },
         res: ['앞자리 아이들에게 나눠 줍니다. {npc}이(가) 처음으로 웃습니다.'],
-        eff: { mp: 1, add: ['hope'], rep: { free: 1 } } },
+        eff: { mp: 1, add: ['warmth'], rep: { free: 1 } } },
       { t: '문 앞에서 돌아선다.', res: ['들어가면 오래 앉아 있을 것 같습니다.'], eff: {} }
     ]
   });
@@ -172,7 +172,7 @@
     choices: [
       { t: '내보내는 것으로 끝내자고 한다.', need: { skill: 'talk' }, dc: 1,
         ok: ['사람들이 웅성거리다 고개를 끄덕입니다. 도둑은 쫓겨나고, 아무도 죽지 않았습니다.'],
-        okEff: { rep: { free: 1 }, mp: 1, add: ['hope'] },
+        okEff: { rep: { free: 1 }, mp: 1, add: ['stable'] },
         no: ['"말은 쉽지." 분위기가 험해집니다. 당신 말은 묻힙니다.'], noEff: { mp: -1 } },
       { t: '규칙대로 하라고 한다.',
         res: ['조합의 규칙대로 손목이 묶인 채 사흘. 지켜보는 사람들 표정이 좋지 않습니다.'],
@@ -198,13 +198,13 @@
     choices: [
       { t: '먹을 것을 나눠 준다.', need: { itemKind: 'food' }, cost: { itemKind: 'food' },
         res: ['가장 작은 아이부터 먹입니다. {npc}이(가) 맨 마지막에 먹습니다. 어른들이 하던 방식 그대로입니다.'],
-        eff: { mp: 1, add: ['hope'], rep: { free: 1 } } },
+        eff: { mp: 1, add: ['stable'], rep: { free: 1 } } },
       { t: '불 피우는 법을 가르쳐 준다.', need: { item: 'lighter' },
         res: ['젖은 나무를 쪼개는 법, 바람을 등지는 법을 알려 줍니다. 아이들이 진지하게 배웁니다.'],
         eff: { mp: 1, rep: { free: 1 }, add: ['humor'] } },
       { t: '마을로 데려가겠다고 한다.', need: { flag: 'in_town' },
         res: ['{npc}이(가) 오래 생각합니다. "우리끼리는 안 갑니다. 넷 다면 갑니다." 넷 다 데려갑니다.'],
-        eff: { mp: 1, add: ['hope', 'hope'], rep: { free: 2 }, flag: 'saved_kids' } },
+        eff: { mp: 1, add: ['stable', 'relief'], rep: { free: 2 }, flag: 'saved_kids' } },
       { t: '조용히 물러난다.', res: ['어른이 나타나면 아이들은 늘 긴장합니다. 그러지 않기로 합니다.'], eff: {} }
     ]
   });
@@ -250,7 +250,7 @@
         noEff: { hp: -1, rad: 1, add: ['fever'] } },
       { t: '사람을 돕는다.', need: { skill: 'force' },
         res: ['떠내려가던 노인을 붙잡아 끌어올립니다. 팔이 빠질 것 같지만 놓지 않습니다.'],
-        eff: { hp: -1, mp: 1, add: ['hope'], rep: { free: 1 } } }
+        eff: { hp: -1, mp: 1, add: ['relief'], rep: { free: 1 } } }
     ]
   });
 
@@ -268,7 +268,7 @@
         eff: { rep: { free: 1 }, mp: 1, add: ['grit'] } },
       { t: '안에 사람이 있는지 확인한다.', need: { skill: 'sense' }, dc: 1,
         ok: ['이층 창문에서 사람 그림자를 봅니다. 소리쳐 알리고, 사다리를 붙입니다. 살렸습니다.'],
-        okEff: { mp: 1, add: ['hope'], rep: { free: 2 } },
+        okEff: { mp: 1, add: ['relief'], rep: { free: 2 } },
         no: ['연기 속으로 들어갔다가 아무것도 못 보고 나옵니다. 목이 오래 아픕니다.'],
         noEff: { hp: -1, add: ['gloom'] } },
       { t: '타는 건물에서 물건을 건진다.',
@@ -306,7 +306,7 @@
       { t: '사진을 건넨다.',
         res: ['{npc}이(가) 사진을 받아 들고 아무 말도 하지 않습니다. 아주 오래.',
                '그러고는 당신에게 밥을 차려 줍니다. 거절할 수 없는 종류의 식사입니다.'],
-        eff: { del: ['photo'], hp: 1, mp: 1, add: ['hope'], rep: { free: 1 } } },
+        eff: { del: ['photo'], hp: 1, mp: 1, add: ['warmth'], rep: { free: 1 } } },
       { t: '문 앞에 두고 온다.',
         res: ['압정으로 대문에 꽂아 둡니다. 누가 보든 안 보든, 사진은 집에 돌아왔습니다.'],
         eff: { del: ['photo'], mp: 1 } }
@@ -341,7 +341,7 @@
     choices: [
       { t: '보초를 따돌린다.', need: { skill: 'sneak' }, dc: 1,
         ok: ['보초가 담배를 피우러 간 삼 분. 그거면 충분합니다.'],
-        okEff: { flag: 'freed_debtor', mp: 1, add: ['hope'] },
+        okEff: { flag: 'freed_debtor', mp: 1, add: ['warmth'] },
         no: ['발소리를 들켰습니다. 쫓기며 세 골목을 달립니다.'], noEff: { hp: -1 } },
       { t: '자물쇠를 딴다.', need: { skill: 'lock' },
         res: ['자물쇠가 소리 없이 열립니다. 안쪽 사람이 놀란 눈으로 당신을 봅니다.'],

@@ -68,7 +68,7 @@
     choices: [
       { t: '{item}을(를) 나눠 준다.', need: { itemKind: 'food' }, cost: { itemKind: 'food' },
         res: ['아이가 두 손으로 받아 들고는 한참을 들여다봅니다. 그러고는 아주 작게 "고맙습니다"라고 합니다.'],
-        eff: { mp: 1, add: ['hope'], rep: { free: 1 } } },
+        eff: { mp: 1, add: ['stable'], rep: { free: 1 } } },
       { t: '가진 것과 바꾸자고 한다.', need: { skill: 'talk' },
         res: ['아이가 주머니를 뒤져 꼬깃한 종이를 내밉니다. 지도 조각입니다. 어디서 났는지는 묻지 않습니다.'],
         eff: { add: ['map'], del: ['choco'] } },
@@ -188,7 +188,7 @@
     choices: [
       { t: '옆에 앉아 이야기를 듣는다.',
         res: ['옛날 부산 이야기가 두 시간쯤 이어집니다. 듣다 보니 이 도시가 한때 얼마나 시끄러웠는지 알겠습니다.'],
-        eff: { mp: 1, add: ['hope'] } },
+        eff: { mp: 1, add: ['relief'] } },
       { t: '길을 묻는다.', need: { skill: 'talk' },
         res: ['노인이 손가락으로 허공에 지도를 그립니다. 그 손짓이 지도보다 정확합니다.'],
         eff: { add: ['map'] } },
@@ -217,7 +217,7 @@
         eff: { skillUp: 'tech', mp: 1 } },
       { t: '무엇을 만드는지 묻는다.',
         res: ['"정수기요. 이거 되면 이 동네 사람들 안 죽습니다." 그렇게 말하는 얼굴이 진지합니다.'],
-        eff: { add: ['hope'], flag: 'knows_water' } },
+        eff: { add: ['relief'], flag: 'knows_water' } },
       { t: '방해하지 않고 나온다.', res: ['집중한 사람을 방해하는 건 예의가 아닙니다.'], eff: {} }
     ]
   });

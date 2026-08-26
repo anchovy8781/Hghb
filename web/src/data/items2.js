@@ -418,7 +418,7 @@
     { id: 'goodrep',  name: '좋은 평판',   kind: 'mood', val: 1, mp: 1 },
     { id: 'blessed',  name: '축복 받음',   kind: 'mood', val: 1, mp: 1 },
     { id: 'beauty',   name: '아름다움',    kind: 'mood', val: 1, mp: 1 },
-    { id: 'stable',   name: '안정됨',      kind: 'mood', val: 1, mp: 1 },
+    { id: 'stable',   name: '안정됨',      kind: 'mood', val: 1, mp: 1, note: '손이 안 떨린다. 그것만으로 하루가 다르다.' },
     { id: 'narciss',  name: '나르시스트',  kind: 'mood', val: 1, mp: 1, note: '거울을 봐도 우울해지지 않는다는 건 재능이다.' }
   ];
 

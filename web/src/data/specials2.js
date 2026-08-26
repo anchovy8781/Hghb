@@ -32,7 +32,7 @@
         { t: '무대를 계속 진행한다.', need: { flag: 'tour_join' },
           res: ['단원들이 흔들리지 않습니다. 대사가 이어지고, 조명 대신 든 등불이 흔들리고, 이야기가 끝까지 갑니다.',
                  '막이 내리자 총을 든 다섯도 손뼉을 칩니다. 어색하게, 그러나 확실하게.\n"…우리 어머니가 저 얘기 좋아했는데." 그중 하나가 말합니다.'],
-          eff: { mp: 1, add: ['hope'], rep: { free: 2 }, flag: 'tour_brave', title: '막을 내리지 않은 사람' } },
+          eff: { mp: 1, add: ['stable'], rep: { free: 2 }, flag: 'tour_brave', title: '막을 내리지 않은 사람' } },
         { t: '앞으로 나가 막아선다.', need: { skill: 'force' }, dc: 2,
           ok: ['무대 앞에 서서 팔을 벌립니다. 총구 다섯 개가 당신을 향합니다.\n십 초. 이십 초. 그리고 그중 하나가 총을 내립니다. 나머지도 따라 내립니다.'],
           okEff: { mp: 1, add: ['grit'], rep: { free: 2 }, flag: 'tour_brave' },
@@ -51,10 +51,10 @@
       ], choices: [
         { t: '옷을 함께 꿰맨다.', need: { itemKind: 'junk' }, cost: { itemKind: 'junk' },
           res: ['바늘과 실을 꺼내 밤새 꿰맵니다. 단원 넷이 붙어 앉아 같이 합니다.\n새벽에 다 기운 옷을 펼쳐 놓고 다들 한참 봅니다. 아무도 잘 됐다고 말하지 않는데, 다들 알고 있습니다.'],
-          eff: { mp: 1, add: ['hope'], rep: { free: 1 }, flag: 'tour_sew' } },
+          eff: { mp: 1, add: ['stable'], rep: { free: 1 }, flag: 'tour_sew' } },
         { t: '이름을 적어 둔다.', need: { skill: 'read' },
           res: ['단장이 부르는 대로 열 명의 이름을 받아 적습니다. 나이와 배역까지요.\n"이제 종이에도 있네요." 단장이 말합니다. "머리에만 있으면 제가 죽을 때 같이 죽으니까."'],
-          eff: { add: ['note', 'hope'], mp: 1, flag: 'tour_names' } },
+          eff: { add: ['note', 'stable'], mp: 1, flag: 'tour_names' } },
         { t: '그냥 다시 싣는다.',
           res: ['흙 묻은 옷을 상자에 도로 담습니다. 경주까지는 아직 하루 남았습니다.'],
           eff: { hp: -1 } }
@@ -68,11 +68,11 @@
         { t: '함께 돌겠다고 한다.',
           res: ['"그럼 다음 배역은 좀 큽니다." 단장이 웃습니다.\n그러나 사흘 뒤, 당신은 부산 쪽 갈림길에서 수레를 멈춥니다. 아직 끝내지 못한 일이 있습니다.',
                  '단장이 고개를 끄덕입니다. "두 달 뒤에 또 옵니다. 그때 보죠."\n포스터 한 장을 쥐여 줍니다. 날짜 칸은 여전히 비어 있습니다.'],
-          eff: { add: ['tourposter', 'hope', 'guitar'], mp: 1, title: '순회 단원', flag: 'tour_done' } },
+          eff: { add: ['tourposter', 'relief', 'guitar'], mp: 1, title: '순회 단원', flag: 'tour_done' } },
         { t: '여기서 헤어진다.',
           res: ['"압니다." 단장이 말합니다. "찾는 얼굴이 있는 사람은 눈이 다릅니다."',
                  '단원들이 하나씩 인사합니다. 열두 명이 열두 번. 마지막에 단장이 포스터를 줍니다.\n"두 달 뒤 부산. 살아 있으면 오세요."'],
-          eff: { add: ['tourposter', 'hope'], mp: 1, title: '관객', flag: 'tour_done' } }
+          eff: { add: ['tourposter', 'relief'], mp: 1, title: '관객', flag: 'tour_done' } }
       ] }
     ]
   });
@@ -94,7 +94,7 @@
         { t: '계속 오른다.', cost: { hp: 1 },
           res: ['숨이 짧아집니다. 다리가 무겁습니다. 그래도 오릅니다.\n칠백 미터쯤에서 구름 위로 나옵니다. 아래는 전부 잿빛 구름이고, 위는 파랗습니다.',
                  '이십 년 만에 보는 하늘색입니다. 한참 서서 봅니다. 다리가 아픈 것도 잊습니다.'],
-          eff: { mp: 1, add: ['hope', 'hope'], rad: -1, flag: 'alps_sky' } }
+          eff: { mp: 1, add: ['relief', 'hope'], rad: -1, flag: 'alps_sky' } }
       ] },
 
       { pages: [
@@ -105,13 +105,13 @@
         { t: '아픈 사람들을 봐 준다.', need: { skill: 'medic' },
           res: ['여섯을 차례로 봅니다. 넷은 폐가 상했고, 하나는 열이 높고, 하나는 사실 아프지 않습니다.\n아프지 않은 사람은 아픈 아내를 따라 올라온 남편이었습니다.',
                  '열이 높은 사람에게 가진 약을 나눠 줍니다. 하루면 열은 내립니다. 그 하루가 중요합니다.'],
-          eff: { mp: 1, add: ['hope'], rep: { free: 2 }, flag: 'alps_help', title: '산장 의사' } },
+          eff: { mp: 1, add: ['warmth'], rep: { free: 2 }, flag: 'alps_help', title: '산장 의사' } },
         { t: '땔감을 해 온다.', cost: { hp: 1 },
           res: ['도끼를 빌려 나무를 팹니다. 세 시간에 사흘 치를 쌓습니다.\n관리인이 말없이 국을 한 그릇 더 줍니다. 여기서 국 한 그릇은 아래에서 금 한 돈입니다.'],
           eff: { hp: 1, rep: { free: 1 }, flag: 'alps_help' } },
         { t: '하룻밤만 묵고 간다.', need: { money: 1 }, cost: { money: 1 },
           res: ['난로 옆에서 잡니다. 기침 소리 사이에서 이상하게 푹 잡니다.\n새벽에 깨서 창밖을 보니 별이 있습니다. 별입니다.'],
-          eff: { hp: 1, mp: 1, add: ['hope'] } }
+          eff: { hp: 1, mp: 1, add: ['stable'] } }
       ] },
 
       { pages: [
@@ -121,13 +121,13 @@
       ], choices: [
         { t: '체온을 올린다.', need: { skill: 'medic' }, dc: 1,
           ok: ['젖은 옷을 벗기고 마른 천으로 감싼 뒤, 몸통부터 데웁니다. 손발부터 데우면 안 됩니다.\n한 시간 뒤 여자가 눈을 뜹니다. 첫마디가 "애는요"입니다.'],
-          okEff: { mp: 1, add: ['hope', 'hope'], rep: { free: 2 }, flag: 'alps_save', title: '눈보라 밤의 사람' },
+          okEff: { mp: 1, add: ['stable', 'stable'], rep: { free: 2 }, flag: 'alps_save', title: '눈보라 밤의 사람' },
           no: ['할 수 있는 걸 다 했는데도 여자의 숨이 계속 얕습니다.\n새벽에 아이만 눈을 떴습니다.'],
           noEff: { mp: -2, add: ['guilt'], flag: 'alps_child' } },
         { t: '가진 옷과 담요를 전부 내놓는다.', need: { itemKind: 'junk' }, cost: { itemKind: 'junk' },
           res: ['가방에서 천이란 천은 다 꺼냅니다. 여섯 명이 각자 이불을 한 겹씩 벗어 보탭니다.\n산장 안이 사람 아홉과 담요 스무 장으로 가득 찹니다. 그리고 따뜻해집니다.',
                  '아침에 둘 다 눈을 떴습니다.'],
-          eff: { mp: 1, add: ['hope', 'hope'], rep: { free: 2 }, flag: 'alps_save' } },
+          eff: { mp: 1, add: ['relief', 'relief'], rep: { free: 2 }, flag: 'alps_save' } },
         { t: '관리인에게 맡긴다.',
           res: ['한쪽에서 지켜봅니다. 관리인 혼자 밤새 움직입니다.\n아침에 그가 말합니다. "…혼자서는 안 되는 밤이었습니다." 원망은 아닌데 원망처럼 들립니다.'],
           eff: { mp: -1, add: ['guilt'], flag: 'alps_child' } }
@@ -139,11 +139,11 @@
       ], choices: [
         { t: '열쇠를 받는다.',
           res: ['주머니에 넣습니다. 나무라 가볍습니다.\n내려가는 길에 몇 번이나 뒤를 돌아봅니다. 그때마다 산장 굴뚝에서 연기가 납니다.'],
-          eff: { add: ['lodgekey', 'hope'], mp: 1, flag: 'alps_done', title: '산 사람' } },
+          eff: { add: ['lodgekey', 'relief'], mp: 1, flag: 'alps_done', title: '산 사람' } },
         { t: '봄에 다시 오겠다고 한다.',
           res: ['"봄이 오면요." 관리인이 웃습니다. "여긴 봄이 늦습니다. 오월에 옵니다."',
                  '오월. 그 단어를 오래 굴려 봅니다. 그때까지 살아 있을 계획이 갑자기 생깁니다.'],
-          eff: { add: ['lodgekey', 'hope', 'hope'], mp: 1, flag: 'alps_done', title: '산 사람' } }
+          eff: { add: ['lodgekey', 'warmth', 'warmth'], mp: 1, flag: 'alps_done', title: '산 사람' } }
       ] }
     ]
   });
@@ -195,7 +195,7 @@
         { t: '물자를 아래 마을에 나누자고 한다.', need: { skill: 'talk' },
           res: ['"…그럼 이십 년이 무슨 소용이오." 노인이 처음으로 화를 냅니다.\n그리고 한참 뒤 말합니다. "…아니지. 그러라고 지킨 거지. 그래야 소용이 있지."',
                  '사흘에 걸쳐 사람들을 데려옵니다. 마흔 명이 등짐을 지고 오르내립니다.\n노인은 창고 문 앞에 앉아 그걸 봅니다. 하나도 안 아까운 얼굴로요.'],
-          eff: { add: ['usgear', 'preserve', 'medkit', 'hope'], mp: 1, rep: { free: 2, market: 2 },
+          eff: { add: ['usgear', 'preserve', 'medkit', 'stable'], mp: 1, rep: { free: 2, market: 2 },
                  title: '창고를 연 사람', flag: 'base_share' } },
         { t: '필요한 만큼만 받는다.',
           res: ['"많이 가져가시오." "이만큼이면 됩니다."\n노인이 그 대답을 오래 씹습니다. 그리고 군장 하나를 더 얹어 줍니다.'],
@@ -203,7 +203,7 @@
         { t: '노인을 데리고 나간다.', need: { skill: 'medic' },
           res: ['업고 나갑니다. 가볍습니다. 이십 년을 통조림으로만 버틴 몸입니다.',
                  '햇빛을 보자 노인이 눈을 가립니다. "…밝네." 그러고는 웁니다.\n산복도로 진료소까지 데려다 놓습니다. 오래 살지는 못하겠지만, 안에서 혼자 죽지는 않을 겁니다.'],
-          eff: { add: ['usgear', 'hope'], mp: 1, hp: -1, rep: { free: 2 },
+          eff: { add: ['usgear', 'stable'], mp: 1, hp: -1, rep: { free: 2 },
                  title: '문을 연 사람', flag: 'base_rescue' } }
       ] },
 
@@ -217,7 +217,7 @@
           eff: { add: ['photo', 'usgear'], mp: 1, flag: 'base_done' } },
         { t: '그대로 두고 나온다.',
           res: ['사진을 제자리에 두고 조종석 문을 닫습니다.\n어떤 것은 있던 자리에 있어야 합니다.'],
-          eff: { mp: 1, add: ['hope'], flag: 'base_done' } }
+          eff: { mp: 1, add: ['stable'], flag: 'base_done' } }
       ] }
     ]
   });
@@ -248,12 +248,12 @@
         { t: '교대해 주겠다고 한다.',
           res: ['자리에 앉아 부품을 담습니다. 한 시간에 백이십 개. 남자가 처음으로 라인에서 떨어집니다.\n그가 화장실에 갔다가, 물을 마시고, 창밖을 봅니다. 창밖을 보는 데 오 분이 걸립니다.',
                  '"…밖이 저렇게 됐군요." 그가 말합니다. 이십 년 만에 처음 보는 사람처럼요.'],
-          eff: { mp: 1, hp: -1, add: ['hope'], flag: 'fac_relief', title: '주간조' } },
+          eff: { mp: 1, hp: -1, add: ['relief'], flag: 'fac_relief', title: '주간조' } },
         { t: '라인을 세우자고 설득한다.', need: { skill: 'talk' }, dc: 2,
           ok: ['"이 부품은 아무도 안 씁니다." "압니다." "그럼 왜…" "그만두면 제가 뭐가 됩니까."',
                  '그 대답 앞에서 한참 말을 못 합니다. 그리고 다르게 말해 봅니다.\n"…그럼 다른 걸 만듭시다. 이 라인으로 물통을 찍을 수 있습니다."',
                  '그가 처음으로 라인이 아닌 곳을 봅니다.'],
-          okEff: { mp: 1, add: ['hope'], flag: 'fac_convert', title: '라인을 바꾼 사람' },
+          okEff: { mp: 1, add: ['relief'], flag: 'fac_convert', title: '라인을 바꾼 사람' },
           no: ['설득이 안 됩니다. 오히려 그가 화를 냅니다. "당신이 뭘 압니까."\n그 말이 맞습니다. 아무것도 모릅니다.'],
           noEff: { mp: -1 } },
         { t: '창고를 본다.', need: { skill: 'sneak' },
@@ -269,7 +269,7 @@
         { t: '걸린 부품을 빼낸다.', need: { skill: 'tech' }, dc: 1,
           ok: ['롤러 사이에 손을 넣어 조각을 빼냅니다. 손등이 벗겨지지만 빠집니다.\n컨베이어가 다시 움직입니다. 쿵, 쿵, 쿵.',
                  '남자가 주저앉습니다. 그리고 웁니다. 이십 년 치를 십 분에 웁니다.'],
-          okEff: { hp: -1, mp: 1, add: ['hope', 'factorykey'], flag: 'fac_fix' },
+          okEff: { hp: -1, mp: 1, add: ['relief', 'factorykey'], flag: 'fac_fix' },
           no: ['손이 미끄러져 롤러에 손가락이 딸려 들어갑니다. 간신히 뺐지만 두 개가 부러졌습니다.\n라인은 멈춘 채입니다.'],
           noEff: { hp: -2, add: ['fracture'], flag: 'fac_stop' } },
         { t: '멈추게 둔다.',
@@ -279,7 +279,7 @@
         { t: '남자를 먼저 끌어낸다.', need: { skill: 'force' },
           res: ['기계실에서 그를 끌어냅니다. 발버둥 치는 것을 안고 밖으로 나옵니다.\n등 뒤에서 라인이 완전히 멈춥니다.',
                  '밖은 새벽입니다. 남자가 하늘을 봅니다. "…아침이네요."'],
-          eff: { hp: -1, mp: 1, add: ['hope'], flag: 'fac_stop' } }
+          eff: { hp: -1, mp: 1, add: ['warmth'], flag: 'fac_stop' } }
       ] },
 
       { pages: [
@@ -289,15 +289,15 @@
         { t: '마을 사람들을 데려온다.', need: { rep: { free: 1 } },
           res: ['사흘 뒤 마흔 명이 옵니다. 라인은 이제 물통을 찍어 냅니다. 하루에 스무 개.\n남자는 여전히 야간조입니다. 다만 이제 주간조가 있습니다.',
                  '떠나는 날, 그가 마스터키를 쥐여 줍니다. "문 마흔 개 열립니다. 이제 제 것이 아니고요."'],
-          eff: { add: ['factorykey', 'hope', 'hope'], mp: 1, rep: { free: 2, market: 2 },
+          eff: { add: ['factorykey', 'warmth', 'stable'], mp: 1, rep: { free: 2, market: 2 },
                  title: '공장을 되살린 사람', flag: 'fac_done' } },
         { t: '기술만 알려 주고 떠난다.',
           res: ['금형 바꾸는 법과 발전 설비 점검 순서를 종이에 적어 줍니다. 열두 장이 나옵니다.\n남자가 그걸 작업복 주머니에 넣습니다. 오래 넣어 둘 얼굴입니다.'],
-          eff: { add: ['factorykey', 'hope'], mp: 1, flag: 'fac_done', title: '인수인계' } },
+          eff: { add: ['factorykey', 'stable'], mp: 1, flag: 'fac_done', title: '인수인계' } },
         { t: '함께 창고를 태운다.',
           res: ['수만 개의 플라스틱 조각을 마당에 쏟아 붓고 불을 붙입니다. 검은 연기가 하늘로 곧게 올라갑니다.\n남자가 그것을 보며 웃습니다. 처음 웃습니다.',
                  '"…이십 년 만에 퇴근합니다." 그가 말합니다.'],
-          eff: { add: ['factorykey', 'humor', 'hope'], mp: 1, flag: 'fac_done', title: '퇴근시킨 사람' } }
+          eff: { add: ['factorykey', 'humor', 'stable'], mp: 1, flag: 'fac_done', title: '퇴근시킨 사람' } }
       ] }
     ]
   });

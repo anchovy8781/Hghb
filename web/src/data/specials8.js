@@ -54,7 +54,7 @@
                 '아무도 손을 안 듭니다. 백 명이 백 명한테서 들은 겁니다.',
                 '값이 그 자리에서 반으로 꺾입니다. 세 배에 산 사람 열댓이 손해를 봤고, 아직 안 산 사람 팔십이 안 잃었습니다.',
                 '거래인이 이쪽을 봅니다. 좋은 얼굴은 아닙니다.'],
-          okEff: { mp: 1, rep: { market: 2 }, add: ['goodrep', 'hope'], flag: 'st_stop', title: '기술자' },
+          okEff: { mp: 1, rep: { market: 2 }, add: ['goodrep', 'relief'], flag: 'st_stop', title: '기술자' },
           no: ['"직접 본 사람 있습니까!" 목소리가 소음에 묻힙니다.',
                 '아무도 안 듣습니다. 값이 네 배가 됩니다. 그날 저녁에 반의반이 됩니다.'],
           noEff: { mp: -1, add: ['gloom'] } },
@@ -67,7 +67,7 @@
           res: ['종목 열둘을 직접 걸어서 확인합니다. 나흘 걸렸습니다.',
                  '넷은 진짜였습니다. 물이 실제로 나오고 사람이 실제로 마십니다.',
                  '돌아와서 그 넷만 삽니다. 값이 제일 안 오르는 것들입니다. 아무도 안 사니까요.'],
-          eff: { hp: -1, money: 1, add: ['lottery', 'hope'], flag: 'st_real', skillUp: 'stock' } }
+          eff: { hp: -1, money: 1, add: ['lottery', 'relief'], flag: 'st_real', skillUp: 'stock' } }
       ] },
 
       { pages: [
@@ -79,12 +79,12 @@
           res: ['감천 쪽 우물 지분을 삽니다. 값이 안 오릅니다. 대신 매달 물이 조금씩 옵니다.',
                  '한 해가 지나면 낸 것만큼 돌아옵니다. 두 해가 지나면 그다음부터는 남습니다.',
                  '이 도시에서 두 해 뒤를 계산하는 사람이 몇 없습니다. 그게 이 종이의 값입니다.'],
-          eff: { money: 1, mp: 1, add: ['lottery', 'hope', 'stable'], title: '자유당원' } },
+          eff: { money: 1, mp: 1, add: ['lottery', 'warmth', 'stable'], title: '자유당원' } },
         { t: '칠판을 하나 더 걸자고 한다.', need: { skill: 'account' },
           res: ['"오르는 것만 적지 말고, 실제로 뭐가 나왔는지도 적읍시다."',
                  '옆에 칠판을 하나 더 겁니다. 이번 달 우물에서 나온 물, 밭에서 나온 것, 배가 실어 온 것.',
                  '그 칠판이 걸리고부터 소문으로 값이 뛰는 일이 줄었습니다. 대신 사람들이 다시 오기 시작했습니다.'],
-          eff: { mp: 1, money: 1, rep: { market: 2 }, add: ['hope', 'goodrep'], title: '기술자' } },
+          eff: { mp: 1, money: 1, rep: { market: 2 }, add: ['warmth', 'goodrep'], title: '기술자' } },
         { t: '종이를 전부 정리하고 나온다.',
           res: ['가진 종이를 전부 넘기고 로비를 나옵니다. 숫자가 등 뒤에서 계속 지워지고 다시 적힙니다.',
                  '이 도시에서 값이 오르내리는 것은 결국 물과 밭과 배입니다. 종이는 그것을 세는 방법일 뿐입니다.',
@@ -130,7 +130,7 @@
                  '"그날 사람들이 지하로 대피했습니다. 금고실이 제일 튼튼했으니까예."',
                  '"몇 명이나예?" "…스물셋입니다. 문이 안에서 잠겼고, 저는 밖에 있었습니다."',
                  '이십 년 동안 이 노인이 기름칠을 한 이유가 그겁니다. 언젠가 열면, 그 문이 잘 열리라고요.'],
-          eff: { flag: 'vt_truth', mp: -1, add: ['gloom', 'hope'] } },
+          eff: { flag: 'vt_truth', mp: -1, add: ['gloom', 'stable'] } },
         { t: '뒤쪽 벽으로 들어가자고 한다.', need: { flag: 'vt_plan' },
           res: ['"앞문은 못 엽니다. 뒤가 얇습니다." 도면을 펴 보입니다.',
                  '열둘이 절단기를 뒤로 옮깁니다. 반나절 만에 사람 하나 들어갈 구멍이 납니다.',
@@ -151,12 +151,12 @@
           res: ['스물셋의 이름을 노인이 다 기억하고 있었습니다. 이십 년 동안 매일 셌으니까요.',
                  '금고문에 종이를 붙입니다. 이름 스물셋과 날짜 하나.',
                  '지나가는 사람들이 그걸 읽습니다. 이제 이 금고는 금고가 아니라 비석입니다.'],
-          eff: { mp: 1, rep: { free: 2 }, add: ['hope', 'goodrep'], title: '교황군' } },
+          eff: { mp: 1, rep: { free: 2 }, add: ['stable', 'goodrep'], title: '교황군' } },
         { t: '같이 기름칠을 한다.',
           res: ['기름통을 나눠 들고 다이얼과 경첩에 칠합니다. 십 분이면 끝납니다.',
                  '"내일도 오십니까?" 노인이 묻습니다. "내일은 못 옵니다." "그라믄 됐습니다."',
                  '노인은 내일도 올 겁니다. 그거면 됐다는 뜻이었습니다.'],
-          eff: { mp: 1, add: ['hope', 'stable'] } }
+          eff: { mp: 1, add: ['stable', 'stable'] } }
       ] }
     ]
   });
@@ -179,12 +179,12 @@
           res: ['책상 위에 마지막 대본이 놓여 있습니다. 중간에 끊겨 있습니다.',
                  '"…시민 여러분께서는 당황하지 마시고 가까운 대피소로" 거기까지입니다.',
                  '그 밑에 다른 필체로 뭔가 적혀 있습니다. "다음 방송은 누가 하나."'],
-          eff: { flag: 'rd_script', mp: -1, add: ['gloom', 'hope'] } },
+          eff: { flag: 'rd_script', mp: -1, add: ['gloom', 'relief'] } },
         { t: '음반 창고를 뒤진다.', need: { skill: 'music' },
           res: ['지하에 음반이 사천 장 있습니다. 습기 때문에 절반은 못 씁니다.',
                  '나머지 이천 장은 멀쩡합니다. 이 도시에 남은 음악 전부가 여기 있습니다.',
                  '한 장을 꺼내 손으로 돌려 봅니다. 소리가 아주 작게 납니다. 그것만으로 목이 멥니다.'],
-          eff: { flag: 'rd_music', add: ['mp3', 'hope'], mp: 1 } }
+          eff: { flag: 'rd_music', add: ['mp3', 'relief'], mp: 1 } }
       ] },
 
       { pages: [
@@ -197,24 +197,24 @@
                  '바늘을 내려놓습니다. 잡음이 삼 초, 그다음에 소리가 나갑니다.',
                  '그날 저녁 이 도시에서 라디오를 켜 놓은 집마다 같은 노래가 나왔습니다.',
                  '창밖으로 산 아래를 보니, 불빛이 하나씩 켜지고 있었습니다. 다들 소리 나는 쪽으로 사람을 부른 겁니다.'],
-          eff: { mp: 1, rep: { free: 2, market: 1 }, add: ['hope', 'hope', 'goodrep'], flag: 'rd_song', title: '부산항의 영웅' } },
+          eff: { mp: 1, rep: { free: 2, market: 1 }, add: ['relief', 'warmth', 'goodrep'], flag: 'rd_song', title: '부산항의 영웅' } },
         { t: '살아 있는 사람들 이름을 읽는다.', need: { skill: 'speech' },
           res: ['교황군 장부를 가져다 놓고 읽기 시작합니다. 검은 글씨만요.',
                  '한 시간 동안 이름 사백 개를 읽었습니다. 중간에 목이 갈라졌는데 계속 읽었습니다.',
                  '그날 밤 이 도시에서 사람 열둘이 서로를 찾았습니다. 이십 년 만에요.'],
-          eff: { mp: 1, rep: { free: 2, cult: 2 }, add: ['hope', 'hope', 'goodrep'], flag: 'rd_names', title: '부산항의 영웅' } },
+          eff: { mp: 1, rep: { free: 2, cult: 2 }, add: ['warmth', 'stable', 'goodrep'], flag: 'rd_names', title: '부산항의 영웅' } },
         { t: '오늘 있었던 일을 그냥 말한다.',
           res: ['"오늘 자갈치에 배가 두 척 들어왔습니다. 감천 우물은 아직 나옵니다."',
                  '"광안대교는 밤에 건너지 마이소. 상판 가운데가 더 벌어졌습니다."',
                  '별것 아닌 소식을 십 분쯤 말했습니다. 그게 이 도시에 이십 년 만에 나간 방송입니다.',
                  '다음 날부터 사람들이 방송국에 소식을 들고 오기 시작했습니다.'],
-          eff: { mp: 1, rep: { free: 2, market: 1 }, add: ['hope', 'goodrep'], flag: 'rd_news', title: '기술자' } },
+          eff: { mp: 1, rep: { free: 2, market: 1 }, add: ['stable', 'goodrep'], flag: 'rd_news', title: '기술자' } },
         { t: '마이크를 다른 사람에게 넘긴다.',
           res: ['유리 너머 열댓 명 중 하나를 손짓으로 부릅니다. 제일 뒤에 선 아이입니다.',
                  '"뭐라고 합니까?" "아무 말이나 하이소."',
                  '아이가 마이크에 대고 자기 이름을 말합니다. 그리고 자기가 사는 동네를 말합니다.',
                  '그날 이후로 이 방송은 계속 그런 식이 됐습니다. 아무나 와서 자기 이름을 말하는 방송이요.'],
-          eff: { mp: 1, rep: { free: 2 }, add: ['hope', 'hope'], flag: 'rd_open', title: '부산항의 영웅' } }
+          eff: { mp: 1, rep: { free: 2 }, add: ['stable', 'relief'], flag: 'rd_open', title: '부산항의 영웅' } }
       ] }
     ]
   });
@@ -255,7 +255,7 @@
                  '스무 명이 나눠 돌립니다. 한 달 걸렸습니다.',
                  '삼백 통 중 예순 통이 실제로 전해졌습니다. 예순 명이 이십 년 늦은 편지를 받았습니다.',
                  '그중 몇 명이 그 자리에서 주저앉았다고, 배달한 사람들이 전했습니다.'],
-          eff: { mp: 1, rep: { free: 2, cult: 1 }, add: ['hope', 'hope', 'goodrep'], flag: 'pb_deliver', title: '교황군' } },
+          eff: { mp: 1, rep: { free: 2, cult: 1 }, add: ['relief', 'relief', 'goodrep'], flag: 'pb_deliver', title: '교황군' } },
         { t: '보낸 사람을 찾아 돌려주자고 한다.',
           res: ['받을 사람이 없으면 보낸 사람에게 돌려주는 겁니다. 반송입니다.',
                  '이십 년 전에 자기가 쓴 편지를 다시 받는 겁니다. 이상한 일인데 아무도 반대 안 합니다.',
@@ -265,7 +265,7 @@
           res: ['주소를 찾아갑니다. 산복도로 위쪽입니다. 집은 아직 있습니다.',
                  '문을 여는 사람이 스무 살쯤 됩니다. 그 신발을 받을 사람이었던 사람입니다.',
                  '신발을 손에 놓아 줍니다. 한참 들여다보다가 웃습니다. "발이 커졌네예."'],
-          eff: { mp: 1, rep: { free: 1 }, add: ['hope', 'hope', 'goodrep'], flag: 'pb_shoe' } },
+          eff: { mp: 1, rep: { free: 1 }, add: ['warmth', 'stable', 'goodrep'], flag: 'pb_shoe' } },
         { t: '자루를 그대로 두고 나온다.',
           res: ['지하 문을 닫습니다. 사백 자루가 그대로 남습니다.',
                  '언젠가 누가 열 겁니다. 그때는 더 늦었을 뿐이고, 늦은 것에는 차이가 없을지도 모릅니다.'],
@@ -310,18 +310,18 @@
                  '스물이 번갈아 돌립니다. 두 시간이 걸립니다.',
                  '마지막 바퀴에서 톱니가 맞물리는 소리가 납니다. 그리고 초침이 움직입니다.',
                  '이십 년 만에 이 도시에서 시계 소리가 났습니다. 스무 명이 그 소리를 듣고 아무도 안 움직였습니다.'],
-          eff: { hp: -1, mp: 1, rep: { free: 2 }, add: ['hope', 'hope', 'goodrep'], flag: 'ck_run', title: '기술자' } },
+          eff: { hp: -1, mp: 1, rep: { free: 2 }, add: ['hope', 'stable', 'goodrep'], flag: 'ck_run', title: '기술자' } },
         { t: '정오를 재서 정확히 맞춘다.', need: { flag: 'ck_time' }, cost: { hp: 1 },
           res: ['사흘 동안 그림자를 봤습니다. 정오를 정했습니다.',
                  '그 시각에 맞춰 바늘을 옮기고 추를 올립니다. 이 도시의 시각이 그 순간부터 다시 정해집니다.',
                  '한 달 뒤 이 도시 사람들이 약속을 시각으로 하기 시작했습니다. "두 시에 봅시다." 이십 년 만입니다.'],
-          eff: { hp: -1, mp: 1, rep: { free: 2, market: 2 }, add: ['hope', 'hope', 'goodrep', 'stable'], flag: 'ck_exact', title: '기술자' } },
+          eff: { hp: -1, mp: 1, rep: { free: 2, market: 2 }, add: ['relief', 'relief', 'goodrep', 'stable'], flag: 'ck_exact', title: '기술자' } },
         { t: '일곱 시 사십일 분에 그대로 둔다.',
           res: ['손잡이에서 손을 뗍니다. 스무 명이 이쪽을 봅니다.',
                  '"이건 시계가 아니라 표시입니다." 그렇게 말합니다.',
                  '아무도 반박 안 합니다. 다들 내려갑니다. 시계는 계속 일곱 시 사십일 분입니다.',
                  '다만 그날 이후로 기계실 먼지가 조금씩 닦여 있었습니다. 누가 올라와서 닦는 겁니다.'],
-          eff: { mp: 1, add: ['hope', 'gloom'], flag: 'ck_keep' } }
+          eff: { mp: 1, add: ['relief', 'gloom'], flag: 'ck_keep' } }
       ] }
     ]
   });
@@ -339,22 +339,22 @@
           res: ['봉투가 없어서 종이에 싸서 냅니다. 접수하는 사람이 이름을 적습니다.',
                  '장부에 이름이 백스물세 번째로 적힙니다. 백스물세 명이 왔다는 뜻입니다.',
                  '이 도시에서 백스물세 명이 한자리에 모이는 일은 흔치 않습니다.'],
-          eff: { flag: 'wd_gift', mp: 1, rep: { free: 1 }, add: ['hope'] } },
+          eff: { flag: 'wd_gift', mp: 1, rep: { free: 1 }, add: ['warmth'] } },
         { t: '먹을 것을 보탠다.', need: { itemKind: 'food' }, cost: { itemKind: 'food' },
           res: ['부엌 쪽으로 가져다줍니다. 솥이 넷 걸려 있고 사람이 여덟 붙어 있습니다.',
                  '"이거 어디다 놓습니까?" "그냥 넣으이소." 뭐든 넣으면 국이 됩니다.',
                  '백스물세 명분 국을 끓이는 데 온 동네 것이 다 들어갔습니다.'],
-          eff: { flag: 'wd_food', mp: 1, rep: { free: 1 }, add: ['hope', 'goodrep'] } },
+          eff: { flag: 'wd_food', mp: 1, rep: { free: 1 }, add: ['warmth', 'goodrep'] } },
         { t: '노래를 맡는다.', need: { skill: 'music' },
           res: ['악기가 통기타 하나뿐입니다. 줄이 넷 남았습니다.',
                  '넷으로 할 수 있는 곡을 고릅니다. 신랑이 좋아한다는 곡인데, 넷 줄로는 반쯤밖에 안 됩니다.',
                  '그래도 부릅니다. 백스물세 명이 따라 부릅니다. 반쯤밖에 안 되는 반주로요.'],
-          eff: { flag: 'wd_song', mp: 1, rep: { free: 2 }, add: ['hope', 'hope'] } },
+          eff: { flag: 'wd_song', mp: 1, rep: { free: 2 }, add: ['stable', 'stable'] } },
         { t: '사진을 찍어 준다.', need: { item: 'sunsetphoto' },
           res: ['사진기 가진 사람을 데려옵니다. 남은 필름이 한 장입니다.',
                  '"한 장이면 언제 찍습니까?" 다들 고민합니다. 결국 식이 다 끝나고 나서 찍기로 합니다.',
                  '백스물세 명이 한 화면에 다 안 들어갑니다. 그래서 서로 붙습니다. 그 사진이 나중에 이 도시에서 제일 유명한 사진이 됩니다.'],
-          eff: { flag: 'wd_photo', mp: 1, add: ['sunsetphoto', 'hope', 'hope'], rep: { free: 2 } } }
+          eff: { flag: 'wd_photo', mp: 1, add: ['sunsetphoto', 'stable', 'relief'], rep: { free: 2 } } }
       ] },
 
       { pages: [
@@ -367,18 +367,18 @@
                  '"이 두 사람은 이십 년 전을 모릅니다." 그렇게 시작합니다.',
                  '"우리는 압니다. 그래서 우리가 이 결혼을 더 무겁게 생각합니다. 두 사람은 가볍게 하십시오. 가볍게 살아도 되는 첫 사람들입니다."',
                  '백스물세 명이 박수를 칩니다. 신부가 웁니다. 우는 이유는 아마 슬퍼서가 아닐 겁니다.'],
-          eff: { mp: 1, rep: { free: 2 }, add: ['hope', 'hope', 'goodrep'], flag: 'wd_officiate', title: '이모의 친구' } },
+          eff: { mp: 1, rep: { free: 2 }, add: ['relief', 'relief', 'goodrep'], flag: 'wd_officiate', title: '이모의 친구' } },
         { t: '교황군을 부르자고 한다.', need: { title: '교황군' },
           res: ['남포동까지 사람을 보냅니다. 두 시간 뒤 흰 천을 두른 사람이 옵니다.',
                  '"저희는 개종을 안 시킵니다." 먼저 그렇게 말합니다. 다들 웃습니다.',
                  '주례는 짧았습니다. 세 문장이었습니다. 그런데 그 세 문장을 백스물세 명이 다 기억했습니다.'],
-          eff: { mp: 1, rep: { cult: 2, free: 1 }, add: ['hope', 'hope'], flag: 'wd_priest' } },
+          eff: { mp: 1, rep: { cult: 2, free: 1 }, add: ['warmth', 'warmth'], flag: 'wd_priest' } },
         { t: '신랑 신부에게 직접 말하게 한다.',
           res: ['"둘이 서로한테 하이소. 주례가 왜 필요합니까."',
                  '신랑이 먼저 말합니다. 두 문장 하다가 막힙니다. 신부가 웃으며 대신 말합니다.',
                  '둘이 번갈아 하다 보니 십 분이 갔습니다. 앞뒤가 안 맞고 자꾸 웃음이 났습니다.',
                  '이 도시에서 제일 긴 주례였고, 제일 좋은 주례였습니다.'],
-          eff: { mp: 1, rep: { free: 2 }, add: ['hope', 'humor', 'goodrep'], flag: 'wd_selfvow' } }
+          eff: { mp: 1, rep: { free: 2 }, add: ['stable', 'humor', 'goodrep'], flag: 'wd_selfvow' } }
       ] },
 
       { pages: [
@@ -389,12 +389,12 @@
           res: ['하늘색 천 조각입니다. 드레스를 만들고 남은 것이요.',
                  '"어디 가서 뭐 하나 만들 때 쓰이소." 신부가 말합니다.',
                  '주머니에 넣습니다. 이 도시에서 하늘색은 사람이 산다는 뜻입니다.'],
-          eff: { add: ['paintcan', 'hope'], mp: 1 } },
+          eff: { add: ['paintcan', 'stable'], mp: 1 } },
         { t: '앞날을 물어본다.',
           res: ['"이제 어떻게 하실 겁니까?" 둘이 서로를 봅니다.',
                  '"모릅니다." 신랑이 웃습니다. "근데 둘이 모르니까 괜찮습니다."',
                  '이 도시에서 그것보다 나은 계획은 별로 없습니다.'],
-          eff: { mp: 1, add: ['hope', 'hope', 'stable'] } }
+          eff: { mp: 1, add: ['stable', 'relief', 'stable'] } }
       ] }
     ]
   });
@@ -422,7 +422,7 @@
           res: ['반나절을 걷습니다. 사슴 무리를 두 번 보고, 원숭이를 한 번 봤습니다.',
                  '공작은 어디에나 있습니다. 소리가 아주 큽니다. 이십 년 동안 이 산 사람들은 그 소리에 익었습니다.',
                  '"저 소리 들리면 사람이 없다는 뜻입니다." 남자가 말합니다. "공작은 사람 오면 조용해집니다."'],
-          eff: { flag: 'zo_walk', skillUp: 'beast', mp: 1, add: ['hope'] } }
+          eff: { flag: 'zo_walk', skillUp: 'beast', mp: 1, add: ['relief'] } }
       ] },
 
       { pages: [
@@ -435,13 +435,13 @@
                  '"누가 셉니까?" "저 위에 세는 사람이 있습니다. 이십 년 동안 셌습니다."',
                  '마을 넷이 각자 셋씩 나눠 갖기로 합니다. 열두 마리입니다. 계산이 맞습니다.',
                  '이 도시에서 처음으로 사냥에 정원이 생겼습니다.'],
-          eff: { mp: 1, rep: { free: 2 }, add: ['hope', 'goodrep'], flag: 'zo_quota', title: '자연주의자' } },
+          eff: { mp: 1, rep: { free: 2 }, add: ['relief', 'goodrep'], flag: 'zo_quota', title: '자연주의자' } },
         { t: '대신 공작을 먹으라고 한다.', need: { skill: 'cook' },
           res: ['"공작은 맛이 없습니다." "요리를 잘못한 겁니다."',
                  '푹 삶고, 국을 내고, 남은 것을 말립니다. 반나절 걸렸습니다.',
                  '먹어 본 사람들 얼굴이 바뀝니다. "…이거 되네예."',
                  '그해 겨울 이 산에서 사슴 여섯 마리와 공작 마흔 마리가 잡혔습니다. 공작은 백 마리에서 예순이 됐고, 봄에 다시 늘었습니다.'],
-          eff: { mp: 1, hp: 1, rep: { free: 2 }, add: ['hope', 'humor', 'goodrep'], flag: 'zo_peacock', skillUp: 'cook' } },
+          eff: { mp: 1, hp: 1, rep: { free: 2 }, add: ['warmth', 'humor', 'goodrep'], flag: 'zo_peacock', skillUp: 'cook' } },
         { t: '아무 말도 안 한다.',
           res: ['남의 겨울입니다. 굶는 사람에게 세어 가며 잡으라고 하는 건 잔인한 일일 수도 있습니다.',
                  '그해 겨울 사슴이 마흔 마리 잡혔습니다. 이듬해에는 잡을 사슴이 없었습니다.',
@@ -456,11 +456,11 @@
         { t: '일지를 한 권 받아 간다.',
           res: ['이십 년 치 중 한 권을 줍니다. 최근 오 년 치입니다.',
                  '"어디 가서 세는 사람 있으면 주이소. 세는 사람은 서로 알아봅니다."'],
-          eff: { add: ['herbbook', 'hope'], mp: 1, title: '자연주의자' } },
+          eff: { add: ['herbbook', 'warmth'], mp: 1, title: '자연주의자' } },
         { t: '내년에도 세러 오겠다고 한다.',
           res: ['"내년 봄에 오겠습니다." 남자가 일지에 뭔가를 적습니다.',
                  '나중에 보니 날짜와 이름이었습니다. 다음 장 제일 위에요.'],
-          eff: { mp: 1, add: ['hope', 'hope', 'stable'], rep: { free: 1 } } }
+          eff: { mp: 1, add: ['stable', 'stable', 'stable'], rep: { free: 1 } } }
       ] }
     ]
   });
@@ -488,7 +488,7 @@
           res: ['하루 빌리는 데 값이 셉니다. 대신 하루에 갈 거리가 세 배가 됩니다.',
                  '타고 나가니 이 도시가 갑자기 작아 보입니다. 이십 년 동안 걸어 다닌 거리가 반나절입니다.',
                  '돌아와서 내리는데 다리가 후들거립니다. 걷는 것과 타는 것은 다른 근육을 씁니다.'],
-          eff: { flag: 'rt_ride', hp: -1, mp: 1, add: ['hope'] } }
+          eff: { flag: 'rt_ride', hp: -1, mp: 1, add: ['stable'] } }
       ] },
 
       { pages: [
@@ -505,12 +505,12 @@
           res: ['출발 전에 안장과 등자를 하나씩 확인합니다. 둘이 헐거웠습니다.',
                  '고쳐 매는 동안 경주가 십 분 늦어집니다. 삼백 명이 야유합니다.',
                  '경주 중에 한 마리가 넘어졌습니다. 아이는 굴러서 일어났습니다. 등자가 헐거웠으면 발이 걸렸을 겁니다.'],
-          eff: { mp: 1, rep: { free: 2 }, add: ['hope', 'goodrep'], flag: 'rt_safe', skillUp: 'firstaid' } },
+          eff: { mp: 1, rep: { free: 2 }, add: ['relief', 'goodrep'], flag: 'rt_safe', skillUp: 'firstaid' } },
         { t: '그냥 삼백 명 사이에서 소리를 지른다.',
           res: ['어느 말인지도 모르고 그냥 소리를 지릅니다. 옆 사람도 그러고 있습니다.',
                  '이십 년 만에 삼백 명이 같은 방향을 보고 같이 소리를 냅니다.',
                  '경주가 끝나고 한참 동안 아무도 안 갔습니다. 다들 그 자리에 앉아 있었습니다.'],
-          eff: { mp: 1, add: ['hope', 'humor'], rep: { free: 1 }, flag: 'rt_cheer' } }
+          eff: { mp: 1, add: ['relief', 'humor'], rep: { free: 1 }, flag: 'rt_cheer' } }
       ] },
 
       { pages: [
@@ -521,17 +521,17 @@
           res: ['종이에 도장을 셋 찍습니다. 말 한 마리의 십분의 일입니다.',
                  '"이거 사면 뭐가 옵니까?" "새끼가 나면 그중에 십분의 일이 옵니다."',
                  '이 도시에서 십 년 뒤를 계산하는 종이가 하나 더 늘었습니다.'],
-          eff: { add: ['lottery', 'hope'], mp: 1, title: '자유당원' } },
+          eff: { add: ['lottery', 'relief'], mp: 1, title: '자유당원' } },
         { t: '아이에게 다루는 법을 가르쳐 주고 간다.', need: { flag: 'rt_learn' },
           res: ['기수를 했던 아이에게 말 목 만지는 순서를 알려 줍니다. 옆에서, 소리 내면서, 목부터.',
                  '아이가 그대로 합니다. 말이 고개를 숙입니다.',
                  '"이거 아무도 안 알려 줬습니다." 아이가 말합니다. 이제는 압니다.'],
-          eff: { mp: 1, rep: { free: 1 }, add: ['hope', 'goodrep'] } },
+          eff: { mp: 1, rep: { free: 1 }, add: ['warmth', 'goodrep'] } },
         { t: '트랙을 한 바퀴 걸어 본다.',
           res: ['풀이 무릎까지 자란 트랙을 한 바퀴 돕니다. 천육백 미터입니다.',
                  '이십 년 전에 이 트랙에서 하루에 열두 번씩 경주가 있었습니다. 사람이 만 명씩 왔고요.',
                  '지금은 삼백 명이고 일 년에 한 번입니다. 그래도 있습니다.'],
-          eff: { mp: 1, add: ['hope'] } }
+          eff: { mp: 1, add: ['warmth'] } }
       ] }
     ]
   });
@@ -554,7 +554,7 @@
           res: ['무너진 쪽에서 쏟아진 책이 통로를 막고 있습니다. 사흘 걸려 옮깁니다.',
                  '분류 번호대로 다시 꽂습니다. 사서가 옆에서 하나씩 확인합니다.',
                  '"이십 년 만에 통로가 열렸습니다." 사서가 말합니다. 눈이 붉습니다.'],
-          eff: { flag: 'lb_sort', rep: { free: 1 }, mp: 1, add: ['hope', 'goodrep'], skillUp: 'read' } },
+          eff: { flag: 'lb_sort', rep: { free: 1 }, mp: 1, add: ['stable', 'goodrep'], skillUp: 'read' } },
         { t: '뭐가 제일 값진지 묻는다.', need: { skill: 'taste' },
           res: ['사서가 서고 제일 안쪽으로 데려갑니다. 잠긴 방입니다.',
                  '"여기가 향토자료실입니다." 부산에 대한 기록이 전부 여기 있습니다. 지도, 사진, 신문, 지방지.',
@@ -572,18 +572,18 @@
                  '사서가 카드를 뒤집니다. 놀랍게도 기록이 다 남아 있습니다.',
                  '한 번도 안 나간 책이 절반이 넘습니다. 그 절반이 그해 겨울 마흔 명을 살렸습니다.',
                  '사서가 그 목록을 따로 적어 뒀습니다. "언젠가 다시 채울 겁니다."'],
-          eff: { mp: 1, rep: { free: 2 }, add: ['hope', 'goodrep'], flag: 'lb_split', title: '빌려 간 사람' } },
+          eff: { mp: 1, rep: { free: 2 }, add: ['stable', 'goodrep'], flag: 'lb_split', title: '빌려 간 사람' } },
         { t: '다른 땔감을 구해 온다.', cost: { hp: 1 },
           res: ['사흘을 돌아다니며 무너진 집 서까래를 뽑습니다. 수레 넷 분입니다.',
                  '도서관 앞에 부려 놓습니다. 마흔 명이 그걸 나눠 갑니다.',
                  '사서가 아무 말도 안 합니다. 대신 그날 밤 서고 불을 늦게까지 켜 놨습니다.'],
-          eff: { hp: -1, mp: 1, rep: { free: 2 }, add: ['hope', 'goodrep'], flag: 'lb_wood' } },
+          eff: { hp: -1, mp: 1, rep: { free: 2 }, add: ['stable', 'goodrep'], flag: 'lb_wood' } },
         { t: '책을 읽어 주자고 한다.', need: { skill: 'speech' },
           res: ['"태우기 전에 한 번 읽고 태웁시다."',
                  '이상한 제안인데 아무도 반대를 안 합니다. 그날 밤 도서관 앞에서 마흔 명이 앉아 이야기를 들었습니다.',
                  '한 권을 다 읽는 데 세 시간 걸렸습니다. 다 읽고 나서, 그 책은 아무도 안 태웠습니다.',
                  '다른 책을 태웠습니다. 그리고 다음 날 밤에도 한 권을 읽었습니다.'],
-          eff: { mp: 1, rep: { free: 2, cult: 1 }, add: ['hope', 'hope', 'goodrep'], flag: 'lb_read', title: '빌려 간 사람' } }
+          eff: { mp: 1, rep: { free: 2, cult: 1 }, add: ['relief', 'relief', 'goodrep'], flag: 'lb_read', title: '빌려 간 사람' } }
       ] },
 
       { pages: [
@@ -593,11 +593,11 @@
         { t: '한 권 더 빌린다.',
           res: ['다시 카드에 이름을 적습니다. 예순두 번째 대출입니다.',
                  '"이 주일입니다." "예."\n이 도시에서 이 주일 뒤를 약속하는 자리가 여기 말고 몇 없습니다.'],
-          eff: { add: ['oldbook', 'hope'], mp: 1, title: '빌려 간 사람' } },
+          eff: { add: ['oldbook', 'relief'], mp: 1, title: '빌려 간 사람' } },
         { t: '기증을 하고 간다.', need: { itemKind: 'doc' }, cost: { itemKind: 'doc' },
           res: ['가진 기록을 하나 놓고 갑니다. 사서가 받아서 분류 번호를 매깁니다.',
                  '"삼십만 하고 한 권입니다." 그렇게 말하는데 목소리가 좋습니다.'],
-          eff: { mp: 1, rep: { free: 1 }, add: ['hope', 'hope', 'goodrep'] } }
+          eff: { mp: 1, rep: { free: 1 }, add: ['warmth', 'warmth', 'goodrep'] } }
       ] }
     ]
   });
@@ -620,7 +620,7 @@
           res: ['"바꿀 데가 없다는 거 압니다." 남자가 먼저 말합니다.',
                  '"근데 이걸 버리면, 그날 제가 이걸 사러 나갔던 게 아무것도 아닌 게 됩니다."',
                  '"그날 이거 사러 나가서 살았습니다. 집에 있던 사람들은 다 못 살았고예."'],
-          eff: { flag: 'lt_why', mp: -1, add: ['gloom', 'hope'] } },
+          eff: { flag: 'lt_why', mp: -1, add: ['gloom', 'stable'] } },
         { t: '값을 부른다.', need: { money: 1 }, cost: { money: 1 },
           res: ['값을 내밉니다. 남자가 놀랍니다. 이십 년 동안 값을 부른 사람이 처음입니다.',
                  '"진짜로예?" "진짭니다."',
@@ -638,18 +638,18 @@
                  '남자가 안 받으려고 합니다. 그래도 놓고 나옵니다.',
                  '다음 날 남자가 다시 그 자리에 앉아 있었습니다. 팻말도 다시 세워져 있고요.',
                  '시장 사람들이 그제서야 편한 얼굴을 합니다.'],
-          eff: { mp: 1, rep: { market: 2, free: 1 }, add: ['hope', 'goodrep'], flag: 'lt_return', title: '단골' } },
+          eff: { mp: 1, rep: { market: 2, free: 1 }, add: ['stable', 'goodrep'], flag: 'lt_return', title: '단골' } },
         { t: '다른 자리를 만들어 준다.', need: { skill: 'talk' },
           res: ['국밥집 주인에게 말합니다. "이 사람 그릇 씻는 자리 하나 주이소."',
                  '주인이 남자를 봅니다. "할 줄 압니까?" "…배우겠습니다."',
                  '한 달 뒤 그 국밥집에 그릇 씻는 사람이 하나 늘었습니다. 이십 년 만에 직업이 생긴 겁니다.'],
-          eff: { mp: 1, rep: { free: 2 }, add: ['hope', 'goodrep'], flag: 'lt_job', title: '단골' } },
+          eff: { mp: 1, rep: { free: 2 }, add: ['stable', 'goodrep'], flag: 'lt_job', title: '단골' } },
         { t: '복권을 벽에 붙이자고 한다.',
           res: ['시장 어귀 벽에 액자처럼 붙입니다. 아래에 팻말을 세웁니다.',
                  '"당첨된 복권. 바꿀 데 없음."',
                  '지나가는 사람마다 웃습니다. 그리고 그 앞에서 잠깐 멈춥니다.',
                  '이 도시에서 제일 많이 읽힌 게시물이 그날부터 그것이 됐습니다.'],
-          eff: { mp: 1, rep: { market: 1, free: 1 }, add: ['humor', 'hope'], flag: 'lt_wall' } }
+          eff: { mp: 1, rep: { market: 1, free: 1 }, add: ['humor', 'relief'], flag: 'lt_wall' } }
       ] }
     ]
   });

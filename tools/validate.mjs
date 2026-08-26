@@ -15,11 +15,11 @@ const srcDir = path.join(here, '..', 'web', 'src');
 
 const FILES = [
   'rng.js',
-  'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/items2.js', 'data/items3.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
+  'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/items2.js', 'data/items3.js', 'data/items4.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
   'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js',
-  'data/templates5.js', 'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js', 'data/templates13.js', 'data/templates14.js',
+  'data/templates5.js', 'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js', 'data/templates13.js', 'data/templates14.js', 'data/templates15.js', 'data/templates16.js', 'data/templates17.js', 'data/templates18.js',
   'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js', 'data/bodies4.js', 'data/bodies5.js',
-  'data/specials.js', 'data/specials2.js', 'data/specials3.js', 'data/specials4.js', 'data/specials5.js', 'data/specials6.js', 'data/specials7.js', 'data/specials8.js',
+  'data/specials.js', 'data/specials2.js', 'data/specials3.js', 'data/specials4.js', 'data/specials5.js', 'data/specials6.js', 'data/specials7.js', 'data/specials8.js', 'data/specials9.js',
   'data/arcs.js', 'data/arcs2.js',
   'generator.js', 'engine.js'
 ].filter((f) => fs.existsSync(path.join(srcDir, f)));
@@ -179,6 +179,9 @@ B.TEMPLATES.forEach((t) => {
   if (t.req) {
     if (t.req.flag) noteFlagUse(t.req.flag, where);
     if (t.req.item && !itemIds.has(t.req.item)) errors.push(`${where}: 없는 조건 아이템 "${t.req.item}"`);
+    (t.req.items || []).forEach((id) => {
+      if (!itemIds.has(id)) errors.push(`${where}: 없는 조건 아이템 "${id}"`);
+    });
     if (t.req.rep) {
       Object.keys(t.req.rep).forEach((k) => {
         if (!factionIds.has(k)) errors.push(`${where}: 없는 세력 "${k}"`);
@@ -258,6 +261,9 @@ const spIds = new Set();
   if (spIds.has(sp.id)) errors.push(`특별 이야기 id 중복: ${sp.id}`);
   spIds.add(sp.id);
   if (!sp.title) errors.push(`특별 이야기 ${sp.id}: 제목 없음`);
+  (sp.req && sp.req.items ? sp.req.items : []).forEach((id) => {
+    if (!itemIds.has(id)) errors.push(`특별 이야기 ${sp.id}: 없는 조건 아이템 "${id}"`);
+  });
   if (typeof sp.at !== 'number') errors.push(`특별 이야기 ${sp.id}: 등장 페이지(at) 없음`);
   if (!sp.scenes || sp.scenes.length < 2) errors.push(`특별 이야기 ${sp.id}: 장면이 너무 적음`);
   (sp.scenes || []).forEach((sc, i) => {

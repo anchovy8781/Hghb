@@ -9,6 +9,7 @@
 (function (global) {
   'use strict';
   const B = global.B;
+  const RECENT = 32;   /* 최근 이만큼 안에 나온 사건은 다시 안 뽑는다 */
 
   function Generator(rnd, state) {
     this.rnd = rnd;
@@ -64,6 +65,13 @@
     if (!r) return true;
     if (r.flag && !st.flags[r.flag]) return false;
     if (r.noflag && st.flags[r.noflag]) return false;   /* 한 여정에 한 번만 나오는 자리 */
+    if (r.pageMin && st.page < r.pageMin) return false;
+    if (r.pageMax && st.page > r.pageMax) return false;
+    if (r.items) {
+      for (let i = 0; i < r.items.length; i++) {
+        if (!st.items[r.items[i]]) return false;
+      }
+    }
     if (r.item && !st.items[r.item]) return false;
     if (r.radMin && st.rad < r.radMin) return false;
     if (r.title && (st.titles || []).indexOf(r.title) < 0) return false;
@@ -96,7 +104,7 @@
       if (self.eligible(cand, st) && self.recent.indexOf(cand.id) < 0) {
         this.tplPool.splice(i, 1);
         this.recent.push(cand.id);
-        if (this.recent.length > 10) this.recent.shift();
+        if (this.recent.length > RECENT) this.recent.shift();
         return cand;
       }
     }
@@ -106,7 +114,7 @@
     const usable = all.filter(function (t) { return t.w > 0 && self.eligible(t, st); });
     const t = B.pickWeighted(this.rnd, usable, function (x) { return x.w; });
     this.recent.push(t.id);
-    if (this.recent.length > 10) this.recent.shift();
+    if (this.recent.length > RECENT) this.recent.shift();
     return t;
   };
 
