@@ -17,7 +17,7 @@ const FILES = [
   'rng.js',
   'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/items2.js', 'data/items3.js', 'data/items4.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
   'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js',
-  'data/templates5.js', 'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js', 'data/templates13.js', 'data/templates14.js', 'data/templates15.js', 'data/templates16.js', 'data/templates17.js', 'data/templates18.js', 'data/templates19.js',
+  'data/templates5.js', 'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js', 'data/templates13.js', 'data/templates14.js', 'data/templates15.js', 'data/templates16.js', 'data/templates17.js', 'data/templates18.js', 'data/templates19.js', 'data/templates20.js',
   'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js', 'data/bodies4.js', 'data/bodies5.js',
   'data/specials.js', 'data/specials2.js', 'data/specials3.js', 'data/specials4.js', 'data/specials5.js', 'data/specials6.js', 'data/specials7.js', 'data/specials8.js', 'data/specials9.js',
   'data/arcs.js', 'data/arcs2.js',
@@ -306,6 +306,40 @@ flagsUsed.forEach((wheres, flag) => {
     errors.push(`조건으로 쓰이지만 아무 데서도 세워지지 않는 깃발 "${flag}" (${wheres[0]})`);
   }
 });
+
+/* ── 같은 id 를 두 번 정의하면 뒤엣것이 앞엣것을 조용히 덮어쓴다 ── */
+{
+  const cnt = new Map();
+  B.TEMPLATES.forEach((t) => cnt.set(t.id, (cnt.get(t.id) || 0) + 1));
+  cnt.forEach((n, id) => {
+    if (n > 1) errors.push(`템플릿 id "${id}" 가 ${n}번 정의됨 — 본문·장소가 서로 덮어써진다`);
+  });
+}
+
+/* ── 한 장면은 도입 + 본문 + 전개가 이어 붙어 나온다.
+ *    같은 문장이 두 자리에 들어 있으면 플레이어가 같은 말을 두 번 읽는다. ── */
+{
+  const norm = (x) => x.replace(/\{\w+\}/g, '').replace(/[^가-힣0-9]/g, '');
+  const cut = (x) => x.split(/\n|(?<=[.?!])\s+/).map((y) => y.trim()).filter((y) => y.length > 10);
+  B.TEMPLATES.forEach((t) => {
+    const groups = [];
+    (t.open || []).forEach((x) => groups.push(['도입', x]));
+    (t.mid || []).forEach((x) => groups.push(['전개', x]));
+    ((B.BODIES && B.BODIES[t.id]) || []).forEach((x) => groups.push(['본문', x]));
+    for (let a = 0; a < groups.length; a++) {
+      for (let b = a + 1; b < groups.length; b++) {
+        if (groups[a][0] === groups[b][0]) continue; /* 같은 칸의 변형끼리는 동시에 안 나온다 */
+        const before = new Set(cut(groups[a][1]).map(norm));
+        cut(groups[b][1]).forEach((sen) => {
+          const n = norm(sen);
+          if (n.length > 12 && before.has(n)) {
+            errors.push(`${t.id}: ${groups[a][0]}과 ${groups[b][0]}에 같은 문장 — "${sen.slice(0, 30)}…"`);
+          }
+        });
+      }
+    }
+  });
+}
 
 /* ── 결과 ───────────────────────────────────── */
 console.log(`템플릿 ${B.TEMPLATES.length} · 아이템 ${B.ITEMS.length} · 능력 ${B.SKILLS.length} · 엔딩 ${endingIds.size}`);

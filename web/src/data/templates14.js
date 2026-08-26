@@ -69,7 +69,7 @@
   });
 
   T.push({
-    id: 'rest_camp', cat: '회복', phase: [1, 2, 3], w: 11,
+    id: 'rest_road', cat: '회복', phase: [1, 2, 3], w: 11,
     slots: { place: 'wild', npc: 'scav', item: 'lux' },
     open: [
       '{place}에 사람 셋이 앉아 있습니다. 불은 안 피웠습니다. 낮이니까요.\n"앉으이소." 하나가 옆으로 비켜 줍니다. 이 도시에서 자리를 내주는 건 큰 인사입니다.',
