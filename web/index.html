@@ -58,6 +58,12 @@
       </div>
     </div>
 
+    <div class="cookie-bar">
+      <span class="cookie-ico">🍪</span>
+      <span class="cookie-n" id="cookieN">0</span>
+      <span class="cookie-label">쿠키</span>
+    </div>
+
     <div class="menu-actions">
       <button class="big-btn resume hidden" id="btnResume">
         <span class="b-title">이어하기</span>
@@ -65,14 +71,25 @@
       </button>
       <button class="big-btn start" id="btnStart">
         <span class="b-title">게임 시작</span>
-        <span class="b-sub">새로운 여정을 떠납니다</span>
+        <span class="b-sub" id="startSub">부산-애프터에이틴</span>
       </button>
+      <div class="origin-pick">
+        <button class="origin on" data-origin="after18">
+          <b>부산-애프터에이틴</b><i>산에서 자라 열여덟 해 뒤에 내려온 사람</i>
+        </button>
+        <button class="origin" data-origin="coma">
+          <b>부산-코마</b><i>그날 이전에 눈을 감고, 십팔 년 뒤에 깬 사람</i>
+        </button>
+      </div>
     </div>
 
     <div class="menu-nav">
       <button data-menu="records"><i>🏆</i><span>기록실</span></button>
       <button data-menu="endings"><i>📖</i><span>엔딩</span></button>
       <button data-menu="keepsakes"><i>🗂️</i><span>수집한 이야기</span></button>
+      <button data-menu="shop"><i>🏪</i><span>상점</span></button>
+      <button data-menu="missions"><i>📋</i><span>미션</span></button>
+      <button data-menu="mail"><i>✉️</i><span>우편함</span></button>
       <button data-menu="help"><i>❔</i><span>도움말</span></button>
       <button data-menu="credit"><i>✎</i><span>만든 것</span></button>
     </div>
@@ -152,6 +169,7 @@
 
 <script src="src/rng.js"></script>
 <script src="src/sound.js"></script>
+<script src="src/data/meta.js"></script>
 <script src="src/data/world.js"></script>
 <script src="src/data/places.js"></script>
 <script src="src/data/actors.js"></script>
@@ -162,6 +180,7 @@
 <script src="src/data/items5.js"></script>
 <script src="src/data/items6.js"></script>
 <script src="src/data/items7.js"></script>
+<script src="src/data/items8.js"></script>
 <script src="src/data/junk.js"></script>
 <script src="src/data/craft.js"></script>
 <script src="src/data/fragments.js"></script>
@@ -188,6 +207,7 @@
 <script src="src/data/templates21.js"></script>
 <script src="src/data/templates22.js"></script>
 <script src="src/data/templates23.js"></script>
+<script src="src/data/templates24.js"></script>
 <script src="src/data/choices_extra.js"></script>
 <script src="src/data/choices_extra2.js"></script>
 <script src="src/data/choices_lv.js"></script>
@@ -208,6 +228,9 @@
 <script src="src/data/specials10.js"></script>
 <script src="src/data/arcs.js"></script>
 <script src="src/data/arcs2.js"></script>
+<script src="src/data/coma.js"></script>
+<script src="src/data/long_land.js"></script>
+<script src="src/data/long_rest.js"></script>
 <script src="src/data/epilogue.js"></script>
 <script src="src/data/keepsakes.js"></script>
 <script src="src/generator.js"></script>

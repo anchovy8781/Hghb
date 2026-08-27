@@ -17,12 +17,12 @@ const srcDir = path.join(here, '..', 'web', 'src');
 
 const FILES = [
   'rng.js',
-  'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/items2.js', 'data/items3.js', 'data/items4.js', 'data/items5.js', 'data/items6.js', 'data/items7.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
+  'data/meta.js', 'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/items2.js', 'data/items3.js', 'data/items4.js', 'data/items5.js', 'data/items6.js', 'data/items7.js', 'data/items8.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
   'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js', 'data/templates5.js',
-  'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js', 'data/templates13.js', 'data/templates14.js', 'data/templates15.js', 'data/templates16.js', 'data/templates17.js', 'data/templates18.js', 'data/templates19.js', 'data/templates20.js', 'data/templates21.js', 'data/templates22.js', 'data/templates23.js', 'data/choices_extra.js', 'data/choices_extra2.js', 'data/choices_lv.js',
+  'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js', 'data/templates13.js', 'data/templates14.js', 'data/templates15.js', 'data/templates16.js', 'data/templates17.js', 'data/templates18.js', 'data/templates19.js', 'data/templates20.js', 'data/templates21.js', 'data/templates22.js', 'data/templates23.js', 'data/templates24.js', 'data/choices_extra.js', 'data/choices_extra2.js', 'data/choices_lv.js',
   'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js', 'data/bodies4.js', 'data/bodies5.js',
   'data/specials.js', 'data/specials2.js', 'data/specials3.js', 'data/specials4.js', 'data/specials5.js', 'data/specials6.js', 'data/specials7.js', 'data/specials8.js', 'data/specials9.js', 'data/specials10.js',
-  'data/arcs.js', 'data/arcs2.js', 'data/epilogue.js', 'data/keepsakes.js',
+  'data/arcs.js', 'data/arcs2.js', 'data/coma.js', 'data/long_land.js', 'data/long_rest.js', 'data/epilogue.js', 'data/keepsakes.js',
   'generator.js', 'engine.js'
 ];
 
@@ -128,8 +128,13 @@ function choose(e, pool) {
   return best;
 }
 
-function play(B, seed, maxPages = 4000) {
-  const e = new B.Engine(seed);
+function play(B, seed, maxPages = 4000, opts = {}) {
+  const e = new B.Engine(seed, opts.origin);
+  if (opts.longs) {
+    /* 장편을 사서 적용해 둔 상태로 돌려 본다 */
+    B.Engine.addCookies(9999);
+    Object.keys(B.LONGS || {}).forEach(function (id) { B.Engine.buyLong(id); });
+  }
   const seenOpen = new Map();      // 장면 도입 문단 -> 처음 나온 페이지
   const dup = [];
   const rawJosa = [];
@@ -228,7 +233,9 @@ console.log('');
 let failed = 0;
 for (let i = 0; i < runs; i++) {
   const seed = baseSeed + i * 977;
-  const r = play(B, seed);
+  /* 세 판에 한 번은 코마 사연으로, 두 판에 한 번은 장편을 사서 돌려 본다 */
+  const opts = { origin: i % 3 === 2 ? 'coma' : 'after18', longs: i % 2 === 1 };
+  const r = play(B, seed, 4000, opts);
   if (r.error) {
     console.log(`시드 ${seed}: 오류 - ${r.error} (${r.page}p)`);
     failed++;
@@ -237,7 +244,7 @@ for (let i = 0; i < runs; i++) {
   const ok = r.dup.length === 0 && r.rawJosa.length === 0;
   if (!ok) failed++;
   console.log(
-    `시드 ${seed} · ${r.page}p · ${r.chapter}장까지 · 인카운터 ${r.encounters} · ` +
+    `시드 ${seed}${opts.origin === 'coma' ? '(코마)' : ''}${opts.longs ? '(장편)' : ''} · ${r.page}p · ${r.chapter}장까지 · 인카운터 ${r.encounters} · ` +
     `장면 ${r.scenes} · 고유 도입 ${r.uniqueTexts} · 중복 ${r.dup.length} · ` +
     `본문 ${(r.chars / 10000).toFixed(1)}만자 · 엔딩 ${r.endingName || '없음'}`
   );

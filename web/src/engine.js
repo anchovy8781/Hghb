@@ -40,6 +40,8 @@
       rep: {},
       phase: 1,
       mode: 'prologue',
+      origin: 'after18',      /* 시작 사연. after18 | coma */
+      lgId: null, lgScene: 0, lgDone: 0, longDone: [],
       prologueIdx: 0,
       chapterIdx: 0,
       sceneIdx: 0,
@@ -61,8 +63,9 @@
     };
   }
 
-  function Engine(seed) {
+  function Engine(seed, origin) {
     this.st = newState(seed || (Date.now() % 100000));
+    if (origin && (B.ARCS.PROLOGUES || {})[origin]) this.st.origin = origin;
     this.rnd = B.mulberry32(this.st.seed);
     this.gen = new B.Generator(this.rnd, this.st);
     this.queue = [];       /* 다음에 보여 줄 장면들 */
@@ -121,6 +124,186 @@
       if (r.titles.indexOf(name) < 0) r.titles.push(name);
       global.localStorage.setItem(RECORD_KEY, JSON.stringify(r));
     } catch (e) { /* 무시 */ }
+  };
+
+  /* ── 쿠키 · 미션 · 우편함 · 상점 ────────────────
+   *   여정 밖에서만 움직이는 것들. 기록실과 같은 저장소를 쓴다.
+   */
+  function saveRec(r) {
+    try { global.localStorage.setItem(RECORD_KEY, JSON.stringify(r)); } catch (e) { /* 무시 */ }
+  }
+
+  Engine.cookies = function () { return Engine.records().cookies || 0; };
+
+  Engine.addCookies = function (n) {
+    const r = Engine.records();
+    r.cookies = Math.max(0, (r.cookies || 0) + n);
+    saveRec(r);
+    return r.cookies;
+  };
+
+  Engine.spendCookies = function (n) {
+    const r = Engine.records();
+    if ((r.cookies || 0) < n) return false;
+    r.cookies -= n;
+    saveRec(r);
+    return true;
+  };
+
+  /* 우편함 — 받으면 그걸로 끝 */
+  Engine.mailTaken = function () { return Engine.records().mail || {}; };
+
+  Engine.takeMail = function (id) {
+    const m = (B.MAIL || []).filter(function (x) { return x.id === id; })[0];
+    if (!m) return 0;
+    const r = Engine.records();
+    r.mail = r.mail || {};
+    if (r.mail[id]) return 0;
+    r.mail[id] = 1;
+    r.cookies = (r.cookies || 0) + (m.cookies || 0);
+    saveRec(r);
+    return m.cookies || 0;
+  };
+
+  /* 상점 — 장편 이야기 */
+  Engine.owned = function () { return Engine.records().owned || {}; };
+  Engine.longApplied = function () { return Engine.records().longOn || {}; };
+
+  Engine.buyLong = function (id) {
+    const price = (B.SHOP_PRICE || {})[id];
+    if (price === undefined) return false;
+    const r = Engine.records();
+    r.owned = r.owned || {};
+    if (r.owned[id]) return false;
+    if ((r.cookies || 0) < price) return false;
+    r.cookies -= price;
+    r.owned[id] = 1;
+    r.longOn = r.longOn || {};
+    r.longOn[id] = 1;               /* 사면 바로 적용해 둔다 */
+    saveRec(r);
+    return true;
+  };
+
+  Engine.toggleLong = function (id) {
+    const r = Engine.records();
+    if (!(r.owned || {})[id]) return false;
+    r.longOn = r.longOn || {};
+    if (r.longOn[id]) delete r.longOn[id]; else r.longOn[id] = 1;
+    saveRec(r);
+    return !!r.longOn[id];
+  };
+
+  /* 미션 — 셋이 붙어 있고, 갱신을 누르면 새로 뽑는다 */
+  function rollOne(pool, used, rnd) {
+    const left = pool.filter(function (m) { return used.indexOf(m.id) < 0; });
+    const src = left.length ? left : pool;
+    const m = src[Math.floor(rnd() * src.length)];
+    const tier = Math.floor(rnd() * 3);
+    return { id: m.id, tier: tier };
+  }
+
+  Engine.missions = function () {
+    const r = Engine.records();
+    if (!r.missions || !r.missions.length) return Engine.rollMissions();
+    return r.missions;
+  };
+
+  Engine.rollMissions = function () {
+    const pool = B.MISSIONS || [];
+    if (!pool.length) return [];
+    const r = Engine.records();
+    const done = r.missionDone || {};
+    const rnd = Math.random;
+    const out = [];
+    const used = [];
+    /* 이미 끝낸 것은 갱신해도 안 사라진다 */
+    (r.missions || []).forEach(function (m) {
+      if (done[m.id + '_' + m.tier]) { out.push(m); used.push(m.id); }
+    });
+    while (out.length < 3) {
+      const m = rollOne(pool, used, rnd);
+      if (used.indexOf(m.id) >= 0 && used.length < pool.length) continue;
+      used.push(m.id);
+      out.push(m);
+    }
+    r.missions = out;
+    saveRec(r);
+    return out;
+  };
+
+  Engine.missionDone = function () { return Engine.records().missionDone || {}; };
+
+  /* 지금 여정이 어디까지 왔는지를 미션이 재는 값으로 바꾼다 */
+  Engine.prototype.missionValue = function (want) {
+    const st = this.st;
+    const self = this;
+    if (want === 'page') return st.page || 0;
+    if (want === 'specials') return (st.specialsDone || []).length;
+    if (want === 'titles') return (st.titles || []).length;
+    if (want === 'skills') return Object.keys(st.skills || {}).filter(function (k) { return st.skills[k] > 0; }).length;
+    if (want === 'deep') return Object.keys(st.skills || {}).filter(function (k) { return st.skills[k] >= 3; }).length;
+    if (want === 'junk') {
+      let n = 0;
+      Object.keys(st.items || {}).forEach(function (id) {
+        const it = B.ITEM_MAP[id];
+        if (it && it.kind === 'junk') n += st.items[id];
+      });
+      return n;
+    }
+    if (want === 'keys') {
+      let n = 0;
+      Object.keys(st.items || {}).forEach(function (id) {
+        const it = B.ITEM_MAP[id];
+        if (it && it.key) n += st.items[id];
+      });
+      return n;
+    }
+    if (want === 'rep') {
+      let m = 0;
+      Object.keys(st.rep || {}).forEach(function (k) { if (st.rep[k] > m) m = st.rep[k]; });
+      return m;
+    }
+    if (want === 'crafted') return st.crafted || 0;
+    if (want === 'armed') {
+      const cls = {};
+      Object.keys(B.GUN_CLASSES || {}).forEach(function (k) { if (self.armed(k)) cls[k] = 1; });
+      return Object.keys(cls).length;
+    }
+    if (want === 'pet') return st.flags && st.flags.has_pet ? 1 : 0;
+    if (want === 'base') return st.flags && st.flags.has_base ? 1 : 0;
+    if (want === 'keepsakes') return Object.keys(Engine.collected()).length;
+    if (want === 'full') return st.fullPages || 0;
+    if (want === 'warm') {
+      const st2 = st;
+      return Object.keys(st2.items || {}).some(function (id) {
+        const it = B.ITEM_MAP[id];
+        return it && it.warm && st2.items[id] > 0;
+      }) ? 1 : 0;
+    }
+    if (want === 'finale') return st.mode === 'finale' || st.mode === 'ending' ? 1 : 0;
+    return 0;
+  };
+
+  /* 조건이 찬 미션이 있으면 그 자리에서 쿠키를 준다 */
+  Engine.prototype.checkMissions = function () {
+    const list = Engine.missions();
+    const r = Engine.records();
+    r.missionDone = r.missionDone || {};
+    const got = [];
+    const self = this;
+    list.forEach(function (m) {
+      const def = (B.MISSIONS || []).filter(function (x) { return x.id === m.id; })[0];
+      if (!def) return;
+      const key = m.id + '_' + m.tier;
+      if (r.missionDone[key]) return;
+      const goal = def.goal[m.tier];
+      if (self.missionValue(def.want) < goal) return;
+      r.missionDone[key] = 1;
+      r.cookies = (r.cookies || 0) + def.reward[m.tier];
+      got.push({ name: def.name, cookies: def.reward[m.tier] });
+    });
+    if (got.length) saveRec(r);
+    return got;
   };
 
   /* ── 수집한 이야기 ─────────────────────────────
@@ -189,6 +372,17 @@
     }
     return got;
   };
+
+  Engine.markLong = function (id) {
+    try {
+      const r = Engine.records();
+      r.longs = r.longs || {};
+      r.longs[id] = (r.longs[id] || 0) + 1;
+      saveRec(r);
+    } catch (e) { /* 무시 */ }
+  };
+
+  Engine.longsDone = function () { return Engine.records().longs || {}; };
 
   Engine.markSpecial = function (id) {
     try {
@@ -683,8 +877,9 @@
 
     /* 도입부 */
     if (st.mode === 'prologue') {
-      if (st.prologueIdx < A.PROLOGUE.length) {
-        const sc = A.PROLOGUE[st.prologueIdx++];
+      const PRO = this.prologue();
+      if (st.prologueIdx < PRO.length) {
+        const sc = PRO[st.prologueIdx++];
         this.queue.push(scene(sc.pages, this.gen.buildChoices({ choices: sc.choices }, {}, {}, this), 'story'));
         return;
       }
@@ -712,7 +907,8 @@
     }
 
     /* 본편 장 */
-    const ch = A.CHAPTERS[st.chapterIdx];
+    const CH = this.chapters();
+    const ch = CH[st.chapterIdx];
     if (ch && (st.inChapter || st.page >= ch.at)) {
       st.inChapter = true;
       if (st.sceneIdx < ch.scenes.length) {
@@ -726,6 +922,44 @@
       st.sceneIdx = 0;
       st.chapterIdx++;
       st.phase = st.chapterIdx >= 7 ? 3 : (st.chapterIdx >= 3 ? 2 : 1);
+    }
+
+    /* 장편 — 상점에서 사서 적용해 둔 것. 정해진 페이지에 시작해 끝까지 이어진다 */
+    const LG = B.LONGS || {};
+    if (st.lgId && LG[st.lgId]) {
+      const lg = LG[st.lgId];
+      if (st.lgScene < lg.scenes.length) {
+        const sc = lg.scenes[st.lgScene++];
+        const pages = sc.pages.slice();
+        if (st.lgScene === 1) pages.unshift('__TITLE__' + lg.title);
+        this.queue.push(scene(pages, this.gen.buildChoices({ choices: sc.choices }, {}, {}, this),
+                              'long', { lg: lg.id }));
+        return;
+      }
+      /* 장편이 끝나면 그 장편의 마무리를 한 장면 보여 준다 */
+      if (!st.lgDone) {
+        st.lgDone = 1;
+        const e2 = lg.ending || {};
+        const pages = ['__TITLE__' + (e2.name || lg.name)].concat(e2.pages || []);
+        this.queue.push(scene(pages, this.gen.buildChoices({ choices: [
+          { t: '이야기를 접는다.', res: [], eff: {} }
+        ] }, {}, {}, this), 'long', { lg: lg.id }));
+        return;
+      }
+      if (st.longDone.indexOf(st.lgId) < 0) st.longDone.push(st.lgId);
+      Engine.markLong(st.lgId);
+      st.lgId = null; st.lgScene = 0; st.lgDone = 0;
+    } else if (!st.lgId) {
+      const on = Engine.longApplied();
+      const ids = Object.keys(LG).filter(function (id) {
+        return on[id] && st.longDone.indexOf(id) < 0 && st.page >= (LG[id].at || 150);
+      });
+      if (ids.length) {
+        st.lgId = ids[Math.floor(this.rnd() * ids.length)];
+        st.lgScene = 0;
+        st.lgDone = 0;
+        return this.produce();
+      }
     }
 
     /* 특별 이야기 — 순서를 섞어 두고, 무작위 간격으로 한 편씩 끼워 넣는다.
@@ -832,6 +1066,17 @@
     }], 'ending'));
   };
 
+  /* 시작 사연에 따라 도입부와 본편이 갈린다 */
+  Engine.prototype.prologue = function () {
+    const P = B.ARCS.PROLOGUES || {};
+    return P[this.st.origin] || B.ARCS.PROLOGUE;
+  };
+
+  Engine.prototype.chapters = function () {
+    if (this.st.origin === 'coma' && B.ARCS.CHAPTERS_COMA) return B.ARCS.CHAPTERS_COMA;
+    return B.ARCS.CHAPTERS;
+  };
+
   /* ── 진행 ────────────────────────────────────── */
   Engine.prototype.step = function () {
     if (!this.queue.length) this.produce();
@@ -922,6 +1167,16 @@
       else if (wear < 0) this.heal('mp', 'mpSub', 0.25);   /* 한 칸이 아니라 마모 한 눈금만 */
     }
     if (st.page % 43 === 0 && st.rad > 0) st.rad = clamp(st.rad - 1, 0, RAD_MAX);
+
+    if (st.hp >= MAX && st.mp >= MAX) st.fullPages = (st.fullPages || 0) + 1;
+
+    /* 조건이 찬 미션이 있으면 쿠키를 준다 */
+    if (st.page % 5 === 0) {
+      const mdone = this.checkMissions();
+      if (mdone.length) {
+        st.mToast = mdone.map(function (m) { return m.name + ' +' + m.cookies; });
+      }
+    }
 
     /* 조건이 찬 수집 이야기가 있으면 그 자리에서 알려 준다 */
     const got = this.checkKeepsakes();
@@ -1072,7 +1327,7 @@
   Engine.prototype.progress = function () {
     const st = this.st;
     const byPage = st.page / FINAL_PAGE;
-    const byChapter = st.chapterIdx / (B.ARCS.CHAPTERS.length + 1);
+    const byChapter = st.chapterIdx / (this.chapters().length + 1);
     return Math.min(100, Math.round(Math.max(byPage, byChapter * 0.9) * 100));
   };
 
@@ -1103,6 +1358,7 @@
     use.forEach(function (id) { self.delItem(id, 1); });
     for (let i = 0; i < (r.n || 1); i++) this.addItem(r.make, 1);
     this.st.log.push('만들기 · ' + r.name);
+    this.st.crafted = (this.st.crafted || 0) + 1;
     this.ensureExit();      /* 재료가 선택지 조건이었을 수 있다 */
     return {
       name: r.name,
@@ -1137,7 +1393,7 @@
       items: items, skills: skills, rep: st.rep, flags: st.flags,
       mode: st.mode, chapter: st.chapterIdx, ending: st.ending,
       titles: st.titles || [], specialsDone: st.specialsDone || [],
-      chapterTitle: (B.ARCS.CHAPTERS[st.chapterIdx] || {}).title || '종장'
+      chapterTitle: (this.chapters()[st.chapterIdx] || {}).title || '종장'
     };
   };
 

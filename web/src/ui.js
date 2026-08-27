@@ -30,6 +30,7 @@
   function UI(engine) {
     this.e = engine;
     this.gtab = 'all';
+    this.origin = 'after18';
     this.sortNew = true;
     this.radioIdx = 0;
     this.revealing = null;
@@ -50,7 +51,14 @@
           saved.st.page + '페이지 · 진행도 ' + saved.progress() + '%';
       }
     }
+    this.paintCookies();
     this.rollRadio();
+  };
+
+  UI.prototype.paintCookies = function () {
+    const n = B.Engine.cookies();
+    const box = el('cookieN');
+    if (box) box.textContent = n.toLocaleString('ko-KR');
   };
 
   UI.prototype.rollRadio = function () {
@@ -101,6 +109,18 @@
     el('btnStart').addEventListener('click', function () { self.onStart(); });
     el('btnResume').addEventListener('click', function () { self.onResume(); });
     el('radioNext').addEventListener('click', function () { self.rollRadio(); });
+    Array.prototype.forEach.call(doc.querySelectorAll('.origin-pick .origin'), function (b) {
+      b.addEventListener('click', function () {
+        if (B.Sound) B.Sound.soft();
+        self.origin = b.getAttribute('data-origin');
+        Array.prototype.forEach.call(doc.querySelectorAll('.origin-pick .origin'), function (x) {
+          x.classList.toggle('on', x === b);
+        });
+        const sub = el('startSub');
+        if (sub) sub.textContent = b.querySelector('b').textContent;
+      });
+    });
+
     Array.prototype.forEach.call(doc.querySelectorAll('.menu-nav button'), function (b) {
       b.addEventListener('click', function () { self.openInfo(b.getAttribute('data-menu')); });
     });
@@ -169,7 +189,7 @@
     function go() {
       B.RESETTING = true;
       B.Engine.clearSave();
-      const engine = new B.Engine();
+      const engine = new B.Engine(null, self.origin);
       self.e = engine;
       global.__b2033.engine = engine;
       B.RESETTING = false;
@@ -221,6 +241,16 @@
     const pages = el('pages');
     const self = this;
     const scrollBefore = el('story').scrollTop;
+
+    /* 끝난 미션이 있으면 알려 준다 */
+    if (this.e && this.e.st && this.e.st.mToast && this.e.st.mToast.length) {
+      const ms = this.e.st.mToast;
+      this.e.st.mToast = null;
+      const self4 = this;
+      ms.forEach(function (m, i) {
+        global.setTimeout(function () { self4.toast('미션 완료 — ' + m + ' 🍪'); }, 300 + i * 1500);
+      });
+    }
 
     /* 조건이 차서 수집된 이야기가 있으면 알려 준다 */
     if (this.e && this.e.st && this.e.st.ksToast && this.e.st.ksToast.length) {
@@ -712,6 +742,140 @@
            + Object.keys(on).length + '편');
     }
 
+    if (which === 'shop') {
+      el('infoTitle').textContent = '상점';
+      const own = B.Engine.owned();
+      const on = B.Engine.longApplied();
+      const done = B.Engine.longsDone();
+      para('쿠키로 장편 이야기를 삽니다. 사면 바로 적용되고, 적용해 둔 편은 여정 중에 이어서 나옵니다.');
+      row('가진 쿠키', B.Engine.cookies().toLocaleString('ko-KR') + ' 🍪');
+      h('장편 이야기');
+      Object.keys(B.LONGS || {}).forEach(function (id) {
+        const lg = B.LONGS[id];
+        const price = (B.SHOP_PRICE || {})[id] || 0;
+        const d = doc.createElement('div');
+        d.className = 'shop-row';
+        const left = doc.createElement('div');
+        left.className = 's-l';
+        const nb = doc.createElement('b');
+        nb.textContent = lg.name + ' — ' + lg.sub;
+        const ni = doc.createElement('i');
+        ni.textContent = lg.intro + '\n장면 ' + lg.scenes.length + '개'
+          + (done[id] ? ' · 끝낸 적 ' + done[id] + '번' : '');
+        left.appendChild(nb); left.appendChild(ni);
+        const right = doc.createElement('div');
+        right.className = 's-r';
+        const btn = doc.createElement('button');
+        btn.className = 'info-btn ks-toggle';
+        function paint() {
+          if (!B.Engine.owned()[id]) btn.textContent = price + ' 🍪';
+          else btn.textContent = B.Engine.longApplied()[id] ? '적용됨' : '적용 안 함';
+        }
+        paint();
+        btn.addEventListener('click', function () {
+          if (B.Sound) B.Sound.click();
+          if (!B.Engine.owned()[id]) {
+            if (B.Engine.buyLong(id)) { self2.toast(B.josa(lg.name + '을(를) 샀습니다.')); }
+            else { self2.toast('쿠키가 모자랍니다.'); }
+          } else {
+            B.Engine.toggleLong(id);
+          }
+          paint();
+          self2.paintCookies();
+          const c = body.querySelector('.info-row .muted');
+          if (c) c.textContent = B.Engine.cookies().toLocaleString('ko-KR') + ' 🍪';
+        });
+        right.appendChild(btn);
+        d.appendChild(left); d.appendChild(right);
+        body.appendChild(d);
+      });
+      para('쿠키는 미션을 끝내면 들어옵니다. 우편함도 확인해 보세요.');
+    }
+
+    if (which === 'missions') {
+      el('infoTitle').textContent = '미션';
+      const eng = self2.e;
+      const done = B.Engine.missionDone();
+      para('셋이 붙어 있습니다. 여정 중에 조건을 채우면 그 자리에서 쿠키가 들어옵니다.');
+      row('가진 쿠키', B.Engine.cookies().toLocaleString('ko-KR') + ' 🍪');
+      h('지금 미션');
+      B.Engine.missions().forEach(function (m) {
+        const def = (B.MISSIONS || []).filter(function (x) { return x.id === m.id; })[0];
+        if (!def) return;
+        const goal = def.goal[m.tier];
+        const rew = def.reward[m.tier];
+        const now = eng ? eng.missionValue(def.want) : 0;
+        const ok = !!done[m.id + '_' + m.tier];
+        const d = doc.createElement('div');
+        d.className = 'mission-row' + (ok ? ' done' : '');
+        const t = doc.createElement('div');
+        t.className = 'm-t';
+        const nb = doc.createElement('b');
+        nb.textContent = def.name + (ok ? ' · 완료' : '');
+        const rb = doc.createElement('span');
+        rb.className = 'muted';
+        rb.textContent = rew + ' 🍪';
+        t.appendChild(nb); t.appendChild(rb);
+        const dd = doc.createElement('div');
+        dd.className = 'm-d';
+        dd.textContent = def.desc.replace('{n}', goal)
+          + (ok ? '' : '  (' + Math.min(now, goal) + ' / ' + goal + ')');
+        const bar = doc.createElement('div');
+        bar.className = 'm-bar';
+        const fill = doc.createElement('span');
+        fill.style.width = Math.min(100, Math.round((ok ? goal : now) / goal * 100)) + '%';
+        bar.appendChild(fill);
+        d.appendChild(t); d.appendChild(dd); d.appendChild(bar);
+        body.appendChild(d);
+      });
+      const rb2 = doc.createElement('button');
+      rb2.className = 'info-btn';
+      rb2.textContent = '갱신하기';
+      rb2.addEventListener('click', function () {
+        if (B.Sound) B.Sound.click();
+        B.Engine.rollMissions();
+        self2.openInfo('missions');
+      });
+      body.appendChild(rb2);
+      para('이미 끝낸 미션은 갱신해도 안 사라집니다. 여정 중에는 다섯 페이지마다 확인합니다.');
+    }
+
+    if (which === 'mail') {
+      el('infoTitle').textContent = '우편함';
+      const taken = B.Engine.mailTaken();
+      row('가진 쿠키', B.Engine.cookies().toLocaleString('ko-KR') + ' 🍪');
+      let left = 0;
+      (B.MAIL || []).forEach(function (m) {
+        const d = doc.createElement('div');
+        d.className = 'mail-row';
+        const f = doc.createElement('div'); f.className = 'ml-from'; f.textContent = m.from;
+        const t = doc.createElement('div'); t.className = 'ml-title'; t.textContent = m.title;
+        const b2 = doc.createElement('div'); b2.className = 'ml-body'; b2.textContent = m.body;
+        d.appendChild(f); d.appendChild(t); d.appendChild(b2);
+        const btn = doc.createElement('button');
+        btn.className = 'info-btn';
+        function paint() {
+          btn.textContent = B.Engine.mailTaken()[m.id]
+            ? '받았습니다' : (m.cookies || 0).toLocaleString('ko-KR') + ' 🍪 받기';
+          btn.disabled = !!B.Engine.mailTaken()[m.id];
+        }
+        paint();
+        if (!taken[m.id]) left++;
+        btn.addEventListener('click', function () {
+          if (B.Sound) B.Sound.click();
+          const got = B.Engine.takeMail(m.id);
+          if (got) self2.toast('쿠키 ' + got.toLocaleString('ko-KR') + '개를 받았습니다.');
+          paint();
+          self2.paintCookies();
+          const c = body.querySelector('.info-row .muted');
+          if (c) c.textContent = B.Engine.cookies().toLocaleString('ko-KR') + ' 🍪';
+        });
+        d.appendChild(btn);
+        body.appendChild(d);
+      });
+      if (!left) para('안 받은 것이 없습니다.');
+    }
+
     if (which === 'help') {
       el('infoTitle').textContent = '도움말';
       h('읽는 법');
@@ -725,6 +889,10 @@
       para('체력·멘탈·돈은 각각 세 칸입니다. 한 칸이 깎이려면 네 번 다쳐야 하고, 회복은 한 번에 한 칸씩 돌아옵니다. 체력이나 멘탈이 0이 되면 그 자리에서 끝납니다.');
       h('피폭');
       para('네 칸까지 있습니다. 시간이 지나면 조금씩 빠지지만, 오염 구역에서는 그보다 빨리 찹니다.');
+      h('쿠키와 상점');
+      para('미션을 끝내면 쿠키가 들어옵니다. 미션은 셋이 붙어 있고 갱신하기를 누르면 새로 뽑습니다. 쿠키로 상점에서 장편 이야기를 사고, 적용해 두면 여정 중에 이어서 나옵니다. 우편함도 한 번 열어 보세요.');
+      h('시작 사연');
+      para('게임 시작 버튼 아래에서 고릅니다. 「부산-애프터에이틴」은 산에서 자라 열여덟 해 뒤에 내려온 사람이고, 「부산-코마」는 그날 이전에 눈을 감고 십팔 년 뒤에 깬 사람입니다. 도입부도 본편도 다릅니다.');
       h('수집한 이야기');
       para('여정 중에 조건을 맞추면 짧은 이야기가 하나씩 수집됩니다. 메뉴의 「수집한 이야기」에서 적용해 두면 다음 여정의 특별 이야기 순번에 같이 섞여, 새로 시작한 판에서도 나올 수 있습니다.');
       h('소리');
