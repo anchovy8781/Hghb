@@ -222,6 +222,18 @@
     const self = this;
     const scrollBefore = el('story').scrollTop;
 
+    /* 조건이 차서 수집된 이야기가 있으면 알려 준다 */
+    if (this.e && this.e.st && this.e.st.ksToast && this.e.st.ksToast.length) {
+      const names = this.e.st.ksToast;
+      this.e.st.ksToast = null;
+      const self3 = this;
+      names.forEach(function (n, i) {
+        global.setTimeout(function () {
+          self3.toast('이야기를 수집했습니다 — 「' + n + '」');
+        }, 400 + i * 1600);
+      });
+    }
+
     pages.innerHTML = '';
     const nodes = [];
 
@@ -659,6 +671,47 @@
       para('죽는 것도 엔딩입니다. 다르게 걸으면 다르게 끝납니다.');
     }
 
+    if (which === 'keepsakes') {
+      el('infoTitle').textContent = '수집한 이야기';
+      const list = B.Engine.keepsakeList();
+      const got = B.Engine.collected();
+      const on = B.Engine.applied();
+      para('여정 중에 조건을 맞추면 여기 쌓입니다. 적용해 두면 다음 여정에서 나올 수 있습니다.');
+      h('가지고 있는 것');
+      let any = 0;
+      list.forEach(function (k) {
+        if (!got[k.id]) return;
+        any++;
+        const d = doc.createElement('div');
+        d.className = 'info-row';
+        d.innerHTML = '<span></span><span class="muted"></span>';
+        d.children[0].textContent = k.title.replace('수집한 이야기 · ', '');
+        const b = doc.createElement('button');
+        b.className = 'info-btn ks-toggle';
+        function paint() { b.textContent = B.Engine.applied()[k.id] ? '적용됨' : '적용 안 함'; }
+        paint();
+        b.addEventListener('click', function () {
+          if (B.Sound) B.Sound.click();
+          B.Engine.toggleApplied(k.id);
+          paint();
+        });
+        d.children[1].appendChild(b);
+        body.appendChild(d);
+      });
+      if (!any) note0('아직 하나도 없습니다. 여정 중에 조건이 차면 그 자리에서 알려 줍니다.');
+
+      h('아직 못 얻은 것');
+      let left = 0;
+      list.forEach(function (k) {
+        if (got[k.id]) return;
+        left++;
+        row('???', k.hint || '');
+      });
+      if (!left) note0('전부 모았습니다.');
+      para('수집 ' + Object.keys(got).length + ' / ' + list.length + '편 · 적용 '
+           + Object.keys(on).length + '편');
+    }
+
     if (which === 'help') {
       el('infoTitle').textContent = '도움말';
       h('읽는 법');
@@ -672,6 +725,8 @@
       para('체력·멘탈·돈은 각각 세 칸입니다. 한 칸이 깎이려면 네 번 다쳐야 하고, 회복은 한 번에 한 칸씩 돌아옵니다. 체력이나 멘탈이 0이 되면 그 자리에서 끝납니다.');
       h('피폭');
       para('네 칸까지 있습니다. 시간이 지나면 조금씩 빠지지만, 오염 구역에서는 그보다 빨리 찹니다.');
+      h('수집한 이야기');
+      para('여정 중에 조건을 맞추면 짧은 이야기가 하나씩 수집됩니다. 메뉴의 「수집한 이야기」에서 적용해 두면 다음 여정의 특별 이야기 순번에 같이 섞여, 새로 시작한 판에서도 나올 수 있습니다.');
       h('소리');
       para('선택할 때마다 짧게 딸깍 소리가 납니다. 파일이 아니라 그때그때 만들어 내는 소리라 용량은 늘지 않습니다.');
       const sb = doc.createElement('button');

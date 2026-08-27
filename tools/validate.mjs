@@ -20,7 +20,7 @@ const FILES = [
   'data/templates5.js', 'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js', 'data/templates13.js', 'data/templates14.js', 'data/templates15.js', 'data/templates16.js', 'data/templates17.js', 'data/templates18.js', 'data/templates19.js', 'data/templates20.js', 'data/templates21.js', 'data/templates22.js', 'data/choices_extra.js', 'data/choices_extra2.js',
   'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js', 'data/bodies4.js', 'data/bodies5.js',
   'data/specials.js', 'data/specials2.js', 'data/specials3.js', 'data/specials4.js', 'data/specials5.js', 'data/specials6.js', 'data/specials7.js', 'data/specials8.js', 'data/specials9.js', 'data/specials10.js',
-  'data/arcs.js', 'data/arcs2.js',
+  'data/arcs.js', 'data/arcs2.js', 'data/epilogue.js', 'data/keepsakes.js',
   'generator.js', 'engine.js'
 ].filter((f) => fs.existsSync(path.join(srcDir, f)));
 
@@ -265,7 +265,9 @@ const spIds = new Set();
     if (!itemIds.has(id)) errors.push(`특별 이야기 ${sp.id}: 없는 조건 아이템 "${id}"`);
   });
   if (typeof sp.at !== 'number') errors.push(`특별 이야기 ${sp.id}: 등장 페이지(at) 없음`);
-  if (!sp.scenes || sp.scenes.length < 2) errors.push(`특별 이야기 ${sp.id}: 장면이 너무 적음`);
+  /* 수집한 이야기는 한 장면짜리 짧은 편이다. 특별 이야기는 두 장면 이상이어야 한다 */
+  const minScenes = sp.keepsake ? 1 : 2;
+  if (!sp.scenes || sp.scenes.length < minScenes) errors.push(`특별 이야기 ${sp.id}: 장면이 너무 적음`);
   (sp.scenes || []).forEach((sc, i) => {
     checkScene(sc, `${sp.title} 장면[${i}]`);
     if (!sc.choices || !sc.choices.length) errors.push(`${sp.title} 장면[${i}]: 선택지 없음`);

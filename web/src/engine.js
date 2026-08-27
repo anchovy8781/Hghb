@@ -123,6 +123,73 @@
     } catch (e) { /* 무시 */ }
   };
 
+  /* ── 수집한 이야기 ─────────────────────────────
+   *   조건을 맞추면 그 자리에서 수집되고, 기록실에 남습니다.
+   *   적용해 두면 다음 여정의 특별 이야기 순번에 같이 섞입니다.
+   */
+  Engine.keepsakeList = function () { return B.KEEPSAKES || []; };
+
+  Engine.collected = function () {
+    const r = Engine.records();
+    return r.keepsakes || {};
+  };
+
+  Engine.applied = function () {
+    const r = Engine.records();
+    return r.applied || {};
+  };
+
+  Engine.collect = function (id) {
+    try {
+      const r = Engine.records();
+      r.keepsakes = r.keepsakes || {};
+      if (r.keepsakes[id]) return false;
+      r.keepsakes[id] = 1;
+      r.applied = r.applied || {};
+      r.applied[id] = 1;              /* 처음 얻으면 바로 적용해 둔다 */
+      global.localStorage.setItem(RECORD_KEY, JSON.stringify(r));
+      return true;
+    } catch (e) { return false; }
+  };
+
+  Engine.toggleApplied = function (id) {
+    try {
+      const r = Engine.records();
+      r.keepsakes = r.keepsakes || {};
+      if (!r.keepsakes[id]) return false;
+      r.applied = r.applied || {};
+      if (r.applied[id]) delete r.applied[id]; else r.applied[id] = 1;
+      global.localStorage.setItem(RECORD_KEY, JSON.stringify(r));
+      return !!r.applied[id];
+    } catch (e) { return false; }
+  };
+
+  /* 지금 상태가 수집 조건을 채웠는지 본다 */
+  Engine.prototype.checkKeepsakes = function () {
+    const st = this.st;
+    const list = B.KEEPSAKES || [];
+    const got = [];
+    for (let i = 0; i < list.length; i++) {
+      const k = list[i];
+      const u = k.unlock || {};
+      if (st.ksGot && st.ksGot.indexOf(k.id) >= 0) continue;
+      if (u.flag && !st.flags[u.flag]) continue;
+      if (u.item && !(st.items[u.item] > 0)) continue;
+      if (u.items) {
+        let ok = true;
+        for (let q = 0; q < u.items.length; q++) if (!(st.items[u.items[q]] > 0)) { ok = false; break; }
+        if (!ok) continue;
+      }
+      if (u.title && (st.titles || []).indexOf(u.title) < 0) continue;
+      if (u.page && st.page < u.page) continue;
+      if (u.sp && st.specialsDone.indexOf(u.sp) < 0) continue;
+      st.ksGot = st.ksGot || [];
+      st.ksGot.push(k.id);
+      if (Engine.collect(k.id)) got.push(k);
+    }
+    return got;
+  };
+
   Engine.markSpecial = function (id) {
     try {
       const r = Engine.records();
@@ -530,6 +597,7 @@
     if (it.broken && B.ITEM_MAP[it.broken]) this.addItem(it.broken, 1);
     if (res && res.losses) res.losses.push(it.name + (left > 0 ? ' 찢어짐' : ' 찢어짐(피해 막음)'));
     this.st.log.push('막음 · ' + it.name);
+    this.st.flags.armor_saved = 1;
     return left;
   };
 
@@ -732,6 +800,27 @@
     const dead = id.indexOf('death_') === 0;
     const pages = e.pages.slice();
     if (dead) pages.unshift('__TITLE__사망했습니다');
+
+    /* 엔딩마다 붙는 맺는 말 */
+    if (B.CODA && B.CODA[id]) pages.push(B.CODA[id]);
+
+    /* 그동안 무엇을 했는지 정리해 준다 */
+    if (B.summarize) {
+      const sum = B.summarize(st);
+      if (sum.length) pages.push('__TITLE__이 여정에 남은 것');
+      for (let i = 0; i < sum.length; i += 2) {
+        pages.push(sum.slice(i, i + 2).join('\n'));
+      }
+    }
+
+    /* 조건이 맞을 때만 붙는 줄 */
+    if (B.ENDING_EXTRA) {
+      const extra = B.ENDING_EXTRA.filter(function (x) {
+        try { return x.when(st); } catch (err) { return false; }
+      }).map(function (x) { return x.text; });
+      if (extra.length) pages.push(extra.join('\n'));
+    }
+
     pages.push('— ' + e.name + ' —\n\n' + st.page + '페이지를 걸었습니다.'
       + (dead ? '\n되살릴 것이 가방에 없었습니다.' : ''));
     this.queue.push(scene(pages, [{
@@ -775,7 +864,10 @@
     const SP = B.SPECIALS || [];
     if (st.spOrder) return;
     const ids = SP.filter(function (sp) {
-      return st.specialsDone.indexOf(sp.id) < 0;
+      if (st.specialsDone.indexOf(sp.id) >= 0) return false;
+      /* 수집 이야기는 적용해 둔 것만 순번에 든다 */
+      if (sp.keepsake) return !!Engine.applied()[sp.id];
+      return true;
     }).map(function (sp) { return sp.id; });
     for (let i = ids.length - 1; i > 0; i--) {          /* 피셔-예이츠 */
       const j = Math.floor(this.rnd() * (i + 1));
@@ -828,6 +920,14 @@
       else if (wear < 0) this.heal('mp', 'mpSub', 0.25);   /* 한 칸이 아니라 마모 한 눈금만 */
     }
     if (st.page % 43 === 0 && st.rad > 0) st.rad = clamp(st.rad - 1, 0, RAD_MAX);
+
+    /* 조건이 찬 수집 이야기가 있으면 그 자리에서 알려 준다 */
+    const got = this.checkKeepsakes();
+    if (got.length) {
+      this.st.ksToast = got.map(function (k) {
+        return k.title.replace('수집한 이야기 · ', '');
+      });
+    }
     this.checkDeath();
   };
 

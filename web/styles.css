@@ -368,6 +368,7 @@ html, body {
   font: inherit; font-weight: 700; border-radius: 10px; cursor: pointer;
 }
 .info-btn.danger { color: var(--red); }
+.info-btn.ks-toggle { margin: 0; padding: 4px 10px; font-size: 13px; width: auto; }
 
 .toast {
   position: fixed; left: 50%; bottom: 110px; transform: translateX(-50%);
