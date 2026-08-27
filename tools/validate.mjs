@@ -15,9 +15,9 @@ const srcDir = path.join(here, '..', 'web', 'src');
 
 const FILES = [
   'rng.js',
-  'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/items2.js', 'data/items3.js', 'data/items4.js', 'data/items5.js', 'data/items6.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
+  'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/items2.js', 'data/items3.js', 'data/items4.js', 'data/items5.js', 'data/items6.js', 'data/items7.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
   'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js',
-  'data/templates5.js', 'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js', 'data/templates13.js', 'data/templates14.js', 'data/templates15.js', 'data/templates16.js', 'data/templates17.js', 'data/templates18.js', 'data/templates19.js', 'data/templates20.js', 'data/templates21.js', 'data/templates22.js', 'data/choices_extra.js', 'data/choices_extra2.js',
+  'data/templates5.js', 'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js', 'data/templates13.js', 'data/templates14.js', 'data/templates15.js', 'data/templates16.js', 'data/templates17.js', 'data/templates18.js', 'data/templates19.js', 'data/templates20.js', 'data/templates21.js', 'data/templates22.js', 'data/templates23.js', 'data/choices_extra.js', 'data/choices_extra2.js', 'data/choices_lv.js',
   'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js', 'data/bodies4.js', 'data/bodies5.js',
   'data/specials.js', 'data/specials2.js', 'data/specials3.js', 'data/specials4.js', 'data/specials5.js', 'data/specials6.js', 'data/specials7.js', 'data/specials8.js', 'data/specials9.js', 'data/specials10.js',
   'data/arcs.js', 'data/arcs2.js', 'data/epilogue.js', 'data/keepsakes.js',
@@ -154,6 +154,8 @@ function checkPlaceholders(text, slots, where) {
   const provided = new Set(['zone']);
   if (slots.place) provided.add('place');
   if (slots.npc) { ['npc', 'role', 'trait', 'look', 'habit', 'line'].forEach((k) => provided.add(k)); }
+  /* {spend} 는 값으로 실제 나갈 물건 이름. 종류로 값을 무는 선택지에서만 채워진다 */
+  provided.add('spend');
   if (slots.threat) provided.add('threat');
   if (slots.item) provided.add('item');
   if (slots.item2) provided.add('item2');
@@ -442,6 +444,73 @@ flagsUsed.forEach((wheres, flag) => {
   Object.keys((B.ARCS && B.ARCS.ENDINGS) || {}).forEach((k) => {
     const e = B.ARCS.ENDINGS[k];
     if (e && LATIN.test(e.name)) say('엔딩', e.name);
+  });
+}
+
+/* ── 총은 분류와 탄종이 다 있어야 총이다 ──
+ *   빠지면 "지금 쏠 수 있는 총"에 안 잡히고, 선택지 앞의 「산탄총 · 탄」도 안 켜진다.
+ *   실제로 스물넷이 kind:'ammo' 인 채로 굴러다녔다. */
+{
+  const guns = B.ITEMS.filter((i) => i.kind === 'gun');
+  const ammo = B.ITEMS.filter((i) => i.kind === 'ammo');
+  const cals = new Set(ammo.map((a) => a.caliber).filter(Boolean));
+  guns.forEach((g) => {
+    if (!g.gun) errors.push(`총 "${g.name}" 에 분류(gun)가 없습니다`);
+    else if (!B.GUN_CLASSES || !B.GUN_CLASSES[g.gun]) errors.push(`총 "${g.name}": 없는 분류 "${g.gun}"`);
+    if (!g.caliber) errors.push(`총 "${g.name}" 에 탄종(caliber)이 없습니다`);
+    else if (!cals.has(g.caliber)) errors.push(`총 "${g.name}": 탄종 "${g.caliber}" 에 맞는 탄이 하나도 없습니다`);
+  });
+  ammo.forEach((a) => {
+    if (!a.caliber && a.thrown === undefined) errors.push(`탄 "${a.name}" 에 탄종(caliber)이 없습니다`);
+  });
+  const used = new Set(guns.map((g) => g.caliber));
+  cals.forEach((c) => { if (!used.has(c)) warns.push(`탄종 "${c}" 을(를) 쓰는 총이 없습니다`); });
+  /* 이름이 총인데 총이 아닌 것 */
+  B.ITEMS.forEach((i) => {
+    if (i.kind === 'gun') return;
+    if (/(산탄총|소총|권총|기관단총|리볼버|엽총|석궁)$/.test(i.name)) {
+      errors.push(`"${i.name}" 은(는) 이름은 총인데 kind 가 "${i.kind}" 입니다`);
+    }
+  });
+}
+
+/* ── 조사 표기가 엔진이 아는 형태인지 ──
+ *   "(으)로" 처럼 쓰면 치환이 안 돼서 괄호가 그대로 화면에 나온다. */
+{
+  const OKJOSA = ['은(는)', '는(은)', '이(가)', '가(이)', '을(를)', '를(을)',
+                  '과(와)', '와(과)', '아(야)', '야(아)', '이었(였)', '이라(라)',
+                  '으로(로)', '로(으로)', '이나(나)', '이란(란)', '이야(야)', '이며(며)'];
+  const seen = new Set();
+  const scan = (x, where) => {
+    if (typeof x !== 'string') return;
+    const re = /([가-힣]{1,3})\(([가-힣]{1,3})\)/g;
+    let g;
+    while ((g = re.exec(x))) {
+      const cand = g[1] + '(' + g[2] + ')';
+      if (OKJOSA.some((o) => cand.endsWith(o))) continue;
+      const key = cand + where;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      errors.push(`${where}: 엔진이 모르는 조사 표기 "${cand}" — 괄호가 화면에 그대로 나옵니다`);
+    }
+  };
+  B.TEMPLATES.forEach((t) => {
+    (t.open || []).forEach((x) => scan(x, t.id));
+    (t.mid || []).forEach((x) => scan(x, t.id));
+    ((B.BODIES && B.BODIES[t.id]) || []).forEach((x) => scan(x, t.id));
+    t.choices.forEach((c) => {
+      scan(c.t, t.id);
+      [].concat(c.res || [], c.ok || [], c.no || []).forEach((x) => scan(x, t.id));
+    });
+  });
+  (B.SPECIALS || []).forEach((sp) => {
+    (sp.scenes || []).forEach((sc) => {
+      (sc.pages || []).forEach((x) => scan(x, sp.id));
+      (sc.choices || []).forEach((c) => {
+        scan(c.t, sp.id);
+        [].concat(c.res || [], c.ok || [], c.no || []).forEach((x) => scan(x, sp.id));
+      });
+    });
   });
 }
 

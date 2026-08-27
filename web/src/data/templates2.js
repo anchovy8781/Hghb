@@ -66,7 +66,7 @@
     ],
     mid: ['{line}'],
     choices: [
-      { t: '{item}을(를) 나눠 준다.', need: { itemKind: 'food' }, cost: { itemKind: 'food' },
+      { t: '{spend}을(를) 나눠 준다.', need: { itemKind: 'food' }, cost: { itemKind: 'food' },
         res: ['아이가 두 손으로 받아 들고는 한참을 들여다봅니다. 그러고는 아주 작게 "고맙습니다"라고 합니다.'],
         eff: { mp: 1, add: ['stable'], rep: { free: 1 } } },
       { t: '가진 것과 바꾸자고 한다.', need: { skill: 'talk' },

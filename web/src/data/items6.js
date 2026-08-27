@@ -4,6 +4,18 @@
   const B = global.B;
 
   const ADD = [
+    /* ── 탄 ──────────────────────────────────── */
+    { id: 'astone', name: '매끈한 조약돌', kind: 'ammo', val: 1, caliber: 'stone',
+      note: '새총에 물린다. 강가에 얼마든지 있다.' },
+    { id: 'a12g2', name: '재장전한 산탄', kind: 'ammo', val: 1, caliber: '12g',
+      note: '탄피에 화약과 쇠구슬을 다시 채웠다. 가끔 안 나간다.' },
+    { id: 'a45b', name: '손으로 만 .45구경 탄', kind: 'ammo', val: 1, caliber: '45',
+      note: '탄두가 좀 비뚤다. 그래도 나간다.' },
+    { id: 'a9mm2', name: '재생 9밀리 탄', kind: 'ammo', val: 1, caliber: '9mm',
+      note: '탄피를 주워 다시 채운 것. 이 도시의 탄은 대개 이렇다.' },
+    { id: 'a300b', name: '.300 매그넘 수제탄', kind: 'ammo', val: 2, caliber: '300',
+      note: '만들 줄 아는 사람이 이 도시에 둘이다.' },
+
     /* ── 걸치는 것 ───────────────────────────── */
     { id: 'furhat', name: '털모자', kind: 'part', val: 2, warm: true, note: '머리로 빠져나가는 열이 절반이다.' },
     { id: 'wooljumper', name: '털 스웨터', kind: 'part', val: 2, warm: true, note: '구멍이 셋 났는데 아직 따뜻하다.' },

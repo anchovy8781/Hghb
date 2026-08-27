@@ -189,7 +189,12 @@
     return ctx;
   };
 
-  Generator.prototype.buildChoices = function (tpl, textCtx, ctx) {
+  /* 종류로 값을 무는 선택지에서, 실제로 가방에서 나갈 물건 이름 */
+  const KINDWORD = { food: '먹을 것', water: '물', med: '약', ammo: '탄',
+                     part: '부품', lux: '귀중품', doc: '기록', junk: '잡동사니',
+                     mood: '감정', key: '유품', gun: '총' };
+
+  Generator.prototype.buildChoices = function (tpl, textCtx, ctx, eng) {
     return tpl.choices.map(function (c) {
       function resolveSlot(v) {
         if (v === '{base}') return ctx.__base;
@@ -219,11 +224,28 @@
         }
         return e;
       }
+      /* {spend} 는 "지금 이 선택을 하면 실제로 나갈 물건"이다.
+       * 예전에는 여기에도 {item} 을 썼는데, {item} 은 그 장면이 뽑아 둔 물건이라
+       * 가방에서 나가는 것과 달랐다. "검은 고양이와 바꾼다" 해 놓고 퍼즐이 나갔다. */
+      let tc = textCtx;
+      const cst = c.cost;
+      if (cst && (cst.itemKind || cst.itemBase)) {
+        let realId = null;
+        if (eng) {
+          if (cst.itemKind) realId = eng.hasKind(cst.itemKind);
+          else if (cst.itemBase) realId = eng.hasBase(resolveSlot(cst.itemBase));
+        }
+        tc = {};
+        for (const k in textCtx) tc[k] = textCtx[k];
+        tc.spend = (realId && B.ITEM_MAP[realId]) ? B.ITEM_MAP[realId].name
+          : (KINDWORD[cst.itemKind] || '가진 것');
+      }
+
       function resolveText(arr) {
-        return (arr || []).map(function (t) { return fill(t, textCtx); });
+        return (arr || []).map(function (t) { return fill(t, tc); });
       }
       return {
-        label: fill(c.t, textCtx),
+        label: fill(c.t, tc),
         need: resolveCond(c.need) || null,
         cost: resolveCond(c.cost) || null,
         dc: c.dc || 0,
@@ -246,7 +268,7 @@
    * 예전처럼 무작위 문장을 앞뒤에 덧붙여 길이를 늘리지 않는다.
    * 어색해지기 때문이다. 대신 각 문단 자체를 길게 쓴다.
    */
-  Generator.prototype.compose = function (st) {
+  Generator.prototype.compose = function (st, eng) {
     let attempt = 0;
     let fallback = null;
 
@@ -277,7 +299,7 @@
         cat: tpl.cat,
         ctx: ctx,
         pages: pages,
-        choices: this.buildChoices(tpl, textCtx, ctx)
+        choices: this.buildChoices(tpl, textCtx, ctx, eng)
       };
       if (!fallback) fallback = built;
 

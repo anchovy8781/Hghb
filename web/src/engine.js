@@ -233,9 +233,11 @@
       const g = B.ITEM_MAP[ids[i]];
       if (!g || g.kind !== 'gun' || !st.items[ids[i]]) continue;
       if (klass && klass !== true && g.gun !== klass) continue;
+      /* 탄만 골라야 한다. 총에도 caliber 가 붙어 있어서, 이 조건을 안 걸면
+       * 총이 제 탄으로 잡히고 한 발 쏠 때마다 총이 없어진다. */
       const rounds = ids.filter(function (a) {
         const it = B.ITEM_MAP[a];
-        return it && it.caliber === g.caliber && st.items[a] > 0;
+        return it && it.kind === 'ammo' && it.caliber === g.caliber && st.items[a] > 0;
       })[0];
       if (rounds) return { gun: ids[i], ammo: rounds };
     }
@@ -683,7 +685,7 @@
     if (st.mode === 'prologue') {
       if (st.prologueIdx < A.PROLOGUE.length) {
         const sc = A.PROLOGUE[st.prologueIdx++];
-        this.queue.push(scene(sc.pages, this.gen.buildChoices({ choices: sc.choices }, {}, {}), 'story'));
+        this.queue.push(scene(sc.pages, this.gen.buildChoices({ choices: sc.choices }, {}, {}, this), 'story'));
         return;
       }
       st.mode = 'run';
@@ -702,7 +704,7 @@
     if (st.mode === 'finale') {
       if (st.sceneIdx < A.FINALE.scenes.length) {
         const sc = A.FINALE.scenes[st.sceneIdx++];
-        this.queue.push(scene(sc.pages, this.gen.buildChoices({ choices: sc.choices }, {}, {}), 'story'));
+        this.queue.push(scene(sc.pages, this.gen.buildChoices({ choices: sc.choices }, {}, {}, this), 'story'));
       } else {
         this.pushEnding('wander');
       }
@@ -717,7 +719,7 @@
         const sc = ch.scenes[st.sceneIdx++];
         const pages = sc.pages.slice();
         if (st.sceneIdx === 1) pages.unshift('__TITLE__' + ch.title);
-        this.queue.push(scene(pages, this.gen.buildChoices({ choices: sc.choices }, {}, {}), 'story'));
+        this.queue.push(scene(pages, this.gen.buildChoices({ choices: sc.choices }, {}, {}, this), 'story'));
         return;
       }
       st.inChapter = false;
@@ -736,7 +738,7 @@
         const sc = cur.scenes[st.spScene++];
         const pages = sc.pages.slice();
         if (st.spScene === 1) pages.unshift('__TITLE__' + cur.title);
-        this.queue.push(scene(pages, this.gen.buildChoices({ choices: sc.choices }, {}, {}),
+        this.queue.push(scene(pages, this.gen.buildChoices({ choices: sc.choices }, {}, {}, this),
                               'special', { sp: cur.id }));
         return;
       }
@@ -786,7 +788,7 @@
       });
     }
 
-    const enc = this.gen.compose(st);
+    const enc = this.gen.compose(st, this);
     st.encounters++;
     this.queue.push(scene(enc.pages, enc.choices, 'enc', { tpl: enc.tplId }));
   };

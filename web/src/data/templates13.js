@@ -133,7 +133,7 @@
                '한 시간을 마른 격발만 했습니다. 딸깍 소리가 백 번 났습니다.'],
         eff: { skillUp: 'shoot', hp: -1 } },
       { t: '탄을 나눠 주고 같이 쏜다.', need: { itemKind: 'ammo' }, cost: { itemKind: 'ammo' },
-        res: ['{item}을(를) 반으로 나눠 놓습니다. {npc}이(가) 한참 그걸 봅니다.',
+        res: ['{spend}을(를) 반으로 나눠 놓습니다. {npc}이(가) 한참 그걸 봅니다.',
                '"…이거 진심입니까." 진심입니다.',
                '그날 둘이 스무 발을 썼습니다. 이 도시에서 스무 발은 사치입니다. 그리고 둘 다 깡통을 맞혔습니다.'],
         eff: { skillUp: 'shoot', mp: 1, rep: { army: 1 }, add: ['stable', 'goodrep'] } },

@@ -112,7 +112,8 @@
 
   B.GUN_CLASSES = {
     ar: '돌격소총', dmr: '지정사수소총', sr: '저격소총',
-    smg: '기관단총', sg: '산탄총', lmg: '기관총', bow: '석궁'
+    smg: '기관단총', sg: '산탄총', lmg: '기관총', bow: '석궁',
+    pistol: '권총', sling: '새총'
   };
 
   ADD.forEach(function (it) {
