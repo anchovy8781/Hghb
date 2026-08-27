@@ -233,7 +233,7 @@
         eff: { mp: 1, add: ['warmth'], chain: 'story_dog3' } },
       { t: '그래도 앞으로 간다.',
         res: ['개가 따라오지 않습니다. 백 걸음쯤 갔을 때, 왜 안 따라왔는지 알게 됩니다.'],
-        eff: { hp: -1, mp: -1, del: ['warmth'] } }
+        eff: { wear: { hp: 2 }, mp: -1, del: ['warmth'] } }
     ]
   });
 
@@ -251,7 +251,7 @@
         eff: { mp: 1, add: ['stable', 'stable'], flag: 'dog_pups' } },
       { t: '먹을 것을 구해 온다.', need: { itemKind: 'food' }, cost: { itemKind: 'food' },
         res: ['가진 것을 전부 내려놓습니다. 오늘 당신은 굶지만, 넷은 삽니다.'],
-        eff: { hp: -1, mp: 1, add: ['stable', 'relief'], flag: 'dog_pups' } }
+        eff: { wear: { hp: 2 }, mp: 1, add: ['stable', 'relief'], flag: 'dog_pups' } }
     ]
   });
 

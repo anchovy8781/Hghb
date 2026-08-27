@@ -40,6 +40,7 @@
       role: arch.role,
       arch: arch.id,
       trait: this.pick('trait', A.TRAITS),
+      look: this.pick('look', A.LOOKS),
       habit: this.pick('habit', A.HABITS),
       line: this.pick('line_' + arch.id, lines)
     };
@@ -164,6 +165,7 @@
       ctx.npc = p.name;
       ctx.role = p.role;
       ctx.trait = p.trait;
+      ctx.look = p.look;
       ctx.habit = p.habit;
       ctx.line = p.line;
     }

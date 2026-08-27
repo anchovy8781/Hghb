@@ -15,9 +15,9 @@ const srcDir = path.join(here, '..', 'web', 'src');
 
 const FILES = [
   'rng.js',
-  'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/items2.js', 'data/items3.js', 'data/items4.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
+  'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/items2.js', 'data/items3.js', 'data/items4.js', 'data/items5.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
   'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js',
-  'data/templates5.js', 'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js', 'data/templates13.js', 'data/templates14.js', 'data/templates15.js', 'data/templates16.js', 'data/templates17.js', 'data/templates18.js', 'data/templates19.js', 'data/templates20.js',
+  'data/templates5.js', 'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js', 'data/templates13.js', 'data/templates14.js', 'data/templates15.js', 'data/templates16.js', 'data/templates17.js', 'data/templates18.js', 'data/templates19.js', 'data/templates20.js', 'data/templates21.js', 'data/choices_extra.js',
   'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js', 'data/bodies4.js', 'data/bodies5.js',
   'data/specials.js', 'data/specials2.js', 'data/specials3.js', 'data/specials4.js', 'data/specials5.js', 'data/specials6.js', 'data/specials7.js', 'data/specials8.js', 'data/specials9.js',
   'data/arcs.js', 'data/arcs2.js',
@@ -153,7 +153,7 @@ function checkPlaceholders(text, slots, where) {
   const found = text.match(/\{(\w+)\}/g) || [];
   const provided = new Set(['zone']);
   if (slots.place) provided.add('place');
-  if (slots.npc) { ['npc', 'role', 'trait', 'habit', 'line'].forEach((k) => provided.add(k)); }
+  if (slots.npc) { ['npc', 'role', 'trait', 'look', 'habit', 'line'].forEach((k) => provided.add(k)); }
   if (slots.threat) provided.add('threat');
   if (slots.item) provided.add('item');
   if (slots.item2) provided.add('item2');
@@ -338,6 +338,72 @@ flagsUsed.forEach((wheres, flag) => {
         });
       }
     }
+  });
+}
+
+/* ── 같은 문장을 살짝 고쳐 쓴 것도 플레이어에게는 같은 말이다 ── */
+{
+  const cut = (x) => x.split(/\n|(?<=[.?!])\s+/).map((y) => y.trim()).filter((y) => y.length > 12);
+  const toks = (x) => new Set(x.replace(/\{\w+\}/g, '').replace(/[^가-힣0-9 ]/g, ' ')
+    .split(/\s+/).filter((w) => w.length > 1));
+  const near = (x, y) => {
+    const A = toks(x); const C = toks(y);
+    if (A.size < 4 || C.size < 4) return 0;
+    let n = 0; A.forEach((w) => { if (C.has(w)) n++; });
+    return n / Math.min(A.size, C.size);
+  };
+  B.TEMPLATES.forEach((t) => {
+    const groups = [];
+    (t.open || []).forEach((x) => groups.push(['도입', x]));
+    (t.mid || []).forEach((x) => groups.push(['전개', x]));
+    ((B.BODIES && B.BODIES[t.id]) || []).forEach((x) => groups.push(['본문', x]));
+    for (let a = 0; a < groups.length; a++) {
+      for (let b = a + 1; b < groups.length; b++) {
+        if (groups[a][0] === groups[b][0]) continue;
+        cut(groups[a][1]).forEach((s1) => {
+          cut(groups[b][1]).forEach((s2) => {
+            const v = near(s1, s2);
+            if (v >= 0.8) {
+              errors.push(`${t.id}: ${groups[a][0]}과 ${groups[b][0]}이 거의 같은 문장 — "${s1.slice(0, 26)}…" / "${s2.slice(0, 26)}…"`);
+            }
+          });
+        });
+      }
+    }
+  });
+}
+
+/* ── 인물 묘사 치환자를 문법이 안 맞는 자리에 쓰지 않았는지 ──
+ *   {trait} 는 "-고" 로 끝나는 연결형이라 명사 앞에 바로 못 온다.
+ *   ("한쪽 눈에 안대를 했고 사람입니다" 가 되어 버린다) */
+{
+  const NOUN_AFTER = /\{trait\}\s*(사람|여자|남자|아이|노인|쪽)/;
+  const all = [];
+  B.TEMPLATES.forEach((t) => {
+    (t.open || []).forEach((x) => all.push([t.id, x]));
+    (t.mid || []).forEach((x) => all.push([t.id, x]));
+    ((B.BODIES && B.BODIES[t.id]) || []).forEach((x) => all.push([t.id, x]));
+  });
+  all.forEach(([id, x]) => {
+    if (typeof x === 'string' && NOUN_AFTER.test(x)) {
+      errors.push(`${id}: "{trait} 명사" 는 말이 안 됩니다 — 관형형 {look} 을 쓰세요`);
+    }
+  });
+}
+
+/* ── 다치는 자리와 지치는 자리를 섞지 않았는지 ──
+ *   eff.hp:-1 은 부상 한 칸(세 번이면 죽는다)이고, cost.hp 는 힘을 쓴 값(반 칸)이다.
+ *   둘을 한 선택지에 같이 물리면 밭일 한 번에 사람이 죽는다. 실제로 그랬다. */
+{
+  B.TEMPLATES.forEach((t) => {
+    t.choices.forEach((c, i) => {
+      const where = `템플릿 ${t.id} 선택지[${i}] "${c.t}"`;
+      [['eff', c.eff], ['okEff', c.okEff], ['noEff', c.noEff]].forEach(([k, e]) => {
+        if (!e || !c.cost) return;
+        if (c.cost.hp && e.hp < 0) errors.push(`${where}: cost.hp 와 ${k}.hp 를 같이 뭅니다 — 한 번에 한 칸 반이 날아갑니다`);
+        if (c.cost.mp && e.mp < 0) errors.push(`${where}: cost.mp 와 ${k}.mp 를 같이 뭅니다`);
+      });
+    });
   });
 }
 

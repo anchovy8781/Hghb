@@ -17,9 +17,9 @@ const srcDir = path.join(here, '..', 'web', 'src');
 
 const FILES = [
   'rng.js',
-  'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/items2.js', 'data/items3.js', 'data/items4.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
+  'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/items2.js', 'data/items3.js', 'data/items4.js', 'data/items5.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
   'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js', 'data/templates5.js',
-  'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js', 'data/templates13.js', 'data/templates14.js', 'data/templates15.js', 'data/templates16.js', 'data/templates17.js', 'data/templates18.js', 'data/templates19.js', 'data/templates20.js',
+  'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js', 'data/templates13.js', 'data/templates14.js', 'data/templates15.js', 'data/templates16.js', 'data/templates17.js', 'data/templates18.js', 'data/templates19.js', 'data/templates20.js', 'data/templates21.js', 'data/choices_extra.js',
   'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js', 'data/bodies4.js', 'data/bodies5.js',
   'data/specials.js', 'data/specials2.js', 'data/specials3.js', 'data/specials4.js', 'data/specials5.js', 'data/specials6.js', 'data/specials7.js', 'data/specials8.js', 'data/specials9.js',
   'data/arcs.js', 'data/arcs2.js',
@@ -58,6 +58,10 @@ function score(e, c) {
     /* 한 대에 한 칸이 날아가므로, 사람이라면 깎이는 선택을 훨씬 더 피한다 */
     if (eff.hp) v += eff.hp * w * (eff.hp < 0 ? (st.hp <= 1 ? 30 : 9) : (st.hp < 3 ? 7 : 2));
     if (eff.mp) v += eff.mp * w * (eff.mp < 0 ? (st.mp <= 1 ? 30 : 9) : (st.mp < 3 ? 7 : 2));
+    /* wear 는 칸이 아니라 칸 안쪽 눈금을 깎는다. 네 눈금이 한 칸이다.
+     * 예전에는 이걸 안 봐서, 자동 플레이가 몸이 상하는 선택을 공짜로 알고 골랐다. */
+    if (eff.wear && eff.wear.hp) v -= (eff.wear.hp / 4) * w * (st.hp <= 1 ? 30 : 9);
+    if (eff.wear && eff.wear.mp) v -= (eff.wear.mp / 4) * w * (st.mp <= 1 ? 30 : 9);
     if (eff.rad) v -= eff.rad * w * (st.rad >= 2 ? 6 : 2);
     if (eff.money) v += eff.money * w * 0.6;
     if (eff.add) v += eff.add.length * 0.5 * w;
