@@ -15,11 +15,11 @@ const srcDir = path.join(here, '..', 'web', 'src');
 
 const FILES = [
   'rng.js',
-  'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/items2.js', 'data/items3.js', 'data/items4.js', 'data/items5.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
+  'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/items2.js', 'data/items3.js', 'data/items4.js', 'data/items5.js', 'data/items6.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
   'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js',
-  'data/templates5.js', 'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js', 'data/templates13.js', 'data/templates14.js', 'data/templates15.js', 'data/templates16.js', 'data/templates17.js', 'data/templates18.js', 'data/templates19.js', 'data/templates20.js', 'data/templates21.js', 'data/choices_extra.js',
+  'data/templates5.js', 'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js', 'data/templates13.js', 'data/templates14.js', 'data/templates15.js', 'data/templates16.js', 'data/templates17.js', 'data/templates18.js', 'data/templates19.js', 'data/templates20.js', 'data/templates21.js', 'data/templates22.js', 'data/choices_extra.js', 'data/choices_extra2.js',
   'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js', 'data/bodies4.js', 'data/bodies5.js',
-  'data/specials.js', 'data/specials2.js', 'data/specials3.js', 'data/specials4.js', 'data/specials5.js', 'data/specials6.js', 'data/specials7.js', 'data/specials8.js', 'data/specials9.js',
+  'data/specials.js', 'data/specials2.js', 'data/specials3.js', 'data/specials4.js', 'data/specials5.js', 'data/specials6.js', 'data/specials7.js', 'data/specials8.js', 'data/specials9.js', 'data/specials10.js',
   'data/arcs.js', 'data/arcs2.js',
   'generator.js', 'engine.js'
 ].filter((f) => fs.existsSync(path.join(srcDir, f)));
@@ -404,6 +404,42 @@ flagsUsed.forEach((wheres, flag) => {
         if (c.cost.mp && e.mp < 0) errors.push(`${where}: cost.mp 와 ${k}.mp 를 같이 뭅니다`);
       });
     });
+  });
+}
+
+/* ── 화면은 ITEM_MAP 을 보고 이름을 찾는다 ──
+ *   B.ITEMS 에만 넣고 ITEM_MAP 등록을 빠뜨리면 선택지 앞에 "pulley" 처럼
+ *   영문 id 가 그대로 뜬다. 실제로 그렇게 나왔다. */
+{
+  const notMapped = B.ITEMS.filter((it) => !B.ITEM_MAP[it.id]);
+  notMapped.slice(0, 12).forEach((it) => {
+    errors.push(`아이템 "${it.id}" 가 ITEM_MAP 에 없습니다 — 화면에 영문 id 가 그대로 뜹니다`);
+  });
+  if (notMapped.length > 12) errors.push(`… ITEM_MAP 누락 ${notMapped.length}건`);
+
+  const dupIds = new Map();
+  B.ITEMS.forEach((it) => dupIds.set(it.id, (dupIds.get(it.id) || 0) + 1));
+  dupIds.forEach((n, id) => { if (n > 1) errors.push(`아이템 id "${id}" 가 ${n}번 정의됨`); });
+}
+
+/* ── 플레이어가 읽는 이름에 로마자가 섞이지 않았는지 ──
+ *   총 이름이 "Mosin-Nagant" 로 뜨면 이 게임의 목소리가 깨진다. */
+{
+  const LATIN = /[A-Za-z]/;
+  const say = (what, name) => errors.push(`${what} 이름에 로마자가 섞였습니다 — "${name}"`);
+  B.ITEMS.forEach((it) => { if (LATIN.test(it.name)) say('아이템', it.name); });
+  (B.SKILLS || []).forEach((sk) => { if (LATIN.test(sk.name)) say('능력', sk.name); });
+  (B.WORLD.FACTIONS || []).forEach((f) => { if (LATIN.test(f.name)) say('세력', f.name); });
+  (B.WORLD.ZONES || []).forEach((z) => { if (LATIN.test(z.name)) say('구역', z.name); });
+  Object.keys(B.PLACESETS || {}).forEach((k) => {
+    (B.PLACESETS[k] || []).forEach((p) => { if (LATIN.test(p)) say('장소', p); });
+  });
+  Object.keys(B.GUN_CLASSES || {}).forEach((k) => {
+    if (LATIN.test(B.GUN_CLASSES[k])) say('총 분류', B.GUN_CLASSES[k]);
+  });
+  Object.keys((B.ARCS && B.ARCS.ENDINGS) || {}).forEach((k) => {
+    const e = B.ARCS.ENDINGS[k];
+    if (e && LATIN.test(e.name)) say('엔딩', e.name);
   });
 }
 

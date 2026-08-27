@@ -11,7 +11,7 @@
   const ADD = [
     /* ── 먹을 것 ─────────────────────────────── */
     { id: 'dwaejigukbap', name: '돼지국밥 한 그릇', kind: 'food', val: 2, hp: 2, mp: 1, note: '이 도시가 아직 이 도시인 이유.' },
-    { id: 'milmyeon', name: '밀면', kind: 'food', val: 2, hp: 1, mp: 1, note: '피란민이 냉면 대신 만들어 먹던 것.' },
+    { id: 'milmyeonbowl', name: '밀면 한 그릇', kind: 'food', val: 2, hp: 1, mp: 1, note: '피란민이 냉면 대신 만들어 먹던 것.' },
     { id: 'eomuk', name: '어묵 꼬치', kind: 'food', val: 1, hp: 1, mp: 1, note: '국물은 공짜다. 그 규칙만은 안 변했다.' },
     { id: 'ssiathotteok', name: '씨앗호떡 반죽', kind: 'food', val: 1, hp: 1, note: '기름에 눌러야 완성이다.' },
     { id: 'jorimgim', name: '조림김', kind: 'food', val: 1, hp: 1, note: '짜다. 짜서 오래간다.' },
@@ -30,7 +30,7 @@
     { id: 'birthseaweed', name: '미역국', kind: 'food', val: 2, hp: 2, mp: 2, note: '아이가 난 집에서만 끓인다.' },
 
     /* ── 마실 것 ─────────────────────────────── */
-    { id: 'barleytea', name: '보리차 주전자', kind: 'water', val: 1, hp: 1, mp: 1, note: '끓인 물이라는 증표이기도 하다.' },
+    { id: 'barleypot', name: '보리차 주전자', kind: 'water', val: 1, hp: 1, mp: 1, note: '끓인 물이라는 증표이기도 하다.' },
     { id: 'snowmelt', name: '눈 녹인 물', kind: 'water', val: 1, hp: 1, note: '첫눈은 안 쓴다. 뒤에 오는 것만 받는다.' },
     { id: 'springjar', name: '약수 한 통', kind: 'water', val: 2, hp: 1, mp: 1, note: '안 마르는 자리는 이 도시에 다섯 군데다.' },
     { id: 'ricewater', name: '숭늉', kind: 'water', val: 1, hp: 1, mp: 1, note: '솥 바닥을 긁어 끓인 것.' },
@@ -68,11 +68,11 @@
     { id: 'firestarter', name: '마른 관솔', kind: 'part', val: 1, note: '젖은 나무에도 불이 붙는다.' },
 
     /* ── 옷과 몸 ─────────────────────────────── */
-    { id: 'padcoat', name: '누비 외투', kind: 'part', val: 3, note: '무겁고 따뜻하다. 겨울에는 값이 세 배가 된다.' },
+    { id: 'padcoat', name: '누비 외투', kind: 'part', val: 3, warm: true, note: '무겁고 따뜻하다. 겨울에는 값이 세 배가 된다.' },
     { id: 'strawshoe', name: '삼 신발', kind: 'part', val: 1, note: '신발을 짤 줄 아는 사람이 아직 몇 남았다.' },
     { id: 'kneepad', name: '무릎 보호대', kind: 'part', val: 1, note: '무릎이 나가면 이 도시에서는 끝이다.' },
     { id: 'earmuff', name: '귀마개', kind: 'part', val: 1, note: '귀가 얼면 안 돌아온다.' },
-    { id: 'handcream', name: '핸드크림', kind: 'part', val: 1, mp: 1, note: '손이 갈라지면 아무것도 못 잡는다.' },
+    { id: 'handbalm', name: '손 연고', kind: 'part', val: 1, mp: 1, note: '손이 갈라지면 아무것도 못 잡는다.' },
     { id: 'shavekit', name: '면도 도구', kind: 'part', val: 1, mp: 1, note: '얼굴이 깨끗하면 값을 덜 깎인다.' },
     { id: 'toothsalt', name: '소금 칫솔', kind: 'part', val: 1, hp: 1, note: '이가 없으면 못 먹고, 못 먹으면 끝이다.' },
 
@@ -124,6 +124,13 @@
     { id: 'firewatch', name: '불 당번표', kind: 'key', val: 1, key: true, note: '두 시간씩. 새벽 당번이 제일 힘들다.' }
   ];
 
-  ADD.forEach(function (it) { I.push(it); });
+  /* ITEM_MAP 에 같이 넣어야 화면에 이름이 나온다.
+   * 이걸 빠뜨리면 선택지 앞에 "pulley" 처럼 영문 id 가 그대로 뜬다. */
+  ADD.forEach(function (it) {
+    if (B.ITEM_MAP[it.id]) return;
+    I.push(it);
+    B.ITEM_MAP[it.id] = it;
+    (B.ITEMS_BY_KIND[it.kind] = B.ITEMS_BY_KIND[it.kind] || []).push(it.id);
+  });
 
 })(typeof globalThis !== 'undefined' ? globalThis : this);

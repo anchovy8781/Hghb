@@ -109,7 +109,7 @@
     /* ── 전기와 기계 ─────────────────────────── */
     { id: 'earphone', name: '이어폰', tag: 'elec', note: '한쪽만 나온다.' },
     { id: 'charger', name: '충전기', tag: 'elec', note: '꽂을 데가 없다.' },
-    { id: 'usb', name: 'USB 메모리', tag: 'elec', note: '안에 뭐가 있는지 알 길이 없다.' },
+    { id: 'usb', name: '유에스비 메모리', tag: 'elec', note: '안에 뭐가 있는지 알 길이 없다.' },
     { id: 'remote', name: '리모컨', tag: 'elec', note: '버튼 몇 개가 닳아 지워졌다.' },
     { id: 'calc', name: '계산기', tag: 'elec', note: '태양광이라 아직 켜진다.' },
     { id: 'watch2', name: '전자시계', tag: 'elec', note: '00:00 에서 깜빡인다.' },

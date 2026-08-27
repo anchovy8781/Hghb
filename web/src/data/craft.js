@@ -11,6 +11,11 @@
   B.RECIPES = [
 
     /* ── 재질만 맞으면 되는 것들 ─────────────── */
+
+    { id: 'r_repad', name: '롱패딩 수선', make: 'longpad', n: 1,
+      need: [{ item: 'longpadtorn', n: 1 }, { tag: 'cloth', n: 2 }, { item: 'sewkit', n: 1 }],
+      line: '터진 자리를 뒤집어 안쪽부터 기웁니다. 솜은 낡은 천을 잘게 뜯어 채웁니다.\n원래만큼은 아니어도 한 번은 더 막아 줄 겁니다. 이 도시에서 한 번은 큰 숫자입니다.' },
+
     { id: 'r_kindle', name: '불쏘시개', make: 'lighter', n: 1,
       need: [{ tag: 'paper', n: 3 }],
       line: '종이를 잘게 찢어 새 둥지처럼 뭉칩니다. 불씨 하나면 이걸로 저녁이 따뜻해집니다.' },

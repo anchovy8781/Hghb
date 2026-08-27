@@ -238,8 +238,12 @@
     const self = this;
 
     if (eff.hp) {
-      if (eff.hp < 0) { this.hurt('hp', 'hpSub', -eff.hp * this.hitScale()); losses.push('체력'); }
-      else { this.heal('hp', 'hpSub', eff.hp); gains.push('체력'); }
+      if (eff.hp < 0) {
+        /* 부상만 옷이 받아 낸다. 지치는 값은 아래 wear 에서 따로 센다 */
+        const raw = -eff.hp * this.hitScale();
+        const left = this.soak(raw, { losses: losses });
+        if (left > 0) { this.hurt('hp', 'hpSub', left); losses.push('체력'); }
+      } else { this.heal('hp', 'hpSub', eff.hp); gains.push('체력'); }
     }
     if (eff.mp) {
       if (eff.mp < 0) { this.hurt('mp', 'mpSub', -eff.mp * this.hitScale()); losses.push('멘탈'); }
@@ -303,6 +307,14 @@
       if (have < want) return false;
     }
     if (need.itemBase && !this.hasBase(need.itemBase)) return false;
+    if (need.warm) {
+      const st6 = this.st;
+      const has = Object.keys(st6.items).some(function (id) {
+        const it = B.ITEM_MAP[id];
+        return it && it.warm && st6.items[id] > 0;
+      });
+      if (!has) return false;
+    }
     if (need.money && this.st.money < need.money) return false;
     if (need.flag && !this.st.flags[need.flag]) return false;
     if (need.title && (this.st.titles || []).indexOf(need.title) < 0) return false;
@@ -361,6 +373,14 @@
           return it && it.thrown !== undefined && st4.items[id] > 0;
         });
         push('item', '던질 것', has);
+      }
+      if (need.warm) {
+        const st7 = self.st;
+        const has = Object.keys(st7.items).some(function (id) {
+          const it = B.ITEM_MAP[id];
+          return it && it.warm && st7.items[id] > 0;
+        });
+        push('item', '두꺼운 옷', has);
       }
       if (need.money) push('money', '돈', self.st.money >= need.money);
       if (need.flag) push('flag', '단서', !!self.st.flags[need.flag]);
@@ -481,6 +501,38 @@
   };
 
   /* 총은 한 번 쐈다고 없어지지 않는다. 다만 무리하면 걸리고, 드물게 못 쓰게 된다 */
+  /* ── 몸에 걸친 것이 한 번은 대신 맞아 준다 ──────
+   *   armor 가 붙은 옷은 부상 한 칸을 통째로 받아 냅니다. 대신 그 한 번으로
+   *   못 쓰게 됩니다. 두 칸짜리 충격이면 한 칸만 막고 나머지는 몸으로 받습니다.
+   *   지치는 값(wear)은 안 막습니다. 굶주림과 노숙을 옷이 막아 줄 수는 없으니까요.
+   */
+  Engine.prototype.armorItem = function () {
+    const st = this.st;
+    let best = null;
+    let bestV = 0;
+    Object.keys(st.items).forEach(function (id) {
+      if (st.items[id] <= 0) return;
+      const it = B.ITEM_MAP[id];
+      if (!it || !it.armor) return;
+      if (it.armor > bestV) { bestV = it.armor; best = id; }
+    });
+    return best;
+  };
+
+  /* 들어온 피해(눈금 단위)를 옷이 받아 내고 남은 값을 돌려준다 */
+  Engine.prototype.soak = function (hits, res) {
+    if (hits <= 0) return hits;
+    const id = this.armorItem();
+    if (!id) return hits;
+    const it = B.ITEM_MAP[id];
+    const left = Math.max(0, hits - it.armor * HIT);
+    this.delItem(id, 1);
+    if (it.broken && B.ITEM_MAP[it.broken]) this.addItem(it.broken, 1);
+    if (res && res.losses) res.losses.push(it.name + (left > 0 ? ' 찢어짐' : ' 찢어짐(피해 막음)'));
+    this.st.log.push('막음 · ' + it.name);
+    return left;
+  };
+
   Engine.prototype.gunMishap = function (res) {
     const a = this.armed(null);
     if (!a) return;
@@ -544,6 +596,10 @@
       { label: '불을 피우고 눈을 붙인다.', need: { item: 'lighter' },
         res: ['젖은 나무가 한참 만에 붙습니다. 불빛 앞에서 무릎을 안고 앉아 선잠을 잡니다.\n몇 번 깼고, 깰 때마다 불이 아직 살아 있는지부터 확인했습니다. 그래도 아침은 옵니다.'],
         eff: { mp: 1, del: ['insomnia'] }, dc: 0, ok: [], no: [] },
+      { label: '두꺼운 옷을 여미고 눕는다.', need: { warm: true },
+        res: ['불을 안 피웁니다. 불은 온기를 주지만 사람도 부릅니다. 오늘은 그 값이 비쌉니다.\n깃을 세우고 두 팔을 안으로 넣고 무릎을 당깁니다. 그것만으로 밤이 견딜 만해집니다.',
+               '아침에 깨니 서리가 옷 위에만 내려 있습니다. 안쪽은 아직 따뜻합니다.'],
+        eff: { mp: 1, del: ['insomnia', 'cold'] }, dc: 0, ok: [], no: [] },
       { label: '노숙한다.', res: ['처마 밑에 몸을 구겨 넣습니다. 추위보다 소리가 더 무섭습니다.\n밤새 열 번쯤 눈을 뜨고, 열 번 다 아무것도 없었습니다. 그게 다행인지 아닌지 모르겠습니다.'],
         eff: { wear: { mp: 2 } }, dc: 0, ok: [], no: [] }
     ], 'sleep');
