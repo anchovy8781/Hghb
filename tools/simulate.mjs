@@ -15,16 +15,9 @@ import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const srcDir = path.join(here, '..', 'web', 'src');
 
-const FILES = [
-  'rng.js',
-  'data/meta.js', 'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/items2.js', 'data/items3.js', 'data/items4.js', 'data/items5.js', 'data/items6.js', 'data/items7.js', 'data/items8.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
-  'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js', 'data/templates5.js',
-  'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js', 'data/templates13.js', 'data/templates14.js', 'data/templates15.js', 'data/templates16.js', 'data/templates17.js', 'data/templates18.js', 'data/templates19.js', 'data/templates20.js', 'data/templates21.js', 'data/templates22.js', 'data/templates23.js', 'data/templates24.js', 'data/choices_extra.js', 'data/choices_extra2.js', 'data/choices_lv.js',
-  'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js', 'data/bodies4.js', 'data/bodies5.js',
-  'data/specials.js', 'data/specials2.js', 'data/specials3.js', 'data/specials4.js', 'data/specials5.js', 'data/specials6.js', 'data/specials7.js', 'data/specials8.js', 'data/specials9.js', 'data/specials10.js',
-  'data/arcs.js', 'data/arcs2.js', 'data/coma.js', 'data/long_land.js', 'data/long_rest.js', 'data/epilogue.js', 'data/keepsakes.js',
-  'generator.js', 'engine.js'
-];
+const FILES = JSON.parse(fs.readFileSync(path.join(here, 'files.json'), 'utf8'))
+  .filter((f) => f !== 'sound.js' && f !== 'ui.js' && f !== 'main.js')
+  .filter((f) => fs.existsSync(path.join(srcDir, f)));
 
 function loadGame() {
   const sandbox = {};
@@ -215,6 +208,7 @@ function play(B, seed, maxPages = 4000, opts = {}) {
     collisions: e.st.collisions || 0,
     crafted: crafted,
     progress: e.progress(),
+    longDone: (e.st.longDone || []).slice(),
     items: Object.keys(e.st.items).length,
     skills: e.st.skills
   };
@@ -256,6 +250,7 @@ for (let i = 0; i < runs; i++) {
   }
   console.log(`   긴장 ${r.tone.act.size}종 · 유머 ${r.tone.fun.size}종 · 잡동사니 보상 ${r.tone.pay.size}종 · 칭호 사건 ${r.tone.ttl.size}종 · 만든 물건 ${r.crafted}개`);
   console.log(`   특별 이야기 ${r.specials.size}/${(B.SPECIALS || []).length}편 · 칭호 ${r.titles.length}개${r.titles.length ? ' (' + r.titles.slice(0, 3).join(', ') + ')' : ''}`);
+  if (opts.longs) console.log(`   끝까지 본 장편 ${r.longDone.length}편${r.longDone.length ? ' (' + r.longDone.map((id) => B.LONGS[id].name).join(', ') + ')' : ''}`);
   if (i === 0) {
     const top = [...r.tplCount.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
     console.log('   자주 나온 템플릿:', top.map(([k, v]) => `${k}(${v})`).join(' '));

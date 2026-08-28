@@ -13,16 +13,9 @@ import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const srcDir = path.join(here, '..', 'web', 'src');
 
-const FILES = [
-  'rng.js',
-  'data/meta.js', 'data/world.js', 'data/places.js', 'data/actors.js', 'data/items.js', 'data/items2.js', 'data/items3.js', 'data/items4.js', 'data/items5.js', 'data/items6.js', 'data/items7.js', 'data/items8.js', 'data/junk.js', 'data/craft.js', 'data/fragments.js',
-  'data/templates.js', 'data/templates2.js', 'data/templates3.js', 'data/templates4.js',
-  'data/templates5.js', 'data/templates6.js', 'data/templates7.js', 'data/templates8.js', 'data/templates9.js', 'data/templates10.js', 'data/templates11.js', 'data/templates12.js', 'data/templates13.js', 'data/templates14.js', 'data/templates15.js', 'data/templates16.js', 'data/templates17.js', 'data/templates18.js', 'data/templates19.js', 'data/templates20.js', 'data/templates21.js', 'data/templates22.js', 'data/templates23.js', 'data/templates24.js', 'data/choices_extra.js', 'data/choices_extra2.js', 'data/choices_lv.js',
-  'data/bodies.js', 'data/bodies2.js', 'data/bodies3.js', 'data/bodies4.js', 'data/bodies5.js',
-  'data/specials.js', 'data/specials2.js', 'data/specials3.js', 'data/specials4.js', 'data/specials5.js', 'data/specials6.js', 'data/specials7.js', 'data/specials8.js', 'data/specials9.js', 'data/specials10.js',
-  'data/arcs.js', 'data/arcs2.js', 'data/coma.js', 'data/long_land.js', 'data/long_rest.js', 'data/epilogue.js', 'data/keepsakes.js',
-  'generator.js', 'engine.js'
-].filter((f) => fs.existsSync(path.join(srcDir, f)));
+const FILES = JSON.parse(fs.readFileSync(path.join(here, 'files.json'), 'utf8'))
+  .filter((f) => f !== 'sound.js' && f !== 'ui.js' && f !== 'main.js')
+  .filter((f) => fs.existsSync(path.join(srcDir, f)));
 
 function loadGame() {
   const sb = {};
@@ -522,7 +515,7 @@ flagsUsed.forEach((wheres, flag) => {
     if (!lg.name) errors.push(`장편 ${id}: 이름 없음`);
     if (!lg.title) errors.push(`장편 ${id}: 제목 없음`);
     if ((B.SHOP_PRICE || {})[id] === undefined) errors.push(`장편 ${id}: 상점 값이 없음`);
-    if (!lg.scenes || lg.scenes.length < 3) errors.push(`장편 ${id}: 장면이 너무 적음`);
+    if (!lg.scenes || lg.scenes.length < 20) errors.push(`장편 ${id}: 장면이 ${(lg.scenes||[]).length}개뿐 — 장편은 스무 장면 이상이어야 합니다`);
     if (!lg.ending || !lg.ending.pages || !lg.ending.pages.length) errors.push(`장편 ${id}: 마무리가 없음`);
     (lg.scenes || []).forEach((sc, i) => {
       const where = `장편 ${lg.name} 장면[${i}]`;
