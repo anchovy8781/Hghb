@@ -577,15 +577,31 @@ flagsUsed.forEach((wheres, flag) => {
     });
   }
 
-  const CC = (B.ARCS && B.ARCS.CHAPTERS_COMA) || [];
-  CC.forEach((ch) => {
-    (ch.scenes || []).forEach((sc, i) => {
-      const where = `코마 본편 ${ch.id} 장면[${i}]`;
-      (sc.choices || []).forEach((c, j) => {
-        const w2 = `${where} 선택지[${j}] "${c.t}"`;
-        checkNeed(c.need, w2); checkCost(c.cost, w2); checkEff(c.eff, w2);
+  const BYO = (B.ARCS && B.ARCS.CHAPTERS_BY_ORIGIN) || {};
+  Object.keys(BYO).forEach((k) => {
+    const chs = BYO[k] || [];
+    if (!chs.length) errors.push(`사연 ${k}: 전용 본편이 비어 있음`);
+    let last = null;
+    chs.forEach((ch) => {
+      (ch.scenes || []).forEach((sc, i) => {
+        const where = `${k} 본편 ${ch.id} 장면[${i}]`;
+        if (!sc.pages || !sc.pages.length) errors.push(`${where}: 본문 없음`);
+        if (!sc.choices || !sc.choices.length) errors.push(`${where}: 선택지 없음`);
+        else if (!sc.choices.some((c) => !c.need)) {
+          errors.push(`${where}: 조건 없는 선택지가 없어 막힐 수 있음`);
+        }
+        (sc.choices || []).forEach((c, j) => {
+          const w2 = `${where} 선택지[${j}] "${c.t}"`;
+          checkNeed(c.need, w2); checkCost(c.cost, w2); checkEff(c.eff, w2);
+        });
       });
+      last = ch;
     });
+    /* 마지막 장에서 종장 문이 열려야 끝까지 간다 */
+    const opens = (last && last.scenes || []).some((sc) =>
+      (sc.choices || []).some((c) => (c.eff && c.eff.flag === 'door_open') ||
+                                     (c.okEff && c.okEff.flag === 'door_open')));
+    if (!opens) errors.push(`사연 ${k}: 마지막 장에 종장을 여는 선택지(door_open)가 없음`);
   });
 }
 

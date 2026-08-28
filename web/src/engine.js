@@ -1085,8 +1085,8 @@
   };
 
   Engine.prototype.chapters = function () {
-    if (this.st.origin === 'coma' && B.ARCS.CHAPTERS_COMA) return B.ARCS.CHAPTERS_COMA;
-    return B.ARCS.CHAPTERS;
+    const M = B.ARCS.CHAPTERS_BY_ORIGIN || {};
+    return M[this.st.origin] || B.ARCS.CHAPTERS;
   };
 
   /* ── 진행 ────────────────────────────────────── */

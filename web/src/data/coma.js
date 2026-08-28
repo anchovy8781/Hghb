@@ -165,6 +165,8 @@
   /* ── 코마 전용 본편 ──────────────────────────
    *   기본 본편 대신 이쪽이 나옵니다. 찾는 것이 다르니 겪는 것도 다릅니다.
    */
+  B.ARCS.CHAPTERS_BY_ORIGIN = B.ARCS.CHAPTERS_BY_ORIGIN || {};
+
   B.ARCS.CHAPTERS_COMA = [
     {
       at: 70, id: 'cch1', title: '1장 · 십팔 년의 값',
@@ -348,5 +350,7 @@
       ]
     }
   ];
+
+  B.ARCS.CHAPTERS_BY_ORIGIN.coma = B.ARCS.CHAPTERS_COMA;
 
 })(typeof globalThis !== 'undefined' ? globalThis : this);
