@@ -228,7 +228,8 @@ let failed = 0;
 for (let i = 0; i < runs; i++) {
   const seed = baseSeed + i * 977;
   /* 세 판에 한 번은 코마 사연으로, 두 판에 한 번은 장편을 사서 돌려 본다 */
-  const opts = { origin: i % 3 === 2 ? 'coma' : 'after18', longs: i % 2 === 1 };
+  /* 셋 중 하나는 사연을 안 정하고 돌려서, 게임 안에서 고르는 장면까지 거치게 한다 */
+  const opts = { origin: i % 3 === 2 ? 'coma' : (i % 3 === 1 ? 'after18' : null), longs: i % 2 === 1 };
   const r = play(B, seed, 4000, opts);
   if (r.error) {
     console.log(`시드 ${seed}: 오류 - ${r.error} (${r.page}p)`);
@@ -238,7 +239,7 @@ for (let i = 0; i < runs; i++) {
   const ok = r.dup.length === 0 && r.rawJosa.length === 0;
   if (!ok) failed++;
   console.log(
-    `시드 ${seed}${opts.origin === 'coma' ? '(코마)' : ''}${opts.longs ? '(장편)' : ''} · ${r.page}p · ${r.chapter}장까지 · 인카운터 ${r.encounters} · ` +
+    `시드 ${seed}${opts.origin === 'coma' ? '(코마)' : (opts.origin ? '' : '(사연 고름)')}${opts.longs ? '(장편)' : ''} · ${r.page}p · ${r.chapter}장까지 · 인카운터 ${r.encounters} · ` +
     `장면 ${r.scenes} · 고유 도입 ${r.uniqueTexts} · 중복 ${r.dup.length} · ` +
     `본문 ${(r.chars / 10000).toFixed(1)}만자 · 엔딩 ${r.endingName || '없음'}`
   );

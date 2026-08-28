@@ -74,7 +74,7 @@ function checkEff(eff, where) {
   if (eff.flag) flagsSet.add(eff.flag);
   if (eff.title && typeof eff.title !== 'string') errors.push(`${where}: 칭호가 문자열이 아님`);
   const KNOWN = ['hp', 'mp', 'money', 'rad', 'wear', 'add', 'add2', 'del', 'skillUp',
-                 'rep', 'flag', 'chain', 'title'];
+                 'rep', 'flag', 'chain', 'title', 'origin'];
   if (eff.wear) {
     Object.keys(eff.wear).forEach((k) => {
       if (k !== 'hp' && k !== 'mp') errors.push(`${where}: wear 에 쓸 수 없는 값 "${k}"`);
@@ -557,6 +557,26 @@ flagsUsed.forEach((wheres, flag) => {
       });
     });
   });
+  /* 게임 안에서 사연을 고르는 장면 */
+  const PK = B.ARCS && B.ARCS.ORIGIN_PICK;
+  if (!PK) errors.push('시작 사연을 고르는 장면(ORIGIN_PICK)이 없습니다');
+  else {
+    if (!PK.pages || !PK.pages.length) errors.push('사연 고르기: 본문 없음');
+    const got = new Set();
+    (PK.choices || []).forEach((c, j) => {
+      const w2 = `사연 고르기 선택지[${j}] "${c.t}"`;
+      checkNeed(c.need, w2); checkCost(c.cost, w2); checkEff(c.eff, w2);
+      if (c.need) errors.push(`${w2}: 조건이 붙어 있으면 사연을 못 고를 수 있습니다`);
+      const o = c.eff && c.eff.origin;
+      if (!o) errors.push(`${w2}: 고를 사연이 지정 안 됨`);
+      else if (!P[o]) errors.push(`${w2}: 없는 사연 "${o}"`);
+      else got.add(o);
+    });
+    Object.keys(P).forEach((k) => {
+      if (!got.has(k)) errors.push(`사연 고르기: "${k}" 를 고를 수 있는 선택지가 없습니다`);
+    });
+  }
+
   const CC = (B.ARCS && B.ARCS.CHAPTERS_COMA) || [];
   CC.forEach((ch) => {
     (ch.scenes || []).forEach((sc, i) => {

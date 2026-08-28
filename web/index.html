@@ -12,45 +12,93 @@
 <!-- ══ 메인 메뉴 ══════════════════════════════════ -->
 <div id="menu" class="screen">
   <div class="menu-sky">
-    <svg class="skyline" viewBox="0 0 400 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <svg class="skyline" viewBox="0 0 400 360" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
       <defs>
         <linearGradient id="fog" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#0000" />
-          <stop offset="100%" stop-color="#000000" stop-opacity="0.85" />
+          <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
+          <stop offset="55%" stop-color="#000000" stop-opacity="0.18"/>
+          <stop offset="100%" stop-color="#000000" stop-opacity="0.62"/>
         </linearGradient>
       </defs>
-      <g fill="#1b1b1b">
-        <rect x="8" y="120" width="26" height="100"/>
-        <rect x="40" y="96" width="18" height="124"/>
-        <rect x="64" y="140" width="30" height="80"/>
-        <rect x="100" y="72" width="22" height="148"/>
-        <rect x="128" y="132" width="34" height="88"/>
-        <rect x="168" y="108" width="20" height="112"/>
-        <rect x="196" y="150" width="40" height="70"/>
-        <rect x="242" y="88" width="24" height="132"/>
-        <rect x="272" y="128" width="30" height="92"/>
-        <rect x="308" y="60" width="16" height="160"/>
-        <rect x="330" y="144" width="28" height="76"/>
-        <rect x="364" y="112" width="28" height="108"/>
+
+      <!-- 먼 산 -->
+      <path d="M0 168 L58 132 L104 156 L150 118 L206 158 L262 128 L316 160 L360 140 L400 162 L400 360 L0 360 Z" fill="#5a5a5a"/>
+      <!-- 먼 건물 -->
+      <g fill="#4d4d4d">
+        <rect x="14" y="150" width="20" height="70"/>
+        <rect x="42" y="134" width="14" height="86"/>
+        <rect x="64" y="160" width="24" height="60"/>
+        <rect x="100" y="120" width="17" height="100"/>
+        <rect x="126" y="152" width="26" height="68"/>
+        <rect x="166" y="140" width="16" height="80"/>
+        <rect x="196" y="166" width="30" height="54"/>
+        <rect x="240" y="126" width="19" height="94"/>
+        <rect x="270" y="150" width="24" height="70"/>
+        <rect x="306" y="106" width="13" height="114"/>
+        <rect x="330" y="162" width="22" height="58"/>
+        <rect x="362" y="138" width="22" height="82"/>
       </g>
-      <g fill="#2a2a2a">
-        <polygon points="0,180 60,150 120,178 180,158 260,186 340,164 400,184 400,220 0,220"/>
+      <path d="M300 106 L312.5 74 L325 106 Z" fill="#565656"/>
+
+      <!-- 가까운 폐허 -->
+      <g fill="#2c2c2c">
+        <rect x="0" y="196" width="46" height="164"/>
+        <rect x="52" y="212" width="34" height="148"/>
+        <path d="M92 222 L120 206 L120 360 L92 360 Z"/>
+        <rect x="128" y="216" width="40" height="144"/>
+        <rect x="230" y="210" width="36" height="150"/>
+        <path d="M272 224 L300 208 L300 360 L272 360 Z"/>
+        <rect x="308" y="200" width="44" height="160"/>
+        <rect x="358" y="216" width="42" height="144"/>
       </g>
-      <path d="M300 60 L316 20 L332 60 Z" fill="#242424"/>
-      <rect width="400" height="220" fill="url(#fog)"/>
+      <g fill="#3d3d3d">
+        <rect x="8" y="206" width="7" height="9"/><rect x="24" y="206" width="7" height="9"/>
+        <rect x="8" y="226" width="7" height="9"/><rect x="24" y="226" width="7" height="9"/>
+        <rect x="136" y="228" width="7" height="9"/><rect x="152" y="228" width="7" height="9"/>
+        <rect x="316" y="212" width="7" height="9"/><rect x="332" y="212" width="7" height="9"/>
+        <rect x="316" y="232" width="7" height="9"/>
+      </g>
+
+      <!-- 땅 -->
+      <path d="M0 272 Q100 262 200 270 T400 266 L400 360 L0 360 Z" fill="#151515"/>
+
+      <!-- 깃대를 든 사람과 개 -->
+      <g fill="#080808">
+        <path d="M196 236 q4 -8 8 0 l2 22 -4 0 -1 20 -3 0 -1 -20 -4 0 z"/>
+        <circle cx="200" cy="232" r="4.4"/>
+        <path d="M206 244 l9 -3 1 3 -10 4 z"/>
+        <path d="M215 240 l1 -22 2 0 -1 22 z"/>
+        <path d="M216 218 l14 4 -14 5 z"/>
+        <path d="M170 266 q6 -7 13 -4 l3 6 4 -1 -1 3 -5 1 -1 6 -3 0 1 -6 -6 1 -1 5 -3 0 z"/>
+      </g>
+
+      <rect width="400" height="360" fill="url(#fog)"/>
     </svg>
   </div>
 
   <div class="menu-inner">
-    <div class="menu-top">
-      <div class="menu-title">부산 <span>2033</span></div>
-      <div class="menu-sub">핵이 터진 도시에서, 당신의 이야기</div>
-    </div>
 
+    <!-- 위 — 이름과 재화 -->
+    <header class="m-top">
+      <div class="m-id">
+        <span class="m-badge" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 9.6a2.4 2.4 0 0 1 2.3 1.7h5.5a7.8 7.8 0 0 0-3.9-6.1l-2.7 4.7a2.4 2.4 0 0 1-1.2-.3Zm-2.3 1.7A2.4 2.4 0 0 1 12 9.6l-2.8-4.4A7.8 7.8 0 0 0 4.2 11.3h5.5ZM12 14.4a2.4 2.4 0 0 1-1.9-1l-2.8 4.5a7.8 7.8 0 0 0 9.4 0l-2.8-4.5a2.4 2.4 0 0 1-1.9 1Z"/></svg></span>
+        <span class="m-name">부산 <b>2033</b></span>
+      </div>
+      <div class="m-pills">
+        <button class="pill" id="pillCookie" data-menu="shop">
+          <i>🍪</i><b id="cookieN">0</b>
+        </button>
+        <button class="pill" id="pillMail" data-menu="mail">
+          <i>✉️</i><b id="mailN">0</b><em class="dot hidden" id="mailDot"></em>
+        </button>
+      </div>
+    </header>
+
+    <!-- 라디오 공지판 -->
     <div class="radio" id="radio">
       <div class="radio-body">
-        <div class="radio-dots"><i></i><i></i><i></i></div>
         <div class="radio-screen">
+          <div class="radio-dots"><i></i><i></i><i></i></div>
           <div class="radio-label">부산 생존 방송 · 89.1</div>
           <div class="radio-text" id="radioText">…</div>
         </div>
@@ -58,41 +106,39 @@
       </div>
     </div>
 
-    <div class="cookie-bar">
-      <span class="cookie-ico">🍪</span>
-      <span class="cookie-n" id="cookieN">0</span>
-      <span class="cookie-label">쿠키</span>
+    <!-- 이어하기 · 오늘의 상태 -->
+    <div class="m-chips">
+      <button class="chip" data-menu="missions">
+        <span class="c-key">미션</span>
+        <span class="c-val" id="missInfo">0 / 3</span>
+      </button>
+      <button class="chip" data-menu="shop">
+        <span class="c-key">장편</span>
+        <span class="c-val" id="longInfo">0 / 0편</span>
+      </button>
     </div>
 
-    <div class="menu-actions">
-      <button class="big-btn resume hidden" id="btnResume">
-        <span class="b-title">이어하기</span>
-        <span class="b-sub" id="resumeInfo"></span>
+    <!-- 가운데 — 큰 버튼 둘 -->
+    <div class="m-actions">
+      <button class="m-act off" id="btnResume">
+        <svg class="a-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a8 8 0 1 1-7.5 10.7l1.9-.7A6 6 0 1 0 12 6v3L7.5 5.5 12 2v2Z"/></svg>
+        <span class="a-title">이어하기</span>
+        <em class="a-sub" id="resumeInfo">저장된 여정 없음</em>
       </button>
-      <button class="big-btn start" id="btnStart">
-        <span class="b-title">게임 시작</span>
-        <span class="b-sub" id="startSub">부산-애프터에이틴</span>
+      <button class="m-act primary" id="btnStart">
+        <svg class="a-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5 20 12 7 19.5v-15Z"/></svg>
+        <span class="a-title">게임 시작</span>
       </button>
-      <div class="origin-pick">
-        <button class="origin on" data-origin="after18">
-          <b>부산-애프터에이틴</b><i>산에서 자라 열여덟 해 뒤에 내려온 사람</i>
-        </button>
-        <button class="origin" data-origin="coma">
-          <b>부산-코마</b><i>그날 이전에 눈을 감고, 십팔 년 뒤에 깬 사람</i>
-        </button>
-      </div>
     </div>
 
-    <div class="menu-nav">
-      <button data-menu="records"><i>🏆</i><span>기록실</span></button>
-      <button data-menu="endings"><i>📖</i><span>엔딩</span></button>
-      <button data-menu="keepsakes"><i>🗂️</i><span>수집한 이야기</span></button>
-      <button data-menu="shop"><i>🏪</i><span>상점</span></button>
-      <button data-menu="missions"><i>📋</i><span>미션</span></button>
-      <button data-menu="mail"><i>✉️</i><span>우편함</span></button>
-      <button data-menu="help"><i>❔</i><span>도움말</span></button>
-      <button data-menu="credit"><i>✎</i><span>만든 것</span></button>
-    </div>
+    <!-- 아래 — 이동 -->
+    <nav class="menu-nav">
+      <button data-menu="records"><svg viewBox="0 0 24 24"><path d="M7 4h10v3h3v2a4 4 0 0 1-4 4h-.4A5 5 0 0 1 13 15.9V18h3v2H8v-2h3v-2.1A5 5 0 0 1 8.4 13H8a4 4 0 0 1-4-4V7h3V4Zm0 5H6v0a2 2 0 0 0 1 1.7V9Zm10 1.7A2 2 0 0 0 18 9h-1v1.7Z"/></svg><span>기록실</span></button>
+      <button data-menu="mail"><svg viewBox="0 0 24 24"><path d="M3 6h18v12H3V6Zm2 2v.4l7 4.2 7-4.2V8H5Zm14 8v-5.2l-7 4.2-7-4.2V16h14Z"/></svg><span>우편함</span><em class="dot hidden" id="navMailDot"></em></button>
+      <button data-menu="shop"><svg viewBox="0 0 24 24"><path d="M4 4h16l1.6 5A3 3 0 0 1 19 12.9V20h-4v-5H9v5H5v-7.1A3 3 0 0 1 2.4 9L4 4Zm1.5 2-1 3.2A1 1 0 0 0 6.5 10 1 1 0 0 0 8 9.1L8.3 6H5.5Zm4.8 0L10 9.1a1 1 0 0 0 2 .1V6h-1.7Zm3.7 0v3.2a1 1 0 0 0 2-.1L15.7 6H14Zm3.7 0 .3 3.1a1 1 0 0 0 1.7.1L19 6h-1.3Z"/></svg><span>상점</span></button>
+      <button data-menu="keepsakes"><svg viewBox="0 0 24 24"><path d="M4 4h4v16H4V4Zm5 0h4v16H9V4Zm5.6.6 3.9 1-4.1 15.4-3.9-1L14.6 4.6Z"/></svg><span>내 서재</span></button>
+      <button data-menu="more"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z"/></svg><span>더보기</span></button>
+    </nav>
   </div>
 </div>
 

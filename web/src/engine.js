@@ -41,6 +41,7 @@
       phase: 1,
       mode: 'prologue',
       origin: 'after18',      /* 시작 사연. after18 | coma */
+      originPicked: 0,        /* 게임 안에서 골랐는지 */
       lgId: null, lgScene: 0, lgDone: 0, longDone: [],
       prologueIdx: 0,
       chapterIdx: 0,
@@ -65,7 +66,7 @@
 
   function Engine(seed, origin) {
     this.st = newState(seed || (Date.now() % 100000));
-    if (origin && (B.ARCS.PROLOGUES || {})[origin]) this.st.origin = origin;
+    if (origin && (B.ARCS.PROLOGUES || {})[origin]) { this.st.origin = origin; this.st.originPicked = 1; }
     this.rnd = B.mulberry32(this.st.seed);
     this.gen = new B.Generator(this.rnd, this.st);
     this.queue = [];       /* 다음에 보여 줄 장면들 */
@@ -96,6 +97,8 @@
       const data = JSON.parse(raw);
       const e = new Engine(data.st.seed);
       e.st = data.st;
+      /* 예전 저장 — 이미 도입부가 시작됐으면 사연은 이미 정해진 것으로 본다 */
+      if (e.st.originPicked === undefined) e.st.originPicked = (e.st.prologueIdx || 0) > 0 ? 1 : 0;
       e.rnd = B.mulberry32((data.st.seed + data.st.page * 7919) >>> 0);
       e.gen = new B.Generator(e.rnd, e.st);
       e.gen.recent = data.recent || [];
@@ -551,6 +554,7 @@
       Engine.markTitle(eff.title);
     }
     if (eff.flag) st.flags[eff.flag] = 1;
+    if (eff.origin && (B.ARCS.PROLOGUES || {})[eff.origin]) st.origin = eff.origin;
     if (eff.chain) st.chain = eff.chain;
     return { gains: gains, losses: losses };
   };
@@ -877,6 +881,14 @@
 
     /* 도입부 */
     if (st.mode === 'prologue') {
+      /* 맨 처음에 시작 사연을 고른다 */
+      if (!st.originPicked && B.ARCS.ORIGIN_PICK) {
+        st.originPicked = 1;
+        const pk = B.ARCS.ORIGIN_PICK;
+        this.queue.push(scene(pk.pages.slice(),
+          this.gen.buildChoices({ choices: pk.choices }, {}, {}, this), 'story'));
+        return;
+      }
       const PRO = this.prologue();
       if (st.prologueIdx < PRO.length) {
         const sc = PRO[st.prologueIdx++];
