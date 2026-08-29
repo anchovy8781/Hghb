@@ -283,6 +283,37 @@
         return it && it.warm && st2.items[id] > 0;
       }) ? 1 : 0;
     }
+    if (want === 'longs') return (st.longDone || []).length;
+    if (want === 'chapter') return st.chapterIdx || 0;
+    if (want === 'money') return st.money || 0;
+    if (want === 'enc') return st.encounters || 0;
+    if (want === 'revive') return st.revives || 0;
+    if (want === 'kinds') {
+      let n = 0;
+      Object.keys(st.items || {}).forEach(function (id) { if (st.items[id] > 0) n++; });
+      return n;
+    }
+    if (want === 'repsum') {
+      let n = 0;
+      Object.keys(st.rep || {}).forEach(function (k) { if (st.rep[k] > 0) n += st.rep[k]; });
+      return n;
+    }
+    if (want === 'armor') {
+      const st3 = st;
+      return Object.keys(st3.items || {}).some(function (id) {
+        const it = B.ITEM_MAP[id];
+        return it && it.armor && st3.items[id] > 0;
+      }) ? 1 : 0;
+    }
+    if (want === 'food' || want === 'med' || want === 'water' ||
+        want === 'ammo' || want === 'doc' || want === 'lux') {
+      let n = 0;
+      Object.keys(st.items || {}).forEach(function (id) {
+        const it = B.ITEM_MAP[id];
+        if (it && it.kind === want) n += st.items[id];
+      });
+      return n;
+    }
     if (want === 'finale') return st.mode === 'finale' || st.mode === 'ending' ? 1 : 0;
     return 0;
   };
@@ -595,6 +626,14 @@
       if (!has) return false;
     }
     if (need.specials && (this.st.specialsDone || []).length < need.specials) return false;
+    if (need.longs && (this.st.longDone || []).length < need.longs) return false;
+    if (need.skills) {
+      const sk = this.st.skills || {};
+      let n2 = 0;
+      for (const k in sk) if (sk[k] > 0) n2++;
+      if (n2 < need.skills) return false;
+    }
+    if (need.origin && this.st.origin !== need.origin) return false;
     if (need.rep) {
       for (const k in need.rep) if ((this.st.rep[k] || 0) < need.rep[k]) return false;
     }
@@ -903,14 +942,20 @@
       st.mode = 'finale';
       st.sceneIdx = 0;
       if (!st.flags.door_open) {
+        const f = st.flags;
         if ((st.specialsDone || []).length >= 18) this.pushEnding('chronicle');
-        else this.pushEnding(st.flags.dog_pups || st.flags.in_town ? 'settle' : 'wander');
+        else if (f.sd_letter || f.sd_back || f.ogr_lend || f.ft_farm) this.pushEnding('grower');
+        else if (f.ft_mine || f.ft_stay || f.ft_winter || f.hdm_check) this.pushEnding('keeper');
+        else this.pushEnding(f.dog_pups || f.in_town ? 'settle' : 'wander');
         return;
       }
     }
     if (st.mode === 'finale') {
-      if (st.sceneIdx < A.FINALE.scenes.length) {
-        const sc = A.FINALE.scenes[st.sceneIdx++];
+      /* 사연마다 문 앞에서 자기 이야기를 한 장면 매듭짓는다 */
+      const FO = (A.FINALE_BY_ORIGIN || {})[st.origin];
+      const list = (FO && FO.scenes ? FO.scenes : []).concat(A.FINALE.scenes);
+      if (st.sceneIdx < list.length) {
+        const sc = list[st.sceneIdx++];
         this.queue.push(scene(sc.pages, this.gen.buildChoices({ choices: sc.choices }, {}, {}, this), 'story'));
       } else {
         this.pushEnding('wander');

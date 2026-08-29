@@ -250,6 +250,23 @@ B.ARCS.CHAPTERS.forEach((ch) => {
 });
 B.ARCS.FINALE.scenes.forEach((sc) => checkScene(sc, `종장 ${sc.id}`));
 
+/* 사연마다 붙는 종장 앞 장면 */
+{
+  const FO = (B.ARCS && B.ARCS.FINALE_BY_ORIGIN) || {};
+  const P2 = (B.ARCS && B.ARCS.PROLOGUES) || {};
+  Object.keys(FO).forEach((k) => {
+    if (!P2[k]) errors.push(`종장 앞 장면: 없는 사연 "${k}"`);
+    (FO[k].scenes || []).forEach((sc) => {
+      checkScene(sc, `${k} 종장 앞 ${sc.id}`);
+      const go = (sc.choices || []).some((c) => !c.end && !c.need);
+      if (!go) errors.push(`${k} 종장 앞 ${sc.id}: 문 안으로 들어가는 선택지가 없습니다`);
+    });
+  });
+  Object.keys(P2).forEach((k) => {
+    if (!FO[k]) warns.push(`사연 ${k}: 종장 앞 장면이 없습니다`);
+  });
+}
+
 /* ── 특별 이야기 ─────────────────────────────── */
 const spIds = new Set();
 (B.SPECIALS || []).forEach((sp) => {
@@ -296,13 +313,7 @@ B.CONVERSIONS.forEach((cv) => {
 });
 
 /* 엔진 안에서 세워지는 깃발도 인정 */
-['in_town', 'door_open', 'dog_pups', 'started'].forEach((f) => flagsSet.add(f));
 
-flagsUsed.forEach((wheres, flag) => {
-  if (!flagsSet.has(flag)) {
-    errors.push(`조건으로 쓰이지만 아무 데서도 세워지지 않는 깃발 "${flag}" (${wheres[0]})`);
-  }
-});
 
 /* ── 같은 id 를 두 번 정의하면 뒤엣것이 앞엣것을 조용히 덮어쓴다 ── */
 {
@@ -604,6 +615,15 @@ flagsUsed.forEach((wheres, flag) => {
     if (!opens) errors.push(`사연 ${k}: 마지막 장에 종장을 여는 선택지(door_open)가 없음`);
   });
 }
+
+/* ── 깃발 — 모든 데이터를 다 훑은 뒤에 본다 ── */
+['in_town', 'door_open', 'dog_pups', 'started'].forEach((f) => flagsSet.add(f));
+
+flagsUsed.forEach((wheres, flag) => {
+  if (!flagsSet.has(flag)) {
+    errors.push(`조건으로 쓰이지만 아무 데서도 세워지지 않는 깃발 "${flag}" (${wheres[0]})`);
+  }
+});
 
 /* ── 결과 ───────────────────────────────────── */
 console.log(`템플릿 ${B.TEMPLATES.length} · 아이템 ${B.ITEMS.length} · 능력 ${B.SKILLS.length} · 엔딩 ${endingIds.size}`);
