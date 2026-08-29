@@ -52,6 +52,6 @@
    *   장편 이야기는 B.LONGS 에 들어 있고, 여기서는 값만 매긴다.
    */
   B.SHOP_PRICE = { land: 150, mine: 150, river: 150, nuke: 180, hosp: 170,
-                   air: 160, yard: 170, seed: 175 };
+                   air: 160, yard: 170, seed: 175, fort: 165 };
 
 })(typeof globalThis !== 'undefined' ? globalThis : this);

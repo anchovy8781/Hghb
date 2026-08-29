@@ -229,8 +229,8 @@ for (let i = 0; i < runs; i++) {
   const seed = baseSeed + i * 977;
   /* 세 판에 한 번은 코마 사연으로, 두 판에 한 번은 장편을 사서 돌려 본다 */
   /* 셋 중 하나는 사연을 안 정하고 돌려서, 게임 안에서 고르는 장면까지 거치게 한다 */
-  const ORI = [null, 'after18', 'coma', 'wed', 'onair'];
-  const opts = { origin: ORI[i % 5], longs: i % 2 === 1 };
+  const ORI = [null, 'after18', 'coma', 'wed', 'onair', 'saver'];
+  const opts = { origin: ORI[i % 6], longs: i % 2 === 1 };
   const r = play(B, seed, 4000, opts);
   if (r.error) {
     console.log(`시드 ${seed}: 오류 - ${r.error} (${r.page}p)`);
