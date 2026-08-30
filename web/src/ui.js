@@ -425,6 +425,33 @@
       g.wrap.classList.toggle('danger', danger);
     }
 
+    /* 같이 걷는 사람과 쫓기는 정도 */
+    const bar = el('mateBar');
+    const hunted = s.hunt >= 2;
+    if (s.mate || hunted) {
+      bar.classList.remove('hidden');
+      if (s.mate) {
+        el('mateName').textContent = s.mate.name;
+        el('mateSub').textContent = s.mate.skill
+          ? s.mate.sub + ' · ' + s.mate.skill
+          : s.mate.sub;
+        let pips = '';
+        for (let i = 0; i < 3; i++) pips += '<s class="' + (i < s.mate.trust ? '' : 'off') + '"></s>';
+        el('mateTrust').innerHTML = pips;
+        el('mateTrust').classList.remove('hidden');
+      } else {
+        el('mateName').textContent = '혼자';
+        el('mateSub').textContent = '같이 걷는 사람이 없습니다';
+        el('mateTrust').innerHTML = '';
+      }
+      const ht = el('huntTag');
+      ht.classList.toggle('hidden', !hunted);
+      ht.textContent = s.hunt >= 9 ? '쫓김 · 이름이 붙었습니다'
+        : (s.hunt >= 5 ? '쫓김 · 값이 붙었습니다' : '쫓김');
+    } else {
+      bar.classList.add('hidden');
+    }
+
     el('progNum').textContent = s.progress + '%';
     el('progFill').style.width = s.progress + '%';
     const scKind = this.e.scene && this.e.scene.kind;
@@ -687,6 +714,21 @@
       });
       const spDone = Object.keys(rec.specials || {}).length;
       para('특별 이야기 ' + spDone + ' / ' + (B.SPECIALS || []).length + '편을 보았습니다.');
+
+      h('같이 걸은 사람');
+      const known2 = B.Engine.matesKnown();
+      (B.MATES || []).forEach(function (m) {
+        const k = known2[m.id];
+        if (!k) { row('???', '아직 못 만남'); return; }
+        const tag = [];
+        if (k.walked) tag.push('같이 걸음 ' + k.walked + '번');
+        else tag.push('마주침 ' + (k.met || 1) + '번');
+        if (k.bond) tag.push('속 얘기 들음');
+        if (k.saved) tag.push('대신 맞아 줌');
+        row(m.name + ' · ' + m.sub, tag.join(' · '));
+      });
+      const walkedN = Object.keys(known2).filter(function (id) { return known2[id].walked; }).length;
+      para('여덟 중 ' + walkedN + '명과 같이 걸어 봤습니다.');
 
       h('얻은 칭호');
       const titles = (rec.titles || []);

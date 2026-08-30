@@ -60,7 +60,18 @@
       spAt: 0,            /* 다음 특별 이야기가 끼어들 페이지 */
       specialsDone: [],
       revives: 0,
-      titles: []
+      titles: [],
+      mate: null,        /* 지금 같이 걷는 사람 */
+      mateTrust: 0,      /* 0~3 */
+      mateSeen: [],      /* 이번 여정에 이미 마주친 사람 */
+      mateAt: 0,         /* 다음에 사람을 만날 페이지 */
+      mateBond: 0,       /* 전용 장면을 봤는지 */
+      mateSaved: 0,      /* 대신 맞아 준 적이 있는지 */
+      mateLine: 0,       /* 다음에 한마디 할 페이지 */
+      mateSince: 0,      /* 같이 걷기 시작한 페이지 */
+      mateTogether: 0,   /* 같이 걸은 쪽수 */
+      hunt: 0,           /* 쫓기는 정도 */
+      huntIdx: 0         /* 다음에 나올 추격 장면 */
     };
   }
 
@@ -99,6 +110,12 @@
       e.st = data.st;
       /* 예전 저장 — 이미 도입부가 시작됐으면 사연은 이미 정해진 것으로 본다 */
       if (e.st.originPicked === undefined) e.st.originPicked = (e.st.prologueIdx || 0) > 0 ? 1 : 0;
+      /* 동행자와 추격은 나중에 붙은 것이라, 옛 저장에는 칸이 없다 */
+      const fresh = newState(e.st.seed);
+      ['mate', 'mateTrust', 'mateSeen', 'mateAt', 'mateBond', 'mateSaved',
+       'mateLine', 'mateSince', 'mateTogether', 'hunt', 'huntIdx'].forEach(function (k) {
+        if (e.st[k] === undefined) e.st[k] = fresh[k];
+      });
       e.rnd = B.mulberry32((data.st.seed + data.st.page * 7919) >>> 0);
       e.gen = new B.Generator(e.rnd, e.st);
       e.gen.recent = data.recent || [];
@@ -283,6 +300,10 @@
         return it && it.warm && st2.items[id] > 0;
       }) ? 1 : 0;
     }
+    if (want === 'trust') return st.mateTrust || 0;
+    if (want === 'together') return st.mateTogether || 0;
+    if (want === 'bond') return st.mateBond ? 1 : 0;
+    if (want === 'quiet') return (st.hunt || 0) === 0 ? (st.page || 0) : 0;
     if (want === 'longs') return (st.longDone || []).length;
     if (want === 'chapter') return st.chapterIdx || 0;
     if (want === 'money') return st.money || 0;
@@ -407,6 +428,17 @@
     return got;
   };
 
+  /* 같이 걸어 본 사람은 여정이 끝나도 기록에 남는다 */
+  Engine.markMate = function (id, how) {
+    const r = Engine.records();
+    r.mates = r.mates || {};
+    const m = r.mates[id] || { met: 0, walked: 0, bond: 0, saved: 0 };
+    m[how] = (m[how] || 0) + 1;
+    r.mates[id] = m;
+    saveRec(r);
+  };
+  Engine.matesKnown = function () { return Engine.records().mates || {}; };
+
   Engine.markLong = function (id) {
     try {
       const r = Engine.records();
@@ -448,7 +480,18 @@
   };
 
   /* ── 상태 ────────────────────────────────────── */
-  Engine.prototype.skillLv = function (id) { return this.st.skills[id] || 0; };
+  Engine.prototype.mateDef = function () {
+    return this.st.mate ? (B.MATE_MAP || {})[this.st.mate] : null;
+  };
+
+  /* 동행자가 아는 것은 당신도 할 수 있게 된다.
+   * 이미 아는 일이면 한 단계 더 깊어진다. 셋을 넘지는 않는다. */
+  Engine.prototype.skillLv = function (id) {
+    let lv = this.st.skills[id] || 0;
+    const m = this.mateDef();
+    if (m && m.skill === id) lv = Math.min(3, lv + 1);
+    return lv;
+  };
   Engine.prototype.has = function (id) { return (this.st.items[id] || 0) > 0; };
 
   /* 뼈대(만화책, 보온병 …)로 찾는다. 상태가 어떻든 만화책은 만화책이다. */
@@ -585,6 +628,36 @@
       Engine.markTitle(eff.title);
     }
     if (eff.flag) st.flags[eff.flag] = 1;
+    if (eff.trust) {
+      const before = st.mateTrust || 0;
+      st.mateTrust = clamp(before + eff.trust, 0, 3);
+      const m0 = this.mateDef();
+      if (m0 && st.mateTrust !== before) {
+        (st.mateTrust > before ? gains : losses).push(m0.name + ' 신뢰');
+      }
+    }
+    if (eff.mateJoin && !st.mate) {
+      const m2 = (B.MATE_MAP || {})[eff.mateJoin];
+      if (m2) {
+        st.mate = m2.id;
+        st.mateTrust = 1;
+        st.mateBond = 0;
+        st.mateLine = st.page + 6;
+        st.mateSince = st.page;
+        Engine.markMate(m2.id, 'walked');
+        gains.push(m2.name + ' 동행');
+        if (m2.gift && B.ITEM_MAP[m2.gift]) {
+          this.addItem(m2.gift, 1);
+          gains.push(B.ITEM_MAP[m2.gift].name);
+        }
+      }
+    }
+    if (eff.mateGo && st.mate) {
+      const m1 = this.mateDef();
+      st.mate = null; st.mateTrust = 0; st.mateBond = 0;
+      if (m1) losses.push(m1.name + ' 동행 끝');
+    }
+    if (eff.hunt) st.hunt = Math.max(0, (st.hunt || 0) + eff.hunt);
     if (eff.origin && (B.ARCS.PROLOGUES || {})[eff.origin]) st.origin = eff.origin;
     if (eff.chain) st.chain = eff.chain;
     return { gains: gains, losses: losses };
@@ -634,6 +707,11 @@
       if (n2 < need.skills) return false;
     }
     if (need.origin && this.st.origin !== need.origin) return false;
+    if (need.mate) {
+      if (!this.st.mate) return false;
+      if (need.mate !== true && this.st.mate !== need.mate) return false;
+    }
+    if (need.trust && (this.st.mateTrust || 0) < need.trust) return false;
     if (need.rep) {
       for (const k in need.rep) if ((this.st.rep[k] || 0) < need.rep[k]) return false;
     }
@@ -912,6 +990,85 @@
     ], 'sleep');
   }
 
+  /* ── 같이 걷는 사람 ──────────────────────────── */
+  const MATE_FIRST = 70;    /* 이 페이지쯤 처음 마주친다 */
+  const MATE_GAP = 130;     /* 헤어졌으면 이만큼 뒤에 또 마주친다 */
+
+  Engine.prototype.produceMate = function () {
+    const st = this.st;
+    const LIST = B.MATES || [];
+    if (!LIST.length) return false;
+
+    /* 신뢰가 다 차면 그 사람만의 장면이 한 번 나온다 */
+    const cur = this.mateDef();
+    if (cur && cur.bond && (st.mateTrust || 0) >= 3 && !st.mateBond) {
+      st.mateBond = 1;
+      Engine.markMate(cur.id, 'bond');
+      const bd = cur.bond;
+      this.queue.push(scene(bd.pages.slice(),
+        this.gen.buildChoices({ choices: bd.choices }, {}, {}, this), 'mate', { mate: cur.id }));
+      return true;
+    }
+    if (cur) return false;
+
+    if (!st.mateAt) st.mateAt = MATE_FIRST + Math.floor(this.rnd() * 40);
+    if (st.page < st.mateAt) return false;
+
+    const seen = st.mateSeen || (st.mateSeen = []);
+    const left = LIST.filter(function (m) { return seen.indexOf(m.id) < 0; });
+    if (!left.length) { st.mateAt = FINAL_PAGE * 2; return false; }
+
+    const m = left[Math.floor(this.rnd() * left.length)];
+    seen.push(m.id);
+    Engine.markMate(m.id, 'met');
+    st.mateAt = st.page + MATE_GAP + Math.floor(this.rnd() * 60);
+
+    /* 같이 가자는 선택지에는 합류를 붙여 준다 */
+    const cs = m.meet.choices.map(function (c) {
+      if (!c.join) return c;
+      const e = {};
+      for (const k in (c.eff || {})) e[k] = c.eff[k];
+      e.mateJoin = m.id;
+      if (e.mp === undefined) e.mp = 2;
+      const out = {};
+      for (const k in c) out[k] = c[k];
+      out.eff = e;
+      return out;
+    });
+    const pages = ['__TITLE__' + m.name + ' · ' + m.sub].concat(m.meet.pages);
+    this.queue.push(scene(pages, this.gen.buildChoices({ choices: cs }, {}, {}, this),
+                          'mate', { mate: m.id }));
+    return true;
+  };
+
+  /* 같이 걷는 사람이 길에서 한마디씩 한다 */
+  Engine.prototype.mateLine = function () {
+    const st = this.st;
+    const m = this.mateDef();
+    if (!m) return null;
+    if (st.page < (st.mateLine || 0)) return null;
+    st.mateLine = st.page + 5 + Math.floor(this.rnd() * 6);
+    const warm = (st.mateTrust || 0) >= 2 && m.warm && m.warm.length && this.rnd() < 0.4;
+    const pool = warm ? m.warm : m.lines;
+    if (!pool || !pool.length) return null;
+    return pool[Math.floor(this.rnd() * pool.length)];
+  };
+
+  /* ── 쫓는 것 ─────────────────────────────────── */
+  Engine.prototype.produceHunt = function () {
+    const st = this.st;
+    const H = B.HUNT || [];
+    if (!H.length) return false;
+    const idx = st.huntIdx || 0;
+    if (idx >= H.length) return false;
+    const sc = H[idx];
+    if ((st.hunt || 0) < sc.at) return false;
+    st.huntIdx = idx + 1;
+    this.queue.push(scene(['__TITLE__' + sc.title].concat(sc.pages),
+      this.gen.buildChoices({ choices: sc.choices }, {}, {}, this), 'hunt'));
+    return true;
+  };
+
   /* ── 콘텐츠 생산 ─────────────────────────────── */
   Engine.prototype.produce = function () {
     const st = this.st;
@@ -962,6 +1119,12 @@
       }
       return;
     }
+
+    /* 같이 걷는 사람 — 만나고, 깊어지고, 헤어진다 */
+    if (this.produceMate()) return;
+
+    /* 쫓는 것 */
+    if (this.produceHunt()) return;
 
     /* 본편 장 */
     const CH = this.chapters();
@@ -1139,6 +1302,11 @@
     if (!this.queue.length) this.produce();
     if (!this.queue.length) return this.scene;
     this.scene = this.queue.shift();
+    /* 같이 걷는 사람이 장면 끝에 한마디 얹는다. 자기 장면에서는 안 얹는다 */
+    if (this.scene.kind !== 'mate' && this.scene.kind !== 'revive' && this.st.mode === 'run') {
+      const ml = this.mateLine();
+      if (ml) this.scene.blocks.push({ type: 'text', text: ml });
+    }
     this.scene.blocks.forEach(function (b) {
       if (b.type === 'text') b.text = B.josa(b.text);
     });
@@ -1193,6 +1361,13 @@
   };
 
   /* 몸을 갉는 것들과 머리를 갉는 것들. 뒤 숫자가 한 번에 깎는 눈금 수 */
+  const TRUST_EVERY = 55;   /* 이만큼 같이 걸으면 신뢰가 한 칸 오른다 */
+  const TRUST_LINES = [
+    '{이름}이(가) 제 걸음에 속도를 맞춥니다. 맞춰 준 건지 맞아진 건지는 모르겠습니다.',
+    '{이름}이(가) 이제 등을 보이고 앞서 걷습니다. 이 도시에서 등을 보이는 건 아무한테나 하는 일이 아닙니다.',
+    '{이름}이(가) 자기 이야기를 시작하려다 맙니다.\n하려던 게 뭔지는 곧 알게 됩니다.'
+  ];
+
   const HP_BAD = [['hunger', 2], ['wound', 1], ['fever', 2], ['fracture', 1], ['burn', 1],
                   ['cold', 1], ['infection', 2], ['bleeding', 2], ['pain', 1], ['poison', 2],
                   ['headshot', 3], ['riddled', 2], ['modified', 1], ['coldweak', 1]];
@@ -1224,6 +1399,24 @@
       else if (wear < 0) this.heal('mp', 'mpSub', 0.25);   /* 한 칸이 아니라 마모 한 눈금만 */
     }
     if (st.page % 43 === 0 && st.rad > 0) st.rad = clamp(st.rad - 1, 0, RAD_MAX);
+
+    if (st.mate) st.mateTogether = (st.mateTogether || 0) + 1;
+
+    /* 같이 오래 걸으면 신뢰가 한 칸씩 오른다. 말로 오르는 게 아니다 */
+    if (st.mate && (st.mateTrust || 0) < 3 &&
+        st.page - (st.mateSince || 0) >= TRUST_EVERY) {
+      st.mateSince = st.page;
+      st.mateTrust = (st.mateTrust || 0) + 1;
+      const mm = this.mateDef();
+      if (mm) {
+        this.queue.unshift(scene(
+          [mm.name + '과(와) 걸은 날이 쌓였습니다.\n말이 줄고 손발이 맞습니다. 그게 신뢰라는 것의 생김새입니다.',
+           TRUST_LINES[Math.min(st.mateTrust, 3) - 1].replace('{이름}', mm.name)],
+          [{ label: '계속 걷는다.', need: null, cost: null, dc: 0, ok: [], no: [],
+             res: ['둘이 앞을 봅니다. 갈 길이 같습니다.'], eff: { mp: 1 } }],
+          'mate', { mate: mm.id }));
+      }
+    }
 
     if (st.hp >= MAX && st.mp >= MAX) st.fullPages = (st.fullPages || 0) + 1;
 
@@ -1262,10 +1455,44 @@
     return held[0];
   };
 
+  /* 살릴 물건이 하나도 없을 때, 같이 걷던 사람이 대신 맞아 준다.
+   * 신뢰가 두 칸을 넘어야 하고, 한 여정에 한 번뿐이다. */
+  Engine.prototype.mateSave = function (cause) {
+    const st = this.st;
+    const m = this.mateDef();
+    if (!m || !m.save || st.mateSaved) return false;
+    if ((st.mateTrust || 0) < 2) return false;
+
+    st.mateSaved = 1;
+    Engine.markMate(m.id, 'saved');
+    st.revives = (st.revives || 0) + 1;
+    if (cause === 'hp') setDamage(st, 'hp', 'hpSub', (MAX - 2) * WEAR);
+    else if (cause === 'mp') setDamage(st, 'mp', 'mpSub', (MAX - 2) * WEAR);
+    st.rad = clamp(st.rad - 2, 0, RAD_MAX);
+    st.mate = null;
+    st.mateTrust = 0;
+    st.mateBond = 0;
+    st.flags.mate_gone = 1;
+    st.flags['mate_' + m.id] = 1;
+    this.addItem('gloom', 1);
+    this.addItem('ironwill', 1);
+
+    this.queue = [];
+    this.queue.push(scene(
+      ['__TITLE__' + m.name + '이(가) 대신 맞았습니다'].concat(m.save)
+        .concat(['— 이제 혼자 걷습니다. —']),
+      [{ label: '일어선다.', need: null, cost: null, dc: 0, ok: [], no: [],
+         res: ['일어섭니다. 무릎이 안 펴지는데 펴집니다.\n두고 갈 수 없는 것이 하나 늘었습니다.'],
+         eff: {} }],
+      'revive'
+    ));
+    return true;
+  };
+
   Engine.prototype.tryRevive = function (cause) {
     const st = this.st;
     const id = this.reviveItem();
-    if (!id) return false;
+    if (!id) return this.mateSave(cause);
     const it = B.ITEM_MAP[id];
     const back = it.revive || 1;          /* 되돌아오는 칸 수 */
 
@@ -1337,6 +1564,12 @@
     }
 
     if (!this.checkNeed(c.need)) return null;
+
+    /* 총을 쓰거나 탄을 태우면 소리가 납니다. 소리는 사람을 부릅니다 */
+    if (this.st.mode === 'run' &&
+        ((c.need && c.need.gun) || (c.cost && c.cost.ammo))) {
+      this.st.hunt = (this.st.hunt || 0) + 1;
+    }
 
     const lost = this.payCost(c.cost);
     let texts;
@@ -1450,6 +1683,14 @@
       items: items, skills: skills, rep: st.rep, flags: st.flags,
       mode: st.mode, chapter: st.chapterIdx, ending: st.ending,
       titles: st.titles || [], specialsDone: st.specialsDone || [],
+      mate: st.mate ? {
+        id: st.mate,
+        name: (B.MATE_MAP[st.mate] || {}).name || st.mate,
+        sub: (B.MATE_MAP[st.mate] || {}).sub || '',
+        skill: (B.SKILL_MAP[(B.MATE_MAP[st.mate] || {}).skill] || {}).name || '',
+        trust: st.mateTrust || 0
+      } : null,
+      hunt: st.hunt || 0,
       chapterTitle: (this.chapters()[st.chapterIdx] || {}).title || '종장'
     };
   };
