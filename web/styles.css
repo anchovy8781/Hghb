@@ -268,33 +268,6 @@ html, body {
 }
 .badge.shield { border-radius: 4px 4px 11px 11px; }
 
-/* 같이 걷는 사람 */
-.mate-bar {
-  display: flex; align-items: center; gap: 8px;
-  padding: 5px 20px; font-size: 12px;
-  border-bottom: 1px solid var(--line);
-  background: var(--choice-bg); color: var(--ink);
-  flex: 0 0 auto;
-}
-.mate-bar.hidden { display: none; }
-.mate-bar .m-who { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
-.mate-bar .m-who b { font-weight: 700; }
-.mate-bar .m-who i {
-  font-style: normal; opacity: .62; font-size: 11px;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.mate-bar .m-trust { display: flex; gap: 3px; margin-left: auto; flex: 0 0 auto; }
-.mate-bar .m-trust s {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: currentColor; opacity: .9; text-decoration: none;
-}
-.mate-bar .m-trust s.off { opacity: .2; }
-.mate-bar .m-hunt {
-  flex: 0 0 auto; padding: 1px 7px; border-radius: 9px;
-  background: var(--red); color: #fff; font-size: 11px;
-}
-.mate-bar .m-hunt.hidden { display: none; }
-
 /* 본문 */
 #story {
   flex: 1 1 auto;

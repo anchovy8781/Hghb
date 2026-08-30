@@ -79,30 +79,6 @@
         + (keys.length > 3 ? ' 그리고 몇 개 더.' : '') + ' 값은 하나도 안 나갑니다.');
     }
 
-    /* 같이 걸은 사람 */
-    const mm = st.mate ? (B.MATE_MAP || {})[st.mate] : null;
-    if (mm) {
-      const tr = st.mateTrust || 0;
-      lines.push(mm.name + '이(가) 끝까지 옆에 있었습니다.'
-        + (tr >= 3 ? ' 말을 안 해도 되는 사이가 됐습니다.'
-          : (tr >= 2 ? ' 등을 맡길 수 있는 사이까지는 갔습니다.'
-            : ' 서로 아직 존댓말을 씁니다.')));
-    } else if (st.flags && st.flags.mate_gone) {
-      const gone = (B.MATES || []).filter(function (m) {
-        return st.flags['mate_' + m.id];
-      })[0];
-      lines.push((gone ? gone.name + '이(가)' : '같이 걷던 사람이')
-        + ' 당신 대신 맞았습니다. 그 자리부터는 혼자 걸었습니다.');
-    } else if ((st.mateSeen || []).length) {
-      lines.push('길에서 같이 가자는 사람을 ' + num(st.mateSeen.length)
-        + '번 만났고, 그때마다 혼자 가는 쪽을 골랐습니다.');
-    }
-    if ((st.hunt || 0) >= 9) {
-      lines.push('벽에 붙은 목록에 당신 이름이 아직 있습니다. 지우려면 값을 내야 합니다.');
-    } else if ((st.hunt || 0) >= 5) {
-      lines.push('당신을 세던 사람들이 아직 세고 있습니다. 값은 안 받으러 왔습니다. 아직은요.');
-    }
-
     if (st.flags && st.flags.has_pet) lines.push('마지막까지 발치에 무언가가 누워 있었습니다.');
     if (st.flags && st.flags.has_base) lines.push('돌아갈 자리가 하나 있었습니다. 그것만으로 걸음이 달랐습니다.');
     if (st.flags && st.flags.armor_saved) lines.push('한 번은 옷이 대신 맞아 주었습니다. 그 옷은 아직 가방에 있습니다.');

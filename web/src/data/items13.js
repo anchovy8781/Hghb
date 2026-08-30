@@ -49,7 +49,17 @@
     { id: 'ropebelt', name: '연장 두르는 띠', kind: 'part', val: 3,
       note: '손이 두 개라는 걸 잊게 해 줍니다.' },
     { id: 'chalkpack', name: '분필 한 상자', kind: 'junk', val: 1,
-      note: '벽에 쓸 게 남은 사람에게는 귀합니다.' }
+      note: '벽에 쓸 게 남은 사람에게는 귀합니다.' },
+    { id: 'mirrorshard', name: '깨진 거울 조각', kind: 'junk', val: 1,
+      note: '얼굴 반쪽만 보입니다. 그게 나을 때도 있습니다.' },
+    { id: 'scissorpair', name: '이발 가위', kind: 'part', val: 3,
+      note: '날을 열두 번 간 겁니다. 손에 맞는 물건 하나로 이십 년을 삽니다.' },
+    { id: 'lunchtin', name: '양은 도시락', kind: 'food', val: 3, hp: 1, mp: 1,
+      note: '뚜껑에 이름이 긁혀 있습니다. 지운 자국은 없습니다.' },
+    { id: 'beaconwood', name: '봉수용 마른 장작', kind: 'part', val: 2, warm: true,
+      note: '젖으면 연기가 옆으로 퍼집니다. 그러면 아무도 못 봅니다.' },
+    { id: 'stonehammer', name: '돌 다루는 망치와 정', kind: 'part', val: 3,
+      note: '돌 갈 자리를 찾는 게 전부입니다. 그 자리는 딱 하나입니다.' }
   ];
 
   ADD.forEach(function (it) {

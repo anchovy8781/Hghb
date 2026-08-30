@@ -74,14 +74,7 @@ function checkEff(eff, where) {
   if (eff.flag) flagsSet.add(eff.flag);
   if (eff.title && typeof eff.title !== 'string') errors.push(`${where}: 칭호가 문자열이 아님`);
   const KNOWN = ['hp', 'mp', 'money', 'rad', 'wear', 'add', 'add2', 'del', 'skillUp',
-                 'rep', 'flag', 'chain', 'title', 'origin',
-                 'trust', 'mateJoin', 'mateGo', 'hunt'];
-  if (eff.mateJoin && !(B.MATE_MAP || {})[eff.mateJoin]) {
-    errors.push(`${where}: 없는 동행자 "${eff.mateJoin}"`);
-  }
-  ['trust', 'hunt'].forEach((k) => {
-    if (eff[k] !== undefined && typeof eff[k] !== 'number') errors.push(`${where}: ${k} 값이 숫자가 아님`);
-  });
+                 'rep', 'flag', 'chain', 'title', 'origin'];
   if (eff.wear) {
     Object.keys(eff.wear).forEach((k) => {
       if (k !== 'hp' && k !== 'mp') errors.push(`${where}: wear 에 쓸 수 없는 값 "${k}"`);
@@ -131,15 +124,6 @@ function checkNeed(need, where) {
     Object.keys(need.rep).forEach((k) => {
       if (!factionIds.has(k)) errors.push(`${where}: 없는 세력 "${k}"`);
     });
-  }
-  if (need.mate && need.mate !== true && !(B.MATE_MAP || {})[need.mate]) {
-    errors.push(`${where}: 없는 동행자 "${need.mate}"`);
-  }
-  if (need.trust !== undefined) {
-    if (typeof need.trust !== 'number' || need.trust < 1 || need.trust > 3) {
-      errors.push(`${where}: 신뢰 조건은 1~3 이어야 합니다`);
-    }
-    if (!need.mate) errors.push(`${where}: 신뢰 조건에는 동행 조건이 같이 있어야 합니다`);
   }
 }
 
@@ -283,61 +267,16 @@ B.ARCS.FINALE.scenes.forEach((sc) => checkScene(sc, `종장 ${sc.id}`));
   });
 }
 
-/* ── 같이 걷는 사람 ──────────────────────────── */
-{
-  const mateIds = new Set();
-  const skillSet = skillIds;
-  (B.MATES || []).forEach((m) => {
-    const w = `동행자 ${m.name || m.id}`;
-    if (mateIds.has(m.id)) errors.push(`동행자 id 중복: ${m.id}`);
-    mateIds.add(m.id);
-    if (!m.name || !m.sub) errors.push(`${w}: 이름이나 소개가 없습니다`);
-    if (!skillSet.has(m.skill)) errors.push(`${w}: 없는 능력 "${m.skill}"`);
-    if (m.gift && !itemIds.has(m.gift)) errors.push(`${w}: 없는 선물 "${m.gift}"`);
-    if (!m.meet || !(m.meet.pages || []).length) errors.push(`${w}: 만나는 장면이 없습니다`);
-    else {
-      checkScene({ id: m.id + '_meet', pages: m.meet.pages, choices: m.meet.choices }, `${w} 만남`);
-      const joins = (m.meet.choices || []).filter((c) => c.join);
-      if (!joins.length) errors.push(`${w} 만남: 같이 가자는 선택지가 없습니다`);
-      const free = joins.some((c) => !c.need);
-      if (!free) errors.push(`${w} 만남: 조건 없이 합류할 길이 없어 못 만날 수 있습니다`);
-    }
-    if (!(m.lines || []).length) errors.push(`${w}: 길에서 하는 말이 없습니다`);
-    if ((m.warm || []).length < 2) errors.push(`${w}: 가까워진 뒤의 말이 모자랍니다`);
-    if (m.bond) {
-      checkScene({ id: m.id + '_bond', pages: m.bond.pages, choices: m.bond.choices }, `${w} 전용`);
-      const free2 = (m.bond.choices || []).some((c) => !c.need && !c.end);
-      if (!free2) errors.push(`${w} 전용: 조건 없는 선택지가 없어 막힐 수 있습니다`);
-    } else warns.push(`${w}: 전용 장면이 없습니다`);
-    if ((m.save || []).length < 2) errors.push(`${w}: 대신 맞아 주는 장면이 모자랍니다`);
-    if (!(m.bye || []).length) warns.push(`${w}: 헤어지는 말이 없습니다`);
-  });
-
-  /* 쫓는 것 */
-  let lastAt = -1;
-  (B.HUNT || []).forEach((h, i) => {
-    const w = `추격 ${i + 1}단계`;
-    if (typeof h.at !== 'number') errors.push(`${w}: 등장 눈금(at)이 없습니다`);
-    else if (h.at <= lastAt) errors.push(`${w}: 눈금이 앞 단계보다 안 큽니다`);
-    else lastAt = h.at;
-    if (!h.title) errors.push(`${w}: 제목 없음`);
-    checkScene({ id: 'hunt' + i, pages: h.pages, choices: h.choices }, w);
-    const free = (h.choices || []).some((c) => !c.need && !c.end);
-    if (!free) errors.push(`${w}: 조건 없는 선택지가 없어 막힐 수 있습니다`);
-    const down = (h.choices || []).some((c) => {
-      const es = [c.eff, c.okEff, c.noEff].filter(Boolean);
-      return es.some((e) => e.hunt < 0);
-    });
-    if (!down) errors.push(`${w}: 쫓김을 줄일 길이 없습니다`);
-  });
-}
-
 /* ── 특별 이야기 ─────────────────────────────── */
 const spIds = new Set();
+const spTitles = new Map();
 (B.SPECIALS || []).forEach((sp) => {
   if (spIds.has(sp.id)) errors.push(`특별 이야기 id 중복: ${sp.id}`);
   spIds.add(sp.id);
   if (!sp.title) errors.push(`특별 이야기 ${sp.id}: 제목 없음`);
+  if (spTitles.has(sp.title)) {
+    errors.push(`특별 이야기 ${sp.id}: 제목 "${sp.title}" 이(가) ${spTitles.get(sp.title)} 와(과) 겹칩니다`);
+  } else spTitles.set(sp.title, sp.id);
   (sp.req && sp.req.items ? sp.req.items : []).forEach((id) => {
     if (!itemIds.has(id)) errors.push(`특별 이야기 ${sp.id}: 없는 조건 아이템 "${id}"`);
   });
