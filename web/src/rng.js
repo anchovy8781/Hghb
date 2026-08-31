@@ -99,11 +99,26 @@
     '이야(야)': ['이야', '야'], '이며(며)': ['이며', '며']
   };
 
-  /* 받침 정보: 0 없음, 8 은 ㄹ */
+  /* 숫자는 읽는 소리로 받침을 본다.
+   *   영(ㅇ) 일(ㄹ) 이 삼(ㅁ) 사 오 육(ㄱ) 칠(ㄹ) 팔(ㄹ) 구
+   * 여러 자리여도 마지막 자리만 보면 된다.
+   * 0 으로 끝나면 십·백·천·만이라 어느 쪽이든 받침이 있고 ㄹ 은 아니다. */
+  const DIGIT_JONG = [1, 8, 0, 1, 0, 0, 1, 8, 8, 0];
+
+  /* 영문은 알파벳 이름을 한글로 읽은 소리를 따른다 */
+  const ALPHA_JONG = {
+    a: 0, b: 0, c: 0, d: 0, e: 0, f: 1, g: 0, h: 0, i: 0,
+    j: 0, k: 0, l: 8, m: 8, n: 0, o: 0, p: 0, q: 0, r: 8,
+    s: 1, t: 0, u: 0, v: 0, w: 0, x: 1, y: 0, z: 0
+  };
+
+  /* 받침 정보: 0 없음, 8 은 ㄹ, 나머지는 있음 */
   function jongseong(ch) {
     const c = ch.charCodeAt(0);
-    if (c < 0xAC00 || c > 0xD7A3) return -1;   /* 한글이 아니면 모른다 */
-    return (c - 0xAC00) % 28;
+    if (c >= 0xAC00 && c <= 0xD7A3) return (c - 0xAC00) % 28;
+    if (c >= 0x30 && c <= 0x39) return DIGIT_JONG[c - 0x30];
+    const a = ALPHA_JONG[ch.toLowerCase()];
+    return a === undefined ? -1 : a;
   }
 
   const JOSA_RE = /([가-힣A-Za-z0-9])(은\(는\)|는\(은\)|이\(가\)|가\(이\)|을\(를\)|를\(을\)|과\(와\)|와\(과\)|아\(야\)|야\(아\)|이었\(였\)|이라\(라\)|으로\(로\)|로\(으로\)|이나\(나\)|이란\(란\)|이야\(야\)|이며\(며\))/g;
@@ -114,15 +129,9 @@
       const forms = JOSA_PAIRS[pair];
       if (!forms) return m;
       const j = jongseong(ch);
-      let withJong;
-      if (j < 0) {
-        /* 숫자나 영문 뒤에는 자주 쓰는 쪽으로 (받침 없는 형태) */
-        withJong = false;
-      } else {
-        withJong = j !== 0;
-        /* ㄹ 받침은 "으로" 가 아니라 "로" 를 쓴다 */
-        if (j === 8 && (pair === '으로(로)' || pair === '로(으로)')) withJong = false;
-      }
+      let withJong = j > 0;
+      /* ㄹ 받침은 "으로" 가 아니라 "로" 를 쓴다 */
+      if (j === 8 && (pair === '으로(로)' || pair === '로(으로)')) withJong = false;
       return ch + (withJong ? forms[0] : forms[1]);
     });
   }
